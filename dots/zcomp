@@ -1,0 +1,274 @@
+# This file gives some examples of compctl commands. The name zcomp
+# does not mean anything to zsh, you can either put the compctl commands
+# in your .zshrc or include a separate file from your .zshrc with the
+# source command.
+
+# These are just examples, use and modify to personal taste.  Copying this
+# file without thought will needlessly increase zsh's memory usage and
+# startup time.
+
+# For an explanation of what all this means, read either the
+# introduction for some explanation or the manual for a detailed
+# description.
+
+# Rmdir only real directories
+compctl -g '*(/)' rmdir dircmp
+
+# Strip, profile, and debug only executables.  The compctls for the
+# debuggers could be better, of course.
+compctl -g '*(*)' strip gprof adb dbx xdbx ups
+
+# See the func/cdmatch function in the distribution
+compctl -K cdmatch -S '/' -x 'S[/][~]' -g '*(-/)' -- cd pushd
+
+# For rcs users, co and rlog from the RCS directory.  We don't want to see
+# the RCS and ,v though.
+compctl -g 'RCS/*(:t:s/\,v//)' co rlog rcs
+
+# Run ghostscript on postscript files, but if no postscript file matches what
+# we already typed, complete directories as the postscript file may not be in
+# the current directory.
+compctl -g '*.ps' + -g '*(-/)' gs ghostview psps pstops psmulti psselect
+
+# Similar things for tex, texinfo and dvi files.
+compctl -g '*.tex*' + -g '*(-/)' tex latex texi2dvi glatex slitex gslitex
+compctl -g '*.dvi' + -g '*(-/)' xdvi dvips
+
+# Anything after nohup is a command by itself with its own completion
+# (the one for the trap builtin isn't perfect -- it does not complete
+# signal names)
+compctl -l '' nohup exec nice eval trap
+compctl -l '' -x 'p[1]' -B -- builtin
+
+# If the command is rsh, make the first argument complete to hosts and treat the
+# rest of the line as a command on its own.
+compctl -k hosts -x 'p[2,-1]' -l '' -- rsh
+
+# kill takes signal names as the first argument after -, but job names after %
+compctl -j -P % -x 's[-] p[1]' -k signals -- kill
+
+# gzip files, but gzip -d only gzipped or compressed files
+compctl -f -x 'R[-*d,^*]' -g '*.gz *.z *.Z' + -g '*(-/)' -- gzip
+compctl -g '*.gz *.z *.Z' + -g '*(-/)' gunzip   # zcat if you use GNU
+compctl -g '*.Z' + -g '*(-/)' uncompress zmore  # zcat if you don't use GNU
+compctl -g '*.F' + -g '*(-/)' melt fcat
+
+# find is very system dependend, this one is for GNU find.
+compctl -x 's[-]' -k "(daystart depth follow maxdepth mindepth noleaf version xdev \
+amin anewer cmin cnewer ctime empty false fstype gid group inum links lname mmin \
+mtime name newer nouser nogroup path perm regex size true type uid used user xtype \
+exec fprint fprint0 fprintf ok print print0 printf prune ls)" - \
+'p[1]' -g '. .. *(-/)' - \
+'c[-1,-anewer][-1,-cnewer][-1,-newer][-1,-fprint][-1,fprint0][-1,fprintf]' -f - \
+'c[-1,-fstype]' -k '(ufs 4.2 4.3 nfs tmp mfs S51K S52K)' - \
+'c[-1,-group]' -s '$(groups)' - \
+'c[-1,-user]' -u - \
+'r[-exec,;][-ok,;]' -l '' -- find
+
+# xsetroot: gets possible colours, cursors and bitmaps from wherever.
+# Uses two auxiliary functions.  You might need to change the path names.
+Xcolours() { reply=($(awk '{ print $4 }' < /usr/lib/X11/X11/rgb.txt)) }
+Xcursor() { reply=($(awk '/^#define/ {print $2}' \
+</usr/include/X11/cursorfont.h | sed 's/^XC_//')) }
+compctl -k '(-help -def -display -cursor -cursor_name -bitmap -mod -fg -bg
+  -grey -rv -solid -name)' -x 'c[-1,-display]' -k hosts -S ':0.0' - \
+  'c[-1,-cursor]' -f -  'c[-2,-cursor]' -f - \
+  'c[-1,-bitmap]' -g '/usr/include/X11/bitmaps/*' - \
+  'c[-1,-cursor_name]' -K Xcursor - \
+  'C[-1,-(solid|fg|bg)]' -K Xcolours -- xsetroot
+
+# Default completion.  See func/multicomp
+compctl -D -f + -U -K multicomp
+# If completion of usernames is slow for you, you may want to add something
+# like
+#    -x 'C[0,*/*]' -f - 's[~]' -S/ -k users + -u
+# where `users' contains the names of the users you want to complete often.
+# If you want to use this and to be able to complete named directories after
+# the `~' you should add `+ -n' at the end
+
+
+# rlogin takes hosts and users after `-l'
+compctl -k hosts -x 'c[-1,-l]' -u -- rlogin
+
+# su takes an username and args for the shell, the `-c' case is
+# handled specially here
+compctl -u -x 'w[2,-c] p[3,-1]' -l '' -- su
+
+# Some systems have directories containing indices of ftp servers.
+# For example: we have the directory /home/ftp/index/INDEX containing
+# files of the form `<name>-INDEX.Z', this leads to:
+compctl -g '/home/ftp/index/INDEX/*-INDEX.Z(:t:r:s/-INDEX//)' ftp tftp
+
+# There are (at least) two ways to complete manual pages.  This one is
+# extremely memory expensive if you have lots of man pages
+man_var() {
+  man_pages=( $^manpath/man*/*(N:t:r) )   # Check your setting of SH_WORD_SPLIT
+  compctl -k man_pages man
+  reply=( $man_pages )
+}
+compctl -K man_var man
+# This one isn't that expensive but somewhat slower
+man_glob () {
+  local a
+  read -cA a
+  if [[ $a[2] = -s ]] then         # Or [[ $a[2] = [0-9]* ]] for BSD
+    reply=( $^manpath/man$a[3]/$1*$2(N:t:r) )    # See above
+  else
+    reply=( $^manpath/man*/$1*$2(N:t:r) )    # See above
+  fi
+}
+compctl -K man_glob man
+
+# Misc.
+compctl -s '$(groups)' newgrp
+compctl -f -x 'p[1]' -s '$(groups)' -- chgrp
+compctl -f -x 'p[1]' -u -- chown
+compctl -g '*.x' + -g '*(-/)' rpcgen
+compctl -g "*.[cCoa]" -x 's[-I]' -g "*(/)" - \
+  's[-l]' -s '${(s.:.)LD_LIBRARY_PATH}/lib*.a(:t:r:s/lib//)' -- cc gcc
+compctl -f -x 'C[-1,*f*] p[2]' -g "*.tar" -- tar
+compctl -u -x 's[+] c[-1,-f],s[-f+]' -g '~/Mail/*(:t)' - \
+  's[-f],c[-1,-f]' -f -- mail elm
+
+# Some builtins.
+compctl -j -P % fg bg wait jobs disown
+compctl -A shift
+compctl -caF type whence which
+compctl -F unfunction
+compctl -a unalias
+compctl -v unset typeset declare vared readonly export integer
+compctl -e disable
+compctl -d enable
+compctl -k '(cputime filesize datasize stacksize coredumpsize resident \
+  memoryuse memorylocked descriptors openfiles vmemorysize)' limit ulimit
+compctl -l '' -x 'p[1]' -f -- . source
+
+# Various MH completions by Peter Stephenson
+# Still to do:
+# Support for searching for files in standard MH locations.
+
+# mhcomp is best autoloaded.  Edit path where indicated.
+function mhcomp {
+  # Completion function for MH folders.
+  # Works with both + (rel. to top) and @ (rel. to current).
+  local nword args pref char mhpath
+  integer ngtrue
+  read -nc nword
+  read -cA args
+
+  [[ -o nullglob ]] && ngtrue=1 || setopt nullglob
+
+  pref=$args[$nword]
+  char=$pref[1]
+  pref=$pref[2,-1]
+
+# The `...`'s here account for most of the time spent in this function.
+  if [[ $char = + ]]; then
+#    mhpath=`mhpath +`
+# EDIT ME:  Use a hard wired value here: it's faster.
+    mhpath=~/Mail
+  elif [[ $char = @ ]]; then
+    mhpath=`mhpath`
+  fi
+
+  reply="reply=($mhpath/$pref*(-/))"
+  eval $reply
+
+  # I'm frankly amazed that this next step works, but it does.
+  reply=(${reply#$mhpath/})
+
+  (( ngtrue )) || unsetopt nullglob
+}
+
+mhfseq() { set -A reply $(mark | awk -F: '{print $1}') \
+next cur prev first last all unseen }
+
+compctl -K mhfseq -x 's[+][@]' -K mhcomp -S / -q - \
+  's[-]' -k '(all fast nofast header noheader help list nolist \
+  pack nopack pop push recurse norecurse total nototal)' -- folder
+compctl -K mhfseq -x 's[+][@],c[-1,-draftfolder] s[+][@]' \
+  -K mhcomp -S / -q - 'c[-1,-draftmessage]' -K mhfseq - \
+  'C[-1,-(editor|whatnowproc)]' -c - \
+  's[-]' -k '(draftfolder draftmessage nodraftfolder editor noedit \
+  file form use nouse whatnowproc nowhatnowproc help)' -- comp
+compctl -K mhfseq + -x 's[+][@]' -K mhcomp -S / -q - \
+  's[-]' -k '(audit noaudit changecur nochangecur form format \
+  file silent nosilent truncate notruncate width help)' - \
+  'C[-1,-(audit|form|file)]' -f -- inc
+compctl -K mhfseq -x 's[+][@],C[-1,-src] s[+][@]' \
+  -K mhcomp -S / -q - 'c[-1,-file]' -f - 'c[-1,-rmmprov]' -c - \
+  's[-]' -k '(draft link nolink preserve nopreserve src file \
+  rmmproc normmproc help)' -- refile
+compctl -K mhfseq -x 's[+][@],C[-1,-(draftfolder|fcc)] s[+][@]' \
+  -K mhcomp -S / -q - 'c[-1,-draftmessage]' -K mhfseq -\
+  's[-]' -k '(annotate noannotate cc nocc draftfolder nodraftfolder \
+  draftmessage editor noedit fcc filter form inplace noinplace query \
+  noquery width whatnowproc nowhatnowproc help)' - 'c[-1,(cc|nocc)]' \
+  -k '(all to cc me)' - 'C[-1,-(filter|form)]' -f - \
+  'C[-1,-(editor|whatnowproc)]' -c -- repl
+compctl -K mhfseq -x 's[+][@]' -K mhcomp -S / -q - \
+  's[-]' -k '(clear noclear form format header noheader reverse noreverse \
+  file help width)' - 'C[-1,-(file|form)]' -f -- scan
+compctl -K mhfseq -x 's[+][@]'  -K mhcomp -S / -q - \
+  's[-]' -k '(draft header noheader showproc noshowproc)' - \
+  'c[-1,showproc]' -c -- show
+compctl -K mhfseq -x 's[+][@]' -K mhcomp -S / -q - 's[-]' \
+  -k '(help)' -- rmm
+
+# End of MH completions
+
+# By Bart Schaefer
+# CVS -- there's almost no way to make this all-inclusive, but ...
+#
+cvsflags=(-H -Q -q -r -w -l -n -t -v -b -e -d)
+cvscmds=(add admin checkout commit diff history import export log rdiff
+	    release remove status tag rtag update)
+
+# diff assumes gnu rcs using gnu diff
+# log assumes gnu rcs
+
+compctl -k "($cvscmds $cvsflags)" \
+    -x "c[-1,-D]" -k '(today yesterday 1\\\ week\\\ ago)' \
+    - "r[add,;]" -k "(-k -m)" -f \
+    - "r[admin,;]" -K cvstargets \
+    - "r[checkout,;]" -k "(-A -N -P -Q -c -f -l -n -p -q -s -r -D -d -k -j)" \
+    - "r[commit,;]" -k "(-n -R -l -f -m -r)"  -K cvstargets \
+    - "r[diff,;]" -k "(-l -D -r -c -u -b -w)" -K cvstargets \
+    - "r[history,;]" \
+	-k "(-T -c -o -m -x -a -e -l -w -D -b -f -n -p -r -t -u)" \
+	-K cvstargets \
+    - "r[history,;] c[-1,-u]" -u \
+    - "r[import,;]" -k "(-Q -q -I -b -m)" -f \
+    - "r[export,;]" -k "(-N -Q -f -l -n -q -r -D -d)" -f \
+    - "R[(r|)log,;]" -k "(-l -R -h -b -t -r -w)" -K cvstargets \
+    - 'R[(r|)log,;] s[-w] n[-1,,],s[-w]' -u -S , -q \
+    - "r[rdiff,;]" -k "(-Q -f -l -c -u -s -t -D -r -V)" -K cvstargets \
+    - "r[release,;]" -k "(-Q -d -q)" -f \
+    - "r[remove,;]" -k "(-l -R)" -K cvstargets \
+    - "r[status,;]" -k "(-v -l -R)" -K cvstargets \
+    - "r[tag,;]" -k "(-Q -l -R -q -d -b)" -K cvstargets \
+    - "r[rtag,;]" -k "(-Q -a -f -l -R -n -q -d -b -r -D)" -f \
+    - "r[update,;]" -k "(-A -P -Q -d -f -l -R -p -q -k -r -D -j -I)" \
+	-K cvstargets \
+    -- cvs
+unset cvsflags cvscmds
+
+cvstargets() {
+    local nword args pref ngtrue f
+    [[ -o nullglob ]] && ngtrue=1
+    setopt nullglob
+    read -nc nword; read -Ac args
+    pref=$args[$nword]
+    if [[ -d $pref:h && ! -d $pref ]]
+    then
+	pref=$pref:h
+    elif [[ $pref != */* ]]
+    then
+	pref=
+    fi
+    [[ -n "$pref" && "$pref" != */ ]] && pref=$pref/
+    reply=($(for f in $(cat ${pref}CVS/Entries 2>/dev/null | \
+    		sed 's/^\/\([^\/]*\).*/\1/'); do echo $pref$f; done)
+	   $(echo ${pref}**/CVS(:h) | sed 's/CVS//'))
+    [[ $ngtrue = 1 ]] || unsetopt nullglob
+}

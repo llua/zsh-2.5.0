@@ -1,0 +1,40 @@
+       print [ -RnrslzpNDPoOic ] [ -un ] [ arg ... ]
+              With  no  flags  or  with flag -, the arguments are
+              printed on the  standard  output  as  described  by
+              echo,  with  the  following differences: the escape
+              sequence \M-x metafies the character  x  (sets  the
+              highest  bit),  \C-x  produces  a control character
+              (\C-@ and \C-? give the characters NULL and delete)
+              and  \E is a synonym for \e.  Finally, if not in an
+              escape sequence, \ escapes the following  character
+              and is not printed.
+              -R, -r ignore  the escape conventions of echo.  The
+                     -R option will print  all  subsequent  argu-
+                     ments and options.
+              -s     place   the  results  in  the  history  list
+                     instead of on the standard output.
+              -n     do not add a newline to the output.
+              -l     print the arguments  separated  by  newlines
+                     instead of spaces.
+              -N     print the arguments separated and terminated
+                     by nulls.
+              -o     print  the  arguments  sorted  in  ascending
+                     order.
+              -O     print  the  arguments  sorted  in descending
+                     order.
+              -i     if given together with -o or -O  makes  them
+                     work case independently
+              -c     print the arguments in columns
+              -un    print the arguments to file descriptor n.
+              -p     print  the  arguments  to  the  input of the
+                     coprocess.
+              -z     push the arguments onto the  editing  buffer
+                     stack,   separated   by  spaces;  no  escape
+                     sequences are recognized.
+              -D     treat  the  arguments  as  directory  names,
+                     replacing  prefixes  with  ~ expressions, as
+                     appropriate.
+              -P     recognize the same escape  sequences  as  in
+                     the PROMPT parameter.
+
+       pwd    Equivalent to print -R $PWD.

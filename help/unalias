@@ -1,0 +1,24 @@
+       alias [ -grm ] [ name[=value] ] ...
+              With no arguments, print the list of aliases in the
+              form name=value on the standard output.   For  each
+              name  with  a  corresponding value, define an alias
+              with that value.  A trailing space in value  causes
+              the next word to be checked for alias substitution.
+              If the -g flag is present, define a  global  alias;
+              global  aliases  are  expanded  even if they do not
+              occur in command position.  For each name  with  no
+              value,  print  the  value of name, if any.  If only
+              the -g or the -r flags are  given  only  global  or
+              regular aliases are listed. If the -m flag is given
+              the arguments are taken as patterns (they should be
+              quoted  to  preserve them from being interpreted as
+              glob patterns) and the aliases matching these  pat-
+              terns are printed.  The exit status is nonzero if a
+              name (with no value) is given for  which  no  alias
+              has been defined.
+
+       unalias [ -m ] name ...
+              The  alias  definition,  if  any,  for each name is
+              removed.  With the -m flag the arguments are  taken
+              as patterns (should be quoted) and all aliases with
+              matching names are removed.

@@ -1,0 +1,242 @@
+       compctl [ -cfqovbCDAIFpEjBaRGuderzNOZ ] [ -k name ]
+              [ -X explanation ] [ -K function ]
+              [ -P prefix ] [ -S suffix ]
+              [ -g globstring ] [ -s subststring ] [ arg ... ]
+              [ -H num pattern ] [ -l cmd ]
+       compctl flags + flags + ...
+       compctl flags -x pattern flags - ... -- arg ...
+              Control the editor's completion behavior  when  one
+              of  arg is the current command.  (Note that aliases
+              are expanded before this is determined.)  With  the
+              -D  flag,  control  default completion behavior for
+              commands not assigned any  special  behavior;  with
+              -C,  control  completion  when  there is no current
+              command.  The remaining options specify the type of
+              command  arguments  to  look for during completion.
+              If completion is attempted for  a  command  with  a
+              pathname  containing  slashes  and no completion is
+              found the search is retried with the last  pathname
+              component.
+
+              -c     Expect command names.
+              -f     Expect filenames and filesystem paths.
+              -o     Expect option names.
+              -v     Expect variable names.
+              -b     Expect key binding names.
+              -A     Expect array names.
+              -I     Expect integer variable names.
+              -F     Expect function names.
+              -p     Expect parameter names.
+              -E     Expect environment variable names.
+              -j     Expect  job names (the first word of the job
+                     leader's command line, useful with the  kill
+                     builtin).
+              -r     Expect names of running jobs.
+              -z     Expect names of suspended jobs.
+              -B     Expect names of builtin commands.
+              -a     Expect alias names.
+              -R     Expect names of regular aliases.
+              -G     Expect names of global aliases.
+              -u     Expect user names.
+              -d     Expect names of disabled commands.
+              -e     Expect  names  of  executable  (and enabled)
+                     commands.
+              -N     Expect names of scalar parameters.
+              -O     Expect names of readonly variables.
+              -Z     Expect names of shell special parameters.
+              -q     If given together with a suffix (see the  -S
+                     flag  below) it makes this suffix be removed
+                     if the next character typed is  a  blank  or
+                     does  not  insert anything (this is the same
+                     rule  as  used  for  the   AUTO_REMOVE_SLASH
+                     option).
+              -k name
+                     Expect  names  taken  from  the  elements of
+                     $name.   Alternatively,  the  argument  name
+                     itself  may  be  a  set  of space- or comma-
+                     separated values in  parentheses,  in  which
+                     any  delimiter  may  be escaped with a back-
+                     slash.   (Example:  `compctl  -k   "(cputime
+                     filesize   datasize  stacksize  coredumpsize
+                     resident descriptors)" limit'.)
+              -K function
+                     Call the given function to get  the  comple-
+                     tions.  The function gets two arguments: the
+                     prefix and the suffix of the word  on  which
+                     completion  is  tried.   The function should
+                     set the variable reply to an array  contain-
+                     ing the completions (one completion per ele-
+                     ment); note that reply should  not  be  made
+                     local.   Currently  the  command line is not
+                     available to the function; an argument pass-
+                     ing mechanism will be added shortly.  (Exam-
+                     ple: `function whoson { reply=(`users`);  };
+                     compctl   -K  whoson  talk'  completes  only
+                     logged-on users  after  `talk'.)  Note  that
+                     whoson  must  return  an  array so that just
+                     "reply=`users`" is incorrect.
+              -X explanation
+                     Print the explanation string before the list
+                     of  completions.  A  `%n'  in this string is
+                     replaced by the number of matches.
+              -P prefix
+                     The prefix is inserted just before the  com-
+                     pleted  string;  any  initial  part  already
+                     typed will be completed and the whole prefix
+                     ignored  for  completion purposes. (Example:
+                     `compctl -j -P "%" kill').
+              -S suffix
+                     After a unique completion is found the  suf-
+                     fix  is inserted after the completed string.
+              -g globstring
+                     The globstring is  expanded  using  filename
+                     globbing;  it should be quoted to protect it
+                     from  immediate  expansion.  The   resulting
+                     filenames  are taken as the possible comple-
+                     tions.   Use  `*(/)'  instead  of  `*/'  for
+                     directories.   The fignore special parameter
+                     is not used.  More than one pattern  may  be
+                     given separated by blanks.
+              -s subststring
+                     The  substring is split into words and these
+                     words are  than  expanded  using  all  shell
+                     expansion  mechanisms.  The  resulting words
+                     are taken as possible completions. The  fig-
+                     nore  special  parameter  is not used.  Note
+                     that -g is faster for filenames.
+              -H num pattern
+                     The possible completions are taken from  the
+                     last  num history lines. Only words matching
+                     pattern are taken. If num is zero  or  nega-
+                     tive  the  whole  history is searched and if
+                     pattern is the  empty  string  (or  '*',  of
+                     course) all words are taken.
+              -l cmd This  option  can  not  be combined with any
+                     other option. If it is  given  it  restricts
+                     the  range  of  command  line words that are
+                     considered to be arguments. By default  this
+                     range  contains  all  arguments  without the
+                     command string. If  combined  with  extended
+                     completion and one of `p[...]', `r[...]', or
+                     `R[...]' the  range  is  restricted  to  the
+                     arguments  between  the ones that are speci-
+                     fied in the brackets.  After  the  range  of
+                     arguments  is  determined completion is done
+                     in it as if they were arguments to  the  cmd
+                     given  with  this  option. If this string is
+                     empty the first word in the range  is  taken
+                     as  the  command name for which to complete.
+                     In this case, if the cursor is in the  first
+                     word, command names are completed.  Example:
+                     `compctl -x 'r[-exec,;]' -l '' -- find' com-
+                     pletes the arguments between `-exec' and the
+                     following `;' (or the  end  of  the  command
+                     line  if there is no such string) as if they
+                     were specifying a command on there own.
+              -U     Use the whole list of possible  completions,
+                     whether  or not they actually match the word
+                     on the command line.  The word typed so  far
+                     will be deleted.  This is most useful with a
+                     function (-K option), which can examine  the
+                     word  via the read builtin's -c and -l flags
+                     and use its own  criterion  to  decide  what
+                     matches.
+              The  second  form  specifies  alternative  options.
+              First completion is tried with the  options  before
+              the  first `+'. If this produces no matches comple-
+              tion is tried with the flags after the `+'  and  so
+              on.  If  there are no flags after the last `+' this
+              means  that  default  completion  is  tried  if  no
+              matches were found.
+              The  third  form  specifies extended completion for
+              the commands given as arg. Each pattern is examined
+              in  turn;  when a match is found, the corresponding
+              flags, as described above for  the  ordinary  case,
+              are  used  to generate possible completions.  If no
+              pattern matches, the flags given before the -x  are
+              used.  Note that each pattern should be supplied as
+              a single argument and should be quoted  to  prevent
+              expansion of metacharacters by the shell. A pattern
+              is built of sub-patterns separated  by  commas;  it
+              matches  if  at  least  one  of  these sub-patterns
+              matches (they are `or'ed'). These sub-patterns  are
+              in turn composed of other sub-patterns separated by
+              white spaces which match if all of the sub-patterns
+              match  (they  are  `and'ed').   An  element  of the
+              sub-patterns is of the  form  'c[...][...]',  where
+              the  pairs  of brackets may be repeated as often as
+              necessary, and matches if any of the sets of brack-
+              ets  match (an `or').  These elements may be any of
+              the following:
+
+                      s[string] ...
+                             The pattern matches if  the  current
+                             word on the command line starts with
+                             one of the strings given  in  brack-
+                             ets.   The string is not removed and
+                             is not part of the completion.
+                      S[string] ...
+                             Like s[string]  but  the  string  is
+                             part of the completion.
+                      p[from,to] ...
+                             The pattern matches if the number of
+                             the current word is between  one  of
+                             the from and to pairs. The comma and
+                             to are optional; to defaults to  the
+                             same  value as from. The numbers may
+                             be negative: -n refers to  the  n'th
+                             last word on the line.
+                      c[offset,string] ...
+                             The  pattern  matches  if one of the
+                             strings matches the word  offset  by
+                             offset  from  the current word posi-
+                             tion.
+                      C[offset,pattern] ...
+                             This is  like  c  but  uses  pattern
+                             matching instead.
+                      w[index,string] ...
+                             The  pattern  matches if the word in
+                             position index is equal to the  cor-
+                             responding  string.   Note  that the
+                             word  count  is  made  after   alias
+                             expansion.
+                      W[index,pattern] ...
+                             Like  w  but  using pattern matching
+                             instead.
+                      n[index,string] ...
+                             Matches if the current word contains
+                             string.  Anything up to the index'th
+                             occurrence of this string  will  not
+                             be  considered  part  of the comple-
+                             tion, but the rest will.
+                      N[index,string] ...
+                             Like n[index,string] but the  string
+                             will  be  taken as a character class
+                             (anything up to the index'th  occur-
+                             rence  of  any  of the characters in
+                             string will not be  considered  part
+                             of the completion).
+                      m[min,max] ...
+                             Matches if the total number of words
+                             lies    between    min    and    max
+                             (inclusive).
+                      r[str1,str2]...
+                             Matches  if  the  cursor  is after a
+                             word with prefix str1. If  there  is
+                             also  a word with prefix str2 on the
+                             command line it matches only if  the
+                             cursor is before this word.
+                      R[str1,str2]...
+                             Like  r  but  using pattern matching
+                             instead.
+
+              Example:
+
+                     compctl -u -x 's[+] c[-1,-f],s[-f+]' -g '~/Mail/*(:t)' \
+                     - 's[-f],c[-1,-f]' -f -- mail
+
+              Complete users by default.   After  a  -f  with  an
+              optional space, complete file names; if a + follows
+              the -f, whether or not there is a space in between,
+              complete  with  the  non-directory part of files in
+              the directory ~/Mail.

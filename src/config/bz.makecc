@@ -1,0 +1,47 @@
+# --- bz.makecc
+
+# --- find out the C compiler
+
+if test -z "$CC"
+then
+  if test -n "$C_CC"
+  then
+    CC="$C_CC"
+  else
+    set c89 c89 "/usr/bin /bin"
+    . ./config/bz.walk
+    if test -n "$c89"
+    then CC=c89; C89=yep
+    elif test -n "$MIPS"
+    then CC='cc -systype bsd43'
+    elif test -n "$TITAN"
+    then CC='cc -43'
+    else CC=$DEFAULT_CC	# the default CC
+    fi
+  fi
+fi
+
+test -z "$CC" && CC="$DEFAULT_C_CC"
+
+set CC "$CC" "C compiler"
+. ./config/bz.define
+
+test -n "$C89" && echo "	(at least judging by name $CC does ANSI...)"
+
+# --- GNU cc?
+
+if test -n "$C89" -o -n "$B_gcc" -o -n "$B_strictgcc" -o -n "$B_mediumgcc"
+then
+  maybegcc="`$CC -v 2>&1|egrep '^gcc version '`"
+  if test -n "$maybegcc"
+  then
+    echo "	($CC seems to be GNU...)"
+    case "$CC" in
+    *gcc*) echo "	(surprised?)" ;;
+    esac
+  fi
+else
+  test -n "$CC_MIPS_STYLE" && echo "	($CC might be MIPS style...)"
+fi
+
+makecc_done=yep

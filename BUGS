@@ -1,0 +1,34 @@
+-*- text -*-
+------------------------------------------------------------------------
+% ( echo foo ; echo bar 1>& 2 ) 2>&1 1>/dev/null | cat
+bar
+foo
+% ksh
+$ ( echo foo ; echo bar 1>& 2 ) 2>&1 1>/dev/null | cat
+bar
+
+This is not exactly a bug, but an effect of the multiple IO
+redirection.  It is a (k)sh incompatibility, though.
+------------------------------------------------------------------------
+If you do
+% foo =(bar)
+and hit ^Z before bar is finished, bar is suspended but nothing
+happens, i.e. no prompt appears and zsh keeps waiting.
+------------------------------------------------------------------------
+Completion has a habit of doing the wrong thing after a
+backslash/newline.
+------------------------------------------------------------------------
+~% (sleep 100 ; echo foo)
+			# Hit ^Z here
+
+zsh: suspended  ( sleep 100; echo foo )
+~% fg
+[1]  + continued  ( sleep 100; echo foo )
+foo			# This is wrong!
+~% ps
+  PID TTY STAT  TIME COMMAND
+ 2092 v02 S     0:00 sleep 100
+------------------------------------------------------------------------
+If you suspend "man", zle seems to get into cooked mode.  It works ok
+for plain "less".
+------------------------------------------------------------------------

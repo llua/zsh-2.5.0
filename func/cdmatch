@@ -1,0 +1,37 @@
+# Start of cdmatch.
+# Save in your functions directory and autoload, then do
+#   compctl -K cdmatch -S '/' cd pushd
+# or if you prefer
+#   compctl -K cdmatch -S '/' -x 'S[/][~][./][../]' -g '*(-/)' -- cd pushd
+# (to use ordinary globbing for absolute paths).
+#
+# Completes directories for cd, pushd, ... anything which knows about cdpath.
+# Note that . is NOT automatically included.  It's up to you to put it in
+# cdpath somewhere.
+
+local dir nword args pref ngtrue gdtrue
+
+[[ -o nullglob ]] && ngtrue=1
+[[ -o globdots ]] && gdtrue=1
+setopt nullglob globdots
+
+read -nc nword
+read -Ac args
+pref=$args[$nword]
+
+if [[ $pref[1] = [/\~] ]]; then
+  eval "reply=($pref*(-/))"
+else
+  reply=()
+
+  for dir in $cdpath
+  do
+    eval "reply=(\$reply $dir/$pref*(-/:s,$dir/,,:gs/ /\\\\\\\\ /))"
+  done
+fi
+
+[[ $ngtrue = 1 ]] || unsetopt nullglob
+[[ $gdtrue = 1 ]] || unsetopt globdots
+
+return
+# End of cdmatch.

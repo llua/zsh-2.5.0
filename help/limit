@@ -1,0 +1,44 @@
+       limit [ -h ] [ resource [ limit ] ] ...
+       limit -s
+              Limit the resource consumption of the current shell
+              and its children.  If limit is not specified, print
+              the current limit placed on resource; otherwise set
+              the limit to the specified value.  If the  -h  flag
+              is  given,  use hard limits instead of soft limits.
+              If no resource is given, print all limits.
+
+              resource is one of:
+
+              cputime
+                     Maximum CPU seconds per process.
+              filesize
+                     Largest single file allowed.
+              datasize
+                     Maximum data size (including stack) for each
+                     process.
+              stacksize
+                     Maximum stack size for each process.
+              coredumpsize
+                     Maximum size of a core dump.
+              resident
+                     Maximum resident set size.
+              memoryuse
+                     The same as resident.
+              memorylocked
+                     Maximum amount of memory locked in RAM.
+              descriptors
+                     Maximum value for a file descriptor.
+              openfiles
+                     Maximum number of open files.
+              vmemorysize
+                     Maximum amount of virtual memory.
+
+              Which   of  these  resource  limits  are  available
+              depends on the system.  limit is a number, with  an
+              optional scaling factor, as follows:
+
+              nh     hours.
+              nk     kilobytes.   This is the default for all but
+                     cputime.
+              nm     megabytes or minutes.
+              mm:ss  minutes and seconds.

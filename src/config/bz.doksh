@@ -1,0 +1,30 @@
+# --- ksh?
+# (hopefully sh does not barf before this point...)
+#
+# if we are not in ksh but we should try it
+#
+if test -n "$F_must_ksh" -o -n "$B_ksh"
+then
+  echo
+# the following trick should tell us whether we have ksh or
+# just bare sh: ksh has alias builtin, sh does not (I really hope that
+# no one has "alias" in their PATH as an executable, this trick
+# will fail major way...)
+(alias) >/dev/null 2>&1 && echo 'Now running ksh...' || {
+  set ksh ksh "/bin /usr/bin /usr/local/bin"
+  . ./config/bz.walk
+  if test -n "$ksh"
+  then
+    test -n "$F_cray" && echo "CRAY's /bin/sh cannot handle buildzsh, a stack overflow will occur."
+    test -n "$B_ksh"      && echo Will | tr -d '\012'
+    test -n "$F_must_ksh" && echo MUST | tr -d '\012'
+    echo " refeed ourselves through $ksh"
+    echo
+    exec $ksh $0 `cat $ARGV`
+    echo "Ooops, something went awfully wrong, failed to 'exec $ksh $0 `cat $ARGV`'"
+  else
+    echo 'Aaargh, we should run ksh but cannot find one.'
+  fi
+  exit 1
+}
+fi

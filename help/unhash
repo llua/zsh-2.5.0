@@ -1,0 +1,12 @@
+       hash name path
+              Puts name in the command hash table, associating it
+              with the pathname path.  Whenever name is used as a
+              command argument, the shell will try to execute the
+              file given by path.
+
+       unhash [ -m ] name ...
+              The  entry  in  the command hash table, if any, for
+              each name is removed. If the -m flag is  given  the
+              arguments  are taken as patterns (should be quoted)
+              and all entries for commands  with  matching  names
+              will be removed.

@@ -1,0 +1,4 @@
+       test arg ...
+       [ arg ... ]
+              Like the system version of test.  Added for compat-
+              ibility; use conditional expressions instead.

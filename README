@@ -1,0 +1,179 @@
+This is zsh version 2.5.0.  Zsh is a shell with lots of features.  For
+a list of these, see the FEATURES file.  For more details, see the
+documentation.
+
+
+Installing zsh
+--------------
+To compile zsh, cd into the src directory and type "./buildzsh".  The
+buildzsh script takes various options that are useful if you want to
+use a nonstandard compiler, build on several architectures, etc.  Do a
+"./buildzsh help" for details.  If no errors occur, you can install
+zsh by typing "make install".  This will install the executable and
+the manpage.
+
+The compilation procedure has recently been tested and found to work
+on the machines listed below.  It might work on others, too,
+particularly if they're small variations of these.  If so, please tell
+us about it.
+
+SunOS 4.1.1 and 4.1.3
+SunOS 5.1 and 5.2
+Solaris 2.3
+Linux (various versions), but can't use USE_ZSH_MALLOC
+AIX 3.2
+HP9000/700, after manually telling buildzsh to use setpgid
+HP9000/827, but only with GCC
+HP9000/847
+HPUX 9.04
+NeXT with NS3.0 and NS3.1
+IRIX 5.1.1.1 and 5.2
+Alpha with OSF/1 1.2, 1.3 and 2.0
+Alpha with Ultrix (unspecified)
+DECstation with Ultrix (unspecified)
+DECstation 5000/240 with Ultrix 4.2A
+DECstation 5000/25 with Mach 3.0
+NetBSD 0.9b
+DYNIX/ptx 1.4 and 2.0.4 with X11
+Sony NWS with NEWS-OS 3.3
+Mac with MiNT after redefining the zgetwd() function as getwd()
+
+If you have used zsh before, please be sure to read the section
+"Important changes" below.
+
+Included in this release are alternative malloc and associated
+functions which reduce memory usage on some systems.  You can use
+these by defining USE_ZSH_MALLOC in config.h.
+
+
+Documentation
+-------------
+There are a number of documents about zsh in this distribution:
+
+man/zsh.1	A manpage in nroff format.  This will be installed in
+		/usr/man/man1 by "make install".
+
+doc/intro.ms	An introduction to zsh in troff format using the ms
+		macros.  This document explains many of the features
+		that make zsh more equal than other shells.
+
+doc/zsh.texi	Everything the manpage has, but in texinfo format.
+
+If you do not have the necessary tools to process these documents,
+postscript, ascii and info versions are available in a separate file
+at the distribution sites:
+
+carlo.phys.uva.nl:/pub/bas/zsh/zsh-2.5.0doc.tar.gz
+ftp.sterling.com:/zsh/zsh-2.5.0doc.tar.gz
+
+The distribution also contains a help directory with descriptions of
+builtin commands taken from the manpage.  The example function
+func/run-help will view the appropriate file from the help directory,
+set in the HELPDIR variable, or run 'man' if such a file is not
+available.
+
+
+Important changes
+-----------------
+This is a list of changes in zsh compared to version 2.3.1 which might
+force you to change your old initialization files.
+
+The -h option to compctl for host completion no longer exists.  Define
+a hosts variable and use compctl -k hosts instead.  Example: change
+compctl -h ping
+to
+compctl -k hosts ping
+
+The hostcmds, bindcmds, optcmds and varcmds special arrays no longer
+exist.  Use compctl -k hosts, -b, -o and -v respectively.
+
+The NO_UNSET option applies to the positional parameters (usually the
+arguments to a script) as well as to all other parameters.
+
+There is a new option CSH_JUNKIE_PAREN which has to be set to allow
+the csh-syntax "if (test) { foo }" to work.  This has been done to
+enhance sh compatibility, where "if (test)" might be used to run
+"test" in a subshell.
+
+
+Feedback
+--------
+Zsh is currently maintained by the members of the zsh mailing list:
+
+	zsh-list@sterling.com
+
+If you wish to subscribe to the mailing list, send an email message to
+	Majordomo@sterling.com
+(this is an automated server) containing
+	subscribe zsh-list <optional-address>
+where <optional-address> can be blank if you want to subscribe from
+your current email address.  Send the message `help' to the same
+address for help on the list server; `unsubscribe zsh-list' also
+works. (Don't send this to the list!). The list manager, Rick Ohnemus,
+can be reached at
+	owner-zsh-list@sterling.com
+
+You can send bug reports, compliments and the like to the mailing
+list.  If are not a subscriber and would like to receive an answer,
+please mention so in your message.
+
+
+Authors
+-------
+Zsh was originally written by Paul Falstad, people who have supplied
+patches for this release are (in lexical order):
+
+Chris.Moore@src.bae.co.uk (Chris Moore)
+Harald.Eikrem@delab.sintef.no
+Irving_Wolfe@happy-man.com (Irving Wolfe)
+Jarkko.Hietaniemi@hut.fi (Jarkko Hietanimi)
+P.Stephenson@swansea.ac.uk (Peter Stephenson)
+Richard.Sharman@software.mitel.com (Richard Sharman)
+Tero_Kivinen@hut.FI (Tero Kivinen)
+arf@maths.nott.ac.uk (Anthony Iano-Fletcher)
+bas@phys.uva.nl (Bas de Bakker)
+benson@odi.com (Benson Margulies)
+billb@bedford.progress.com (Bill Burton)
+brown@wi.extrel.com (M. Brown)
+carlos@snfep1.if.usp.br (Carlos Carvalho)
+cedman@capitalist.princeton.edu (Carl Edman)
+chip%fin@myrddin.sybus.com (Chip Salzenberg)
+chs@apu.fi (Hannu Strang)
+cross@eng.umd.edu (Chris Ross)
+dm@cs.brown.edu (Dimitris Michailidis)
+dmm0t@rincewind.mech.virginia.edu (David M. Meyer)
+esky@CS.UCLA.EDU (Eskandar Ensafi)
+franl@centerline.com (Fran Litterio)
+gansevle@cs.utwente.nl (Fred Gansevles)
+gnohmon@ssiny.com (Ralph Betza)
+guillaum@clipper.ens.fr (Florent Guillaume)
+guthrie@math.upenn.edu (John Guthrie)
+hegedus@celeste.eng.yale.edu (Peter Hegedus)
+hoh@approve.se (Goran Larsson)
+hooft@chem.ruu.nl (Rob Hooft)
+hsw1@papa.attmail.com (Stephen Harris)
+irving@happy-man.com (Irving Wolfe)
+jch@cs.cmu.edu (Jonathan Hardwick)
+jhi@dol-guldur.hut.fi (Jarkko Hietaniemi)
+jos@oce.nl (Jos Backus)
+liblit@cs.psu.edu (Benjamin Liblit)
+marc@cam.org (Marc Boucher)
+mason@werple.apana.org.au (Geoff Wing)
+mycroft@gnu.ai.mit.edu (Charles Hannum)
+mystic@axposf.pa.dec.com (D. Hall)
+norbert@i3.informatik.rwth-aachen.de (Norbert Kiesel)
+oberon@cs.tu-berlin.de (Sven Wischnowsky)
+pclink@qld.tne.oz.au (Rick)
+pem@aaii.oz.au (Paul Maisano)
+per@efd.lth.se (Per Foreby)
+pf@z-code.com (Paul Falstad)
+roderick@ibcinc.com (Roderick Schertler)
+schaefer@z-code.com (Bart Schaefer)
+schlangm@informatik.uni-muenchen.de (Harald Schlangmann)
+seniorr@teleport.com (Russell Senior)
+sinclair@dcs.gla.ac.uk (Duncan Sinclair)
+sterling@oldcolo.com (Bruce Sterling Woodcock)
+suzuki@otsl.oki.co.jp (Hisao Suzuki)
+tsm@cs.brown.edu (Timothy Miller)
+wacker@physik.uni-dortmund.de (Klaus Wacker)
+wacren@cis10.ens-cachan.fr (Laurent Wacrenier)

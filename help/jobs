@@ -1,0 +1,7 @@
+       jobs [ -lprs ] [ job ... ]
+              Lists information about each given job, or all jobs
+              if job is omitted.  The -l flag lists process  ids,
+              and  the  -p  flag lists process groups.  If the -r
+              flag is specified only running jobs will be  listed
+              and  if  the -s flag is given only stopped jobs are
+              shown.

@@ -1,0 +1,59 @@
+# --- (argument handling)
+
+eval set X "$_argv"; shift
+
+for parm
+do
+  case "$parm" in
+  help)
+	. ./config/bz.help
+	;;
+  *=* ) set Z `echo "$parm"|sed 's/=/ /'`
+	var="$2"
+	for cp in $CONFIG_PARMS
+	do
+	  if test Z"$cp" = Z"$var"
+	  then
+	    cpok=yep
+	    break
+	  fi
+	done
+	if test -z "$cpok"
+	then
+	  echo 'Unrecognized configurable parameter "'$var'" in assignment'
+	  echo 'Configurable parameters : '$CONFIG_PARMS
+	  echo 'Try "'$0' help" for more information.'
+	  echo 'Aborting.'
+	  exit 1
+	fi
+	shift
+	shift
+	eval "C_$var=\"$@\""
+	;;
+  hs)
+	B_signals_h=yep
+	B_config_h=yep
+	;;
+  Makefile | makefile | mf)
+	B_Makefile=yep
+	;;
+  gcc|mediumgcc|strictgcc)
+        eval "B_$parm=yep"
+	B_gcc=yep
+	CC=gcc
+	;;
+  signals.h|config.h)
+        eval "B_`echo $parm|tr . _`=yep"
+	;;
+  ksh|query|probe|auto|noopt|debug|zshdebug|install|nomake)
+        eval "B_$parm=yep"
+	;;
+  * )	echo 'Unrecognized parameter "'$parm'"'
+	echo 'Assignable parameters : '$CONFIG_PARMS
+	echo 'Boolean parameters : '$BOOL_PARMS
+        echo 'Try "'$0' help" for more information.'
+	echo 'Aborting.'
+	exit 1
+	;;
+  esac
+done

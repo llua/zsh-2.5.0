@@ -1,0 +1,2066 @@
+Path: news.csc.fi!news.eunet.fi!EU.net!uunet!sparky!not-for-mail
+From: zsh-list@sterling.com (Bas de Bakker)
+Newsgroups: comp.sources.misc
+Subject: v43i107:  zsh - The Z shell, version 2.5.0, Part18/18
+Followup-To: comp.sources.d
+Date: 13 Jul 1994 23:08:32 -0500
+Organization: Sterling Software
+Lines: 2051
+Sender: kent@sparky.sterling.com
+Approved: kent@sparky.sterling.com
+Message-ID: <302do0$b1@sparky.sterling.com>
+References: <csm-v43i089=zsh.230017@sparky.sterling.com>
+NNTP-Posting-Host: sparky.sterling.com
+X-Md4-Signature: ff86cf92399ba045306a4f4f5f18a85d
+
+Submitted-by: zsh-list@sterling.com (Bas de Bakker)
+Posting-number: Volume 43, Issue 107
+Archive-name: zsh/part18
+Environment: UNIX
+Supersedes: zsh: Volume 35, Issue 51-72
+
+#! /bin/sh
+# This is a shell archive.  Remove anything before this line, then feed it
+# into a shell via "sh file" or similar.  To overwrite existing files,
+# type "sh file -c".
+# Contents:  zsh-2.5.0/dots/zlogin zsh-2.5.0/dots/zshenv
+#   zsh-2.5.0/func/acx zsh-2.5.0/func/cdmatch zsh-2.5.0/func/cx
+#   zsh-2.5.0/func/harden zsh-2.5.0/func/mere zsh-2.5.0/func/proto
+#   zsh-2.5.0/func/randline zsh-2.5.0/func/run-help zsh-2.5.0/func/yp
+#   zsh-2.5.0/func/yu zsh-2.5.0/func/zed zsh-2.5.0/help/TRAP
+#   zsh-2.5.0/help/alias zsh-2.5.0/help/bg zsh-2.5.0/help/break
+#   zsh-2.5.0/help/builtin zsh-2.5.0/help/bye zsh-2.5.0/help/case
+#   zsh-2.5.0/help/cd zsh-2.5.0/help/chpwd zsh-2.5.0/help/continue
+#   zsh-2.5.0/help/coproc zsh-2.5.0/help/dirs zsh-2.5.0/help/disable
+#   zsh-2.5.0/help/disown zsh-2.5.0/help/echo zsh-2.5.0/help/echotc
+#   zsh-2.5.0/help/elif zsh-2.5.0/help/enable zsh-2.5.0/help/eval
+#   zsh-2.5.0/help/export zsh-2.5.0/help/false zsh-2.5.0/help/for
+#   zsh-2.5.0/help/function zsh-2.5.0/help/getln
+#   zsh-2.5.0/help/getopts zsh-2.5.0/help/jobs zsh-2.5.0/help/kill
+#   zsh-2.5.0/help/let zsh-2.5.0/help/log zsh-2.5.0/help/logout
+#   zsh-2.5.0/help/periodic zsh-2.5.0/help/popd zsh-2.5.0/help/precmd
+#   zsh-2.5.0/help/pushd zsh-2.5.0/help/readonly zsh-2.5.0/help/rehash
+#   zsh-2.5.0/help/repeat zsh-2.5.0/help/return zsh-2.5.0/help/sched
+#   zsh-2.5.0/help/select zsh-2.5.0/help/set zsh-2.5.0/help/shift
+#   zsh-2.5.0/help/source zsh-2.5.0/help/suspend zsh-2.5.0/help/test
+#   zsh-2.5.0/help/time zsh-2.5.0/help/times zsh-2.5.0/help/trap
+#   zsh-2.5.0/help/ttyctl zsh-2.5.0/help/type zsh-2.5.0/help/ulimit
+#   zsh-2.5.0/help/umask zsh-2.5.0/help/unfunction
+#   zsh-2.5.0/help/until zsh-2.5.0/help/vared zsh-2.5.0/help/wait
+#   zsh-2.5.0/help/while zsh-2.5.0/src/.indent.pro
+#   zsh-2.5.0/src/buildzsh zsh-2.5.0/src/config/bz.doksh
+#   zsh-2.5.0/src/config/bz.finale zsh-2.5.0/src/config/bz.hs
+#   zsh-2.5.0/src/config/bz.ifksh zsh-2.5.0/src/config/bz.init
+#   zsh-2.5.0/src/config/bz.makecc zsh-2.5.0/src/config/bz.makevpath
+#   zsh-2.5.0/src/config/bz.saveargv zsh-2.5.0/src/config/bz.walk
+#   zsh-2.5.0/src/makepro.sed zsh-2.5.0/src/version.h
+# Wrapped by kent@sparky on Tue Jul 12 16:47:29 1994
+PATH=/bin:/usr/bin:/usr/ucb:/usr/local/bin:/usr/lbin:$PATH ; export PATH
+echo If this archive is complete, you will see the following message:
+echo '          "shar: End of archive 18 (of 18)."'
+if test -f 'zsh-2.5.0/dots/zlogin' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/dots/zlogin'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/dots/zlogin'\" \(247 characters\)
+  sed "s/^X//" >'zsh-2.5.0/dots/zlogin' <<'END_OF_FILE'
+Xclear
+Xcd
+Xstty dec new cr0 -tabs
+Xttyctl -f  # freeze the terminal modes... can't change without a ttyctl -u
+Xumask 022
+Xexport MAIL=/usr/spool/mail/$USER
+XMAILCHECK=60
+Xmesg y
+Xuptime
+Xfortune
+Xlog
+Xfrom 2>/dev/null
+Xcat notes
+Xunlimit
+Xlimit core 0
+Xmsgs -fp
+END_OF_FILE
+  if test 247 -ne `wc -c <'zsh-2.5.0/dots/zlogin'`; then
+    echo shar: \"'zsh-2.5.0/dots/zlogin'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/dots/zlogin'
+fi
+if test -f 'zsh-2.5.0/dots/zshenv' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/dots/zshenv'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/dots/zshenv'\" \(123 characters\)
+  sed "s/^X//" >'zsh-2.5.0/dots/zshenv' <<'END_OF_FILE'
+Xpath=(~/scr ~/bin/$HOSTTYPE
+X	/usr/princeton/bin /usr/ucb /usr/bin /bin
+X	/usr/hosts /usr/princeton/bin/X11 /usr/etc /etc .)
+END_OF_FILE
+  if test 123 -ne `wc -c <'zsh-2.5.0/dots/zshenv'`; then
+    echo shar: \"'zsh-2.5.0/dots/zshenv'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/dots/zshenv'
+fi
+if test -f 'zsh-2.5.0/func/acx' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/func/acx'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/func/acx'\" \(104 characters\)
+  sed "s/^X//" >'zsh-2.5.0/func/acx' <<'END_OF_FILE'
+X#! /bin/sh
+X#
+X# zsh shell function to make its arguments 755
+X# also works as an sh script
+X#
+Xchmod 755 $*
+END_OF_FILE
+  if test 104 -ne `wc -c <'zsh-2.5.0/func/acx'`; then
+    echo shar: \"'zsh-2.5.0/func/acx'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/func/acx'
+fi
+if test -f 'zsh-2.5.0/func/cdmatch' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/func/cdmatch'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/func/cdmatch'\" \(897 characters\)
+  sed "s/^X//" >'zsh-2.5.0/func/cdmatch' <<'END_OF_FILE'
+X# Start of cdmatch.
+X# Save in your functions directory and autoload, then do
+X#   compctl -K cdmatch -S '/' cd pushd
+X# or if you prefer
+X#   compctl -K cdmatch -S '/' -x 'S[/][~][./][../]' -g '*(-/)' -- cd pushd
+X# (to use ordinary globbing for absolute paths).
+X#
+X# Completes directories for cd, pushd, ... anything which knows about cdpath.
+X# Note that . is NOT automatically included.  It's up to you to put it in
+X# cdpath somewhere.
+X
+Xlocal dir nword args pref ngtrue gdtrue
+X
+X[[ -o nullglob ]] && ngtrue=1
+X[[ -o globdots ]] && gdtrue=1
+Xsetopt nullglob globdots
+X
+Xread -nc nword
+Xread -Ac args
+Xpref=$args[$nword]
+X
+Xif [[ $pref[1] = [/\~] ]]; then
+X  eval "reply=($pref*(-/))"
+Xelse
+X  reply=()
+X
+X  for dir in $cdpath
+X  do
+X    eval "reply=(\$reply $dir/$pref*(-/:s,$dir/,,:gs/ /\\\\\\\\ /))"
+X  done
+Xfi
+X
+X[[ $ngtrue = 1 ]] || unsetopt nullglob
+X[[ $gdtrue = 1 ]] || unsetopt globdots
+X
+Xreturn
+X# End of cdmatch.
+END_OF_FILE
+  if test 897 -ne `wc -c <'zsh-2.5.0/func/cdmatch'`; then
+    echo shar: \"'zsh-2.5.0/func/cdmatch'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/func/cdmatch'
+fi
+if test -f 'zsh-2.5.0/func/cx' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/func/cx'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/func/cx'\" \(109 characters\)
+  sed "s/^X//" >'zsh-2.5.0/func/cx' <<'END_OF_FILE'
+X#! /bin/sh
+X#
+X# zsh shell function to make its arguments executable
+X# also works as a sh script
+X#
+Xchmod +x $*
+END_OF_FILE
+  if test 109 -ne `wc -c <'zsh-2.5.0/func/cx'`; then
+    echo shar: \"'zsh-2.5.0/func/cx'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/func/cx'
+fi
+if test -f 'zsh-2.5.0/func/harden' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/func/harden'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/func/harden'\" \(97 characters\)
+  sed "s/^X//" >'zsh-2.5.0/func/harden' <<'END_OF_FILE'
+X#! /bin/sh
+X# harden a link (convert it to a singly linked file)
+Xcp $1 $1.foo
+Xrm $1
+Xmv $1.foo $1
+X
+END_OF_FILE
+  if test 97 -ne `wc -c <'zsh-2.5.0/func/harden'`; then
+    echo shar: \"'zsh-2.5.0/func/harden'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/func/harden'
+fi
+if test -f 'zsh-2.5.0/func/mere' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/func/mere'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/func/mere'\" \(84 characters\)
+  sed "s/^X//" >'zsh-2.5.0/func/mere' <<'END_OF_FILE'
+X#! /bin/sh
+X# read a man page in the current directory
+Xnroff -man -Tman $1 | less -s
+END_OF_FILE
+  if test 84 -ne `wc -c <'zsh-2.5.0/func/mere'`; then
+    echo shar: \"'zsh-2.5.0/func/mere'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/func/mere'
+fi
+if test -f 'zsh-2.5.0/func/proto' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/func/proto'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/func/proto'\" \(194 characters\)
+  sed "s/^X//" >'zsh-2.5.0/func/proto' <<'END_OF_FILE'
+X#! /bin/sh
+X# generate prototypes, if your style is the same as mine
+Xfor i
+Xdo
+X	rm $i:r.pro 2>/dev/null
+X	grep -v '[{};:#]' $i | grep '^[A-Za-z]' |
+X		grep -v static | sed 's/$/;/' >! $i:r.pro
+Xdone
+END_OF_FILE
+  if test 194 -ne `wc -c <'zsh-2.5.0/func/proto'`; then
+    echo shar: \"'zsh-2.5.0/func/proto'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/func/proto'
+fi
+if test -f 'zsh-2.5.0/func/randline' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/func/randline'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/func/randline'\" \(80 characters\)
+  sed "s/^X//" >'zsh-2.5.0/func/randline' <<'END_OF_FILE'
+X# get a random line from a file
+Xinteger z=$(wc -l <$1)
+Xsed -n $[RANDOM%z+1]p $1
+END_OF_FILE
+  if test 80 -ne `wc -c <'zsh-2.5.0/func/randline'`; then
+    echo shar: \"'zsh-2.5.0/func/randline'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/func/randline'
+fi
+if test -f 'zsh-2.5.0/func/run-help' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/func/run-help'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/func/run-help'\" \(377 characters\)
+  sed "s/^X//" >'zsh-2.5.0/func/run-help' <<'END_OF_FILE'
+X#! /bin/zsh
+X# zsh script to peruse the help directory
+X#
+Xif [[ $1 = "-l" ]]; then
+X  if [[ ${HELPDIR:-} != "" ]]; then
+X    echo 'Here is a list of topics for which help is available:'
+X    echo ""
+X    ls $HELPDIR
+X  else
+X    echo 'There is no help available at this time'
+X  fi
+Xelif [[ ${HELPDIR:-} != "" && -r $HELPDIR/$1 ]]
+Xthen
+X    ${=PAGER:-more} $HELPDIR/$1
+Xelse
+X    man $1
+Xfi
+END_OF_FILE
+  if test 377 -ne `wc -c <'zsh-2.5.0/func/run-help'`; then
+    echo shar: \"'zsh-2.5.0/func/run-help'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/func/run-help'
+fi
+if test -f 'zsh-2.5.0/func/yp' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/func/yp'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/func/yp'\" \(29 characters\)
+  sed "s/^X//" >'zsh-2.5.0/func/yp' <<'END_OF_FILE'
+X#! /bin/sh
+Xypmatch $1 passwd
+END_OF_FILE
+  if test 29 -ne `wc -c <'zsh-2.5.0/func/yp'`; then
+    echo shar: \"'zsh-2.5.0/func/yp'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/func/yp'
+fi
+if test -f 'zsh-2.5.0/func/yu' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/func/yu'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/func/yu'\" \(35 characters\)
+  sed "s/^X//" >'zsh-2.5.0/func/yu' <<'END_OF_FILE'
+X#! /bin/sh
+Xypmatch $1 passwd.byuid
+END_OF_FILE
+  if test 35 -ne `wc -c <'zsh-2.5.0/func/yu'`; then
+    echo shar: \"'zsh-2.5.0/func/yu'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/func/yu'
+fi
+if test -f 'zsh-2.5.0/func/zed' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/func/zed'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/func/zed'\" \(1363 characters\)
+  sed "s/^X//" >'zsh-2.5.0/func/zed' <<'END_OF_FILE'
+X# zed():  Peter Stephenson <pws@s-a.amtp.liv.ac.uk>
+X# No other shell could do this.
+X# Edit small files with the command line editor.
+X# Use ^X^W to save, ^C to abort.
+X# Option -f: edit shell functions.  (Also if called as fned.)
+X#
+X# Completion: use
+X# compctl -f -x 'w[1,-f]' -F -- zed
+X
+Xlocal var nb fun
+X
+X[[ $1 = -f || $0 = fned ]] && fun=1
+X[[ $1 = -(|-|f) ]] && shift
+X
+X[[ -z "$1" ]] && echo 'Usage: "zed filename" or "zed -f function"' && return 1
+X
+X# catch interrupts
+XTRAPINT() {
+X  bindkey "^M" accept-line
+X  [[ $nb = 1 ]] || unsetopt nobanghist
+X  trap - INT
+X  (($1 > 0)) && return $[128+$1]
+X}
+X
+X# don't mangle !'s
+X[[ -o nobanghist ]] && nb=1
+Xsetopt nobanghist
+X
+Xbindkey "^M" self-insert-unmeta
+X# Depending on your stty's, you may be able to use ^J as accept-line, else:
+Xbindkey "^X^W" accept-line
+X
+Xif [[ $fun = 1 ]]; then
+X  var="$(functions $1)"
+X  # If function is undefined but autoloadable, load it
+X  if [[ $var = undefined* ]]; then
+X    local dir
+X    for dir in $fpath; do
+X      if [[ -f $dir/$1 ]]; then
+X	var="$1() {
+X$(<$dir/$1)
+X}"
+X	break
+X      fi
+X    done
+X  elif [[ -z $var ]]; then
+X    var="$1() {
+X}"
+X  fi
+X  vared var
+X  # remember there\'s a memory leak in eval...
+X  eval function "$var"
+Xelse
+X  [[ -f $1 ]] && var="$(<$1)"
+X  vared var
+X  (( $? == 0 )) && print -R "$var" >! $1
+Xfi
+X
+Xbindkey "^X^W" undefined-key
+X
+X# Restore setup
+XTRAPINT 0
+Xreturn 0
+X
+X# End of zed
+END_OF_FILE
+  if test 1363 -ne `wc -c <'zsh-2.5.0/func/zed'`; then
+    echo shar: \"'zsh-2.5.0/func/zed'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/func/zed'
+fi
+if test -f 'zsh-2.5.0/help/TRAP' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/TRAP'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/TRAP'\" \(799 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/TRAP' <<'END_OF_FILE'
+X       TRAPxxx
+X              If defined and non-null, this function will be exe-
+X              cuted whenever the shell catches a  signal  SIGxxx,
+X              where  xxx  is  a  signal name as specified for the
+X              kill builtin (see below).  The signal  number  will
+X              be  passed  as the first parameter to the function.
+X              In addition, TRAPZERR is executed whenever  a  com-
+X              mand  has a non-zero exit status, TRAPDEBUG is exe-
+X              cuted after each command, and TRAPEXIT is  executed
+X              when  the shell exits, or when the current function
+X              exits if defined inside a function.  If a  function
+X              of  this  form  is  defined and null, the shell and
+X              processes spawned by it will ignore SIGxxx.
+END_OF_FILE
+  if test 799 -ne `wc -c <'zsh-2.5.0/help/TRAP'`; then
+    echo shar: \"'zsh-2.5.0/help/TRAP'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/TRAP'
+fi
+if test -f 'zsh-2.5.0/help/alias' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/alias'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/alias'\" \(1403 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/alias' <<'END_OF_FILE'
+X       alias [ -grm ] [ name[=value] ] ...
+X              With no arguments, print the list of aliases in the
+X              form name=value on the standard output.   For  each
+X              name  with  a  corresponding value, define an alias
+X              with that value.  A trailing space in value  causes
+X              the next word to be checked for alias substitution.
+X              If the -g flag is present, define a  global  alias;
+X              global  aliases  are  expanded  even if they do not
+X              occur in command position.  For each name  with  no
+X              value,  print  the  value of name, if any.  If only
+X              the -g or the -r flags are  given  only  global  or
+X              regular aliases are listed. If the -m flag is given
+X              the arguments are taken as patterns (they should be
+X              quoted  to  preserve them from being interpreted as
+X              glob patterns) and the aliases matching these  pat-
+X              terns are printed.  The exit status is nonzero if a
+X              name (with no value) is given for  which  no  alias
+X              has been defined.
+X
+X       unalias [ -m ] name ...
+X              The  alias  definition,  if  any,  for each name is
+X              removed.  With the -m flag the arguments are  taken
+X              as patterns (should be quoted) and all aliases with
+X              matching names are removed.
+END_OF_FILE
+  if test 1403 -ne `wc -c <'zsh-2.5.0/help/alias'`; then
+    echo shar: \"'zsh-2.5.0/help/alias'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/alias'
+fi
+if test -f 'zsh-2.5.0/help/bg' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/bg'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/bg'\" \(153 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/bg' <<'END_OF_FILE'
+X       bg [ job ... ]
+X       job ... &
+X              Put  each  specified  job in the background, or the
+X              current job if none is specified.
+END_OF_FILE
+  if test 153 -ne `wc -c <'zsh-2.5.0/help/bg'`; then
+    echo shar: \"'zsh-2.5.0/help/bg'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/bg'
+fi
+if test -f 'zsh-2.5.0/help/break' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/break'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/break'\" \(193 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/break' <<'END_OF_FILE'
+X       break [ n ]
+X              Exit from an enclosing for, while,  until,  select,
+X              or  repeat  loop.   If n is specified, then break n
+X              levels instead of just one.
+END_OF_FILE
+  if test 193 -ne `wc -c <'zsh-2.5.0/help/break'`; then
+    echo shar: \"'zsh-2.5.0/help/break'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/break'
+fi
+if test -f 'zsh-2.5.0/help/builtin' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/builtin'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/builtin'\" \(95 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/builtin' <<'END_OF_FILE'
+X       builtin name [ args ] ...
+X              Executes the builtin name, with the given args.
+END_OF_FILE
+  if test 95 -ne `wc -c <'zsh-2.5.0/help/builtin'`; then
+    echo shar: \"'zsh-2.5.0/help/builtin'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/builtin'
+fi
+if test -f 'zsh-2.5.0/help/bye' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/bye'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/bye'\" \(340 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/bye' <<'END_OF_FILE'
+X       bye    Same as exit.
+X
+X       exit [ n ]
+X              Exit the shell with the exit code specified  by  n;
+X              if  none  is  specified, use the exit code from the
+X              last command executed.  An EOF condition will  also
+X              cause  the  shell  to  exit,  unless  the IGNOREEOF
+X              option is set.
+END_OF_FILE
+  if test 340 -ne `wc -c <'zsh-2.5.0/help/bye'`; then
+    echo shar: \"'zsh-2.5.0/help/bye'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/bye'
+fi
+if test -f 'zsh-2.5.0/help/case' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/case'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/case'\" \(455 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/case' <<'END_OF_FILE'
+X              case word in [ pattern ) list ;; ] ...  esac
+X                     Execute the list associated with  the  first
+X                     pattern that matches word, if any.  The form
+X                     of the patterns is the same as that used for
+X                     filename  generation.   See Filename Genera-
+X                     tion below.
+X
+X              case word { [ pattern ) list ;; ] ...  }
+X                     Another form of case.
+END_OF_FILE
+  if test 455 -ne `wc -c <'zsh-2.5.0/help/case'`; then
+    echo shar: \"'zsh-2.5.0/help/case'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/case'
+fi
+if test -f 'zsh-2.5.0/help/cd' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/cd'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/cd'\" \(997 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/cd' <<'END_OF_FILE'
+X       cd [ arg ]
+X       cd old new
+X       cd +-n Change the current directory.  In the  first  form,
+X              change  the  current  directory  to  arg, or to the
+X              value of HOME if arg is not specified.  If  arg  is
+X              -,  change  to  the  value  of OLDPWD, the previous
+X              directory.  If a directory named arg is  not  found
+X              in  the  current  directory  and arg does not begin
+X              with a slash, search each component  of  the  shell
+X              parameter cdpath.  If the option CDABLEVARS is set,
+X              and a parameter named arg exists whose value begins
+X              with a slash, treat its value as the directory.
+X
+X              The  second  form  of cd substitutes the string new
+X              for the string old  in  the  name  of  the  current
+X              directory,  and  tries to change to this new direc-
+X              tory.
+X
+X              The third form of cd is equivalent to popd.
+X
+X       chdir  Same as cd.
+END_OF_FILE
+  if test 997 -ne `wc -c <'zsh-2.5.0/help/cd'`; then
+    echo shar: \"'zsh-2.5.0/help/cd'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/cd'
+fi
+if test -f 'zsh-2.5.0/help/chpwd' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/chpwd'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/chpwd'\" \(89 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/chpwd' <<'END_OF_FILE'
+X       chpwd  Executed whenever the current working directory  is
+X              changed.
+END_OF_FILE
+  if test 89 -ne `wc -c <'zsh-2.5.0/help/chpwd'`; then
+    echo shar: \"'zsh-2.5.0/help/chpwd'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/chpwd'
+fi
+if test -f 'zsh-2.5.0/help/continue' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/continue'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/continue'\" \(260 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/continue' <<'END_OF_FILE'
+X       continue [ num ]
+X              Resume the next iteration  of  the  enclosing  for,
+X              while,  until,  select,  or  repeat  loop.  If n is
+X              specified, break out of n - 1 loops and  resume  at
+X              the nth enclosing loop.
+END_OF_FILE
+  if test 260 -ne `wc -c <'zsh-2.5.0/help/continue'`; then
+    echo shar: \"'zsh-2.5.0/help/continue'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/continue'
+fi
+if test -f 'zsh-2.5.0/help/coproc' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/coproc'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/coproc'\" \(277 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/coproc' <<'END_OF_FILE'
+X       If a pipeline is preceded by coproc, it is executed  as  a
+X       coprocess;  a  two-way  pipe is established between it and
+X       the parent shell.  The shell can read from or write to the
+X       coprocess  by  means of the >&p and <&p redirection opera-
+X       tors.
+END_OF_FILE
+  if test 277 -ne `wc -c <'zsh-2.5.0/help/coproc'`; then
+    echo shar: \"'zsh-2.5.0/help/coproc'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/coproc'
+fi
+if test -f 'zsh-2.5.0/help/dirs' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/dirs'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/dirs'\" \(550 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/dirs' <<'END_OF_FILE'
+X       dirs [ -v ] [ arg ... ]
+X              With no arguments, print the contents of the direc-
+X              tory stack.  If the -v option is given, number  the
+X              directories  in  the stack when printing.  Directo-
+X              ries are added to this stack with  the  pushd  com-
+X              mand, and removed with the cd or popd commands.  If
+X              arguments are specified, load them onto the  direc-
+X              tory  stack, replacing anything that was there, and
+X              push the current directory onto the stack.
+END_OF_FILE
+  if test 550 -ne `wc -c <'zsh-2.5.0/help/dirs'`; then
+    echo shar: \"'zsh-2.5.0/help/dirs'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/dirs'
+fi
+if test -f 'zsh-2.5.0/help/disable' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/disable'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/disable'\" \(608 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/disable' <<'END_OF_FILE'
+X       disable [ -m ] arg ...
+X              Disable the builtin arg temporarily.   This  allows
+X              you  to  use an external command with the same name
+X              as a shell builtin.  Without arguments all disabled
+X              builtins  are  printed,  with the -m flag the argu-
+X              ments are taken as patterns (should  be  quoted  to
+X              preserve  them  from  being taken as glob patterns)
+X              and all builtins matching these patterns  are  dis-
+X              abled.   Actually the same as unhash.  Builtins can
+X              be enabled with the enable command.
+END_OF_FILE
+  if test 608 -ne `wc -c <'zsh-2.5.0/help/disable'`; then
+    echo shar: \"'zsh-2.5.0/help/disable'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/disable'
+fi
+if test -f 'zsh-2.5.0/help/disown' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/disown'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/disown'\" \(270 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/disown' <<'END_OF_FILE'
+X       disown job ...
+X              Remove the specified jobs from the job  table;  the
+X              shell  will no longer report their status, and will
+X              not complain if you  try  to  exit  an  interactive
+X              shell with them running or stopped.
+END_OF_FILE
+  if test 270 -ne `wc -c <'zsh-2.5.0/help/disown'`; then
+    echo shar: \"'zsh-2.5.0/help/disown'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/disown'
+fi
+if test -f 'zsh-2.5.0/help/echo' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/echo'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/echo'\" \(809 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/echo' <<'END_OF_FILE'
+X       echo [ -n ] [ arg ... ]
+X              Write each arg on the standard output, with a space
+X              separating each one.  If the -n flag  is  not  pre-
+X              sent,  print a newline at the end.  echo recognizes
+X              the following escape sequences:
+X              \a     bell character
+X              \b     backspace
+X              \c     don't print an ending newline
+X              \e     escape
+X              \f     form feed
+X              \n     newline
+X              \r     carriage return
+X              \t     horizontal tab
+X              \v     vertical tab
+X              \\     backslash
+X              \nnn   character code in octal, with a  maximum  of
+X                     four  digits.  A  non-octal digit terminates
+X                     the number. It must start with zero.
+END_OF_FILE
+  if test 809 -ne `wc -c <'zsh-2.5.0/help/echo'`; then
+    echo shar: \"'zsh-2.5.0/help/echo'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/echo'
+fi
+if test -f 'zsh-2.5.0/help/echotc' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/echotc'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/echotc'\" \(151 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/echotc' <<'END_OF_FILE'
+X       echotc cap [ arg ... ]
+X              Output the  termcap  string  corresponding  to  the
+X              capability cap, with optional arguments.
+END_OF_FILE
+  if test 151 -ne `wc -c <'zsh-2.5.0/help/echotc'`; then
+    echo shar: \"'zsh-2.5.0/help/echotc'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/echotc'
+fi
+if test -f 'zsh-2.5.0/help/elif' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/elif'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/elif'\" \(985 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/elif' <<'END_OF_FILE'
+X              if list
+X              then list
+X              [ elif list ; then list ] ...
+X              [ else list ]
+X              fi     The if list is executed, and, if it  returns
+X                     a  zero  exit  status, the then list is exe-
+X                     cuted.  Otherwise, the elif list is executed
+X                     and,  if its value is zero, the then list is
+X                     executed.   If  each   elif   list   returns
+X                     nonzero, the else list is executed.
+X
+X              if ( list ) sublist
+X                     A short form of if.
+X
+X              if ( list ) {
+X              list
+X              } elif ( list ) {
+X              list
+X              } ... else {
+X              list
+X              }      An  alternate  form  of  if. The parentheses
+X                     surrounding list can be omitted if the  only
+X                     command in the list is a conditional expres-
+X                     sion of the form [[ exp ]] (see below).
+END_OF_FILE
+  if test 985 -ne `wc -c <'zsh-2.5.0/help/elif'`; then
+    echo shar: \"'zsh-2.5.0/help/elif'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/elif'
+fi
+if test -f 'zsh-2.5.0/help/enable' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/enable'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/enable'\" \(386 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/enable' <<'END_OF_FILE'
+X       enable [ -m ] arg ...
+X              Enable  the  specified builtin commands, presumably
+X              disabled earlier with disable.   Without  arguments
+X              the  enabled  builtins  are printed and with the -m
+X              flag the arguments are taken as patterns (should be
+X              quoted)  and  all  builtins matching these patterns
+X              are enabled.
+END_OF_FILE
+  if test 386 -ne `wc -c <'zsh-2.5.0/help/enable'`; then
+    echo shar: \"'zsh-2.5.0/help/enable'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/enable'
+fi
+if test -f 'zsh-2.5.0/help/eval' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/eval'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/eval'\" \(179 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/eval' <<'END_OF_FILE'
+X       eval [ arg ... ]
+X              Read the arguments as input to the shell  and  exe-
+X              cute  the resulting command(s) in the current shell
+X              process.
+END_OF_FILE
+  if test 179 -ne `wc -c <'zsh-2.5.0/help/eval'`; then
+    echo shar: \"'zsh-2.5.0/help/eval'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/eval'
+fi
+if test -f 'zsh-2.5.0/help/export' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/export'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/export'\" \(188 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/export' <<'END_OF_FILE'
+X       export [ name[=value] ... ]
+X              The specified names are marked for automatic export
+X              to  the  environment  of subsequently executed com-
+X              mands.
+END_OF_FILE
+  if test 188 -ne `wc -c <'zsh-2.5.0/help/export'`; then
+    echo shar: \"'zsh-2.5.0/help/export'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/export'
+fi
+if test -f 'zsh-2.5.0/help/false' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/false'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/false'\" \(111 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/false' <<'END_OF_FILE'
+X       false  Do nothing and return an exit code of 1.
+X
+X       true   Do nothing and return an exit code of 0.
+END_OF_FILE
+  if test 111 -ne `wc -c <'zsh-2.5.0/help/false'`; then
+    echo shar: \"'zsh-2.5.0/help/false'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/false'
+fi
+if test -f 'zsh-2.5.0/help/for' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/for'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/for'\" \(1098 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/for' <<'END_OF_FILE'
+X              for name [ in word ... ]
+X              do list
+X              done   Expand the list of words, and set the param-
+X                     eter name to each of them in turn, executing
+X                     list each time.  If the in word is  omitted,
+X                     use the positional parameters instead of the
+X                     words.
+X
+X              for name [ in word ... ] ; sublist
+X                     This is a shorthand for for.  Though it  may
+X                     cause  confusion,  it is included for conve-
+X                     nience; its use in scripts  is  discouraged,
+X                     unless  sublist  is  a command of the form {
+X                     list }.
+X
+X              foreach name ( word ... )
+X              list
+X              end    Another form of for.
+X
+X              for name in word ...
+X              {
+X              list
+X              }      Another form of for.
+X
+X              for name ( word ... ) {
+X              list
+X              }      Another form of for.
+X
+X              for name ( word ... ) sublist
+X                     Another form of for.
+END_OF_FILE
+  if test 1098 -ne `wc -c <'zsh-2.5.0/help/for'`; then
+    echo shar: \"'zsh-2.5.0/help/for'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/for'
+fi
+if test -f 'zsh-2.5.0/help/function' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/function'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/function'\" \(489 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/function' <<'END_OF_FILE'
+X              function word [ () ] ... { list }
+X              word ... () { list }
+X              word ... () sublist
+X                     Define a function which is referenced by any
+X                     one  of  word.   Normally,  only one word is
+X                     provided; multiple words  are  usually  only
+X                     useful  for  setting traps.  The body of the
+X                     function is the list between the  {  and  }.
+X                     See FUNCTIONS below.
+END_OF_FILE
+  if test 489 -ne `wc -c <'zsh-2.5.0/help/function'`; then
+    echo shar: \"'zsh-2.5.0/help/function'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/function'
+fi
+if test -f 'zsh-2.5.0/help/getln' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/getln'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/getln'\" \(247 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/getln' <<'END_OF_FILE'
+X       getln name ...
+X              Read the top value from the buffer stack and put it
+X              in the shell parameter name.   Equivalent  to  read
+X              -zr.  The flags -c, -l, -A, -e, -E, and -n are sup-
+X              ported, too.
+END_OF_FILE
+  if test 247 -ne `wc -c <'zsh-2.5.0/help/getln'`; then
+    echo shar: \"'zsh-2.5.0/help/getln'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/getln'
+fi
+if test -f 'zsh-2.5.0/help/getopts' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/getopts'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/getopts'\" \(1305 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/getopts' <<'END_OF_FILE'
+X       getopts optstring name [ arg ... ]
+X              Checks arg for legal options.  If arg  is  omitted,
+X              use  the  positional  parameters.   A  valid option
+X              argument begins with a + or a -.  An  argument  not
+X              beginning with a + or a -, or the argument --, ends
+X              the options.  optstring contains the  letters  that
+X              getopts  recognizes.   If a letter is followed by a
+X              `:', that option is expected to have  an  argument.
+X              The  options  can be separated from the argument by
+X              blanks.
+X
+X              Each time it is invoked, getopts places the  option
+X              letter  it  finds  in  the  shell  parameter  name,
+X              prepended with a + when arg begins with a  +.   The
+X              index  of  the  next  arg is stored in OPTIND.  The
+X              option argument, if any, is stored in OPTARG.
+X
+X              A leading : in optstring causes  getopts  to  store
+X              the  letter of the invalid option in OPTARG, and to
+X              set name to `?' for an unknown option  and  to  `:'
+X              when  a  required  option  is  missing.  Otherwise,
+X              getopts prints an error message.  The  exit  status
+X              is nonzero when there are no more options.
+END_OF_FILE
+  if test 1305 -ne `wc -c <'zsh-2.5.0/help/getopts'`; then
+    echo shar: \"'zsh-2.5.0/help/getopts'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/getopts'
+fi
+if test -f 'zsh-2.5.0/help/jobs' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/jobs'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/jobs'\" \(385 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/jobs' <<'END_OF_FILE'
+X       jobs [ -lprs ] [ job ... ]
+X              Lists information about each given job, or all jobs
+X              if job is omitted.  The -l flag lists process  ids,
+X              and  the  -p  flag lists process groups.  If the -r
+X              flag is specified only running jobs will be  listed
+X              and  if  the -s flag is given only stopped jobs are
+X              shown.
+END_OF_FILE
+  if test 385 -ne `wc -c <'zsh-2.5.0/help/jobs'`; then
+    echo shar: \"'zsh-2.5.0/help/jobs'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/jobs'
+fi
+if test -f 'zsh-2.5.0/help/kill' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/kill'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/kill'\" \(558 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/kill' <<'END_OF_FILE'
+X       kill [ -sig ] job ...
+X       kill -l
+X              Sends either SIGTERM or the specified signal to the
+X              given jobs or processes.  Signals are given by num-
+X              ber or by names (with the  prefix  "SIG"  removed).
+X              If  the signal being sent is not KILL or CONT, then
+X              the job will  be  sent  a  CONT  signal  if  it  is
+X              stopped.  The argument job can be the process id of
+X              a job not in the job list.   In  the  second  form,
+X              kill -l, the signal names are listed.
+END_OF_FILE
+  if test 558 -ne `wc -c <'zsh-2.5.0/help/kill'`; then
+    echo shar: \"'zsh-2.5.0/help/kill'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/kill'
+fi
+if test -f 'zsh-2.5.0/help/let' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/let'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/let'\" \(308 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/let' <<'END_OF_FILE'
+X       let arg ...
+X              Evaluate each arg as an arithmetic expression.  See
+X              ARITHMETIC EVALUATION above for  a  description  of
+X              arithmetic  expressions.   The  exit status is 0 if
+X              the value of the last expression is nonzero, and  1
+X              otherwise.
+END_OF_FILE
+  if test 308 -ne `wc -c <'zsh-2.5.0/help/let'`; then
+    echo shar: \"'zsh-2.5.0/help/let'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/let'
+fi
+if test -f 'zsh-2.5.0/help/log' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/log'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/log'\" \(127 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/log' <<'END_OF_FILE'
+X       log    List all users currently logged in who are affected
+X              by the current setting of the watch parameter.
+END_OF_FILE
+  if test 127 -ne `wc -c <'zsh-2.5.0/help/log'`; then
+    echo shar: \"'zsh-2.5.0/help/log'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/log'
+fi
+if test -f 'zsh-2.5.0/help/logout' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/logout'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/logout'\" \(56 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/logout' <<'END_OF_FILE'
+X       logout Exit the shell, if this is a login shell.
+END_OF_FILE
+  if test 56 -ne `wc -c <'zsh-2.5.0/help/logout'`; then
+    echo shar: \"'zsh-2.5.0/help/logout'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/logout'
+fi
+if test -f 'zsh-2.5.0/help/periodic' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/periodic'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/periodic'\" \(170 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/periodic' <<'END_OF_FILE'
+X       periodic
+X              If  the  parameter  PERIOD is set, this function is
+X              executed  every  PERIOD  seconds,  just  before   a
+X              prompt.
+END_OF_FILE
+  if test 170 -ne `wc -c <'zsh-2.5.0/help/periodic'`; then
+    echo shar: \"'zsh-2.5.0/help/periodic'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/periodic'
+fi
+if test -f 'zsh-2.5.0/help/popd' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/popd'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/popd'\" \(663 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/popd' <<'END_OF_FILE'
+X       popd [ +-n ]
+X              Removes entries from the directory stack.  With  no
+X              arguments,  removes  the  top  directory  from  the
+X              stack, and performs a cd to the new top  directory.
+X              With  an  argument  of  the form +n, remove the nth
+X              entry counting from the left of the list  shown  by
+X              the dirs command, starting with zero, and change to
+X              that directory.  With an argument of the  form  -n,
+X              remove  the  nth entry counting from the right.  If
+X              the PUSHD_MINUS option is set, the  meanings  of  +
+X              and - in this context are swapped.
+END_OF_FILE
+  if test 663 -ne `wc -c <'zsh-2.5.0/help/popd'`; then
+    echo shar: \"'zsh-2.5.0/help/popd'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/popd'
+fi
+if test -f 'zsh-2.5.0/help/precmd' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/precmd'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/precmd'\" \(43 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/precmd' <<'END_OF_FILE'
+X       precmd Executed before each prompt.
+END_OF_FILE
+  if test 43 -ne `wc -c <'zsh-2.5.0/help/precmd'`; then
+    echo shar: \"'zsh-2.5.0/help/precmd'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/precmd'
+fi
+if test -f 'zsh-2.5.0/help/pushd' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/pushd'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/pushd'\" \(1449 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/pushd' <<'END_OF_FILE'
+X       pushd [ arg ]
+X       pushd old new
+X       pushd +-n
+X              Change the current directory, and push the old cur-
+X              rent directory onto the directory  stack.   In  the
+X              first  form,  change  the current directory to arg.
+X              If arg is  not  specified,  change  to  the  second
+X              directory  on  the stack (that is, exchange the top
+X              two entries), or change to the value of HOME if the
+X              PUSHD_TO_HOME option is set or if there is only one
+X              entry on the stack.  If arg is  -,  change  to  the
+X              value  of  OLDPWD,  the  previous  directory.  If a
+X              directory named arg is not  found  in  the  current
+X              directory  and arg does not contain a slash, search
+X              each component of the shell parameter  cdpath.   If
+X              the option CDABLEVARS is set, and a parameter named
+X              arg exists whose value begins with a  slash,  treat
+X              its   value   as  the  directory.   If  the  option
+X              PUSHD_SILENT is not set, the directory  stack  will
+X              be printed after a pushd is performed.
+X
+X              The second form of pushd substitutes the string new
+X              for the string old  in  the  name  of  the  current
+X              directory,  and  tries to change to this new direc-
+X              tory.
+X
+X              The third form of pushd is equivalent to popd.
+END_OF_FILE
+  if test 1449 -ne `wc -c <'zsh-2.5.0/help/pushd'`; then
+    echo shar: \"'zsh-2.5.0/help/pushd'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/pushd'
+fi
+if test -f 'zsh-2.5.0/help/readonly' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/readonly'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/readonly'\" \(161 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/readonly' <<'END_OF_FILE'
+X       readonly [ name[=value] ] ...
+X              The  given  names  are marked readonly; these names
+X              cannot be changed by subsequent assignment.
+END_OF_FILE
+  if test 161 -ne `wc -c <'zsh-2.5.0/help/readonly'`; then
+    echo shar: \"'zsh-2.5.0/help/readonly'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/readonly'
+fi
+if test -f 'zsh-2.5.0/help/rehash' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/rehash'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/rehash'\" \(248 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/rehash' <<'END_OF_FILE'
+X       rehash [ -f ]
+X              Throw out the command hash table  and  start  over.
+X              If  the  -f  option is set, rescan the command path
+X              immediately, instead of rebuilding the  hash  table
+X              incrementally.
+END_OF_FILE
+  if test 248 -ne `wc -c <'zsh-2.5.0/help/rehash'`; then
+    echo shar: \"'zsh-2.5.0/help/rehash'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/rehash'
+fi
+if test -f 'zsh-2.5.0/help/repeat' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/repeat'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/repeat'\" \(331 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/repeat' <<'END_OF_FILE'
+X              repeat word
+X              do list
+X              done   word is expanded and treated  as  an  arith-
+X                     metic  expression,  which must evaluate to a
+X                     number n.  list is then executed n times.
+X
+X              repeat word sublist
+X                     This is a short form of repeat.
+END_OF_FILE
+  if test 331 -ne `wc -c <'zsh-2.5.0/help/repeat'`; then
+    echo shar: \"'zsh-2.5.0/help/repeat'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/repeat'
+fi
+if test -f 'zsh-2.5.0/help/return' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/return'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/return'\" \(1063 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/return' <<'END_OF_FILE'
+X       return [ n ]
+X              Causes  a  shell  function or . script to return to
+X              the invoking script with the return  status  speci-
+X              fied  by n.  If n is omitted then the return status
+X              is that of the last command executed.
+X
+X              If return was executed from a trap, whether set  by
+X              the trap builtin or by defining a TRAPxxx function,
+X              the effect  is  different  for  zero  and  non-zero
+X              return  status.   With  zero  status  (or  after an
+X              implicit return at the end of the trap), the  shell
+X              will  return to whatever it was previously process-
+X              ing; with a non-zero status, the shell will  behave
+X              as interrupted except that the return status of the
+X              trap is  retained.   Note  that  the  signal  which
+X              caused the trap is passed as the first argument, so
+X              the statement `return $[128+$1]'  will  return  the
+X              same  status as if the signal had not been trapped.
+END_OF_FILE
+  if test 1063 -ne `wc -c <'zsh-2.5.0/help/return'`; then
+    echo shar: \"'zsh-2.5.0/help/return'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/return'
+fi
+if test -f 'zsh-2.5.0/help/sched' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/sched'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/sched'\" \(380 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/sched' <<'END_OF_FILE'
+X       sched [+]hh:mm command ...
+X       sched [ -item ]
+X              Make an entry in the scheduled list of commands  to
+X              execute.  The time may be specified in either abso-
+X              lute or relative time.  With no  arguments,  prints
+X              the  list of scheduled commands.  With the argument
+X              -item, removes the given item from the list.
+END_OF_FILE
+  if test 380 -ne `wc -c <'zsh-2.5.0/help/sched'`; then
+    echo shar: \"'zsh-2.5.0/help/sched'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/sched'
+fi
+if test -f 'zsh-2.5.0/help/select' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/select'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/select'\" \(1082 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/select' <<'END_OF_FILE'
+X              select name [ in word ... ]
+X              do list
+X              done   Print the set of words, each preceded  by  a
+X                     number.   If the in word is omitted, use the
+X                     positional parameters.  The  PROMPT3  prompt
+X                     is  printed and a line is read from standard
+X                     input.  If this line consists of the  number
+X                     of one of the listed words, then the parame-
+X                     ter name is set to the word corresponding to
+X                     this  number.   If  this  line is empty, the
+X                     selection list is printed again.  Otherwise,
+X                     the  value  of  the parameter name is set to
+X                     null.  The contents of the  line  read  from
+X                     standard  input  is  saved  in the parameter
+X                     REPLY.  list is executed for each  selection
+X                     until a break or end-of-file is encountered.
+X
+X              select name [ in word ] ; sublist
+X                     A short form of select.
+END_OF_FILE
+  if test 1082 -ne `wc -c <'zsh-2.5.0/help/select'`; then
+    echo shar: \"'zsh-2.5.0/help/select'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/select'
+fi
+if test -f 'zsh-2.5.0/help/set' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/set'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/set'\" \(1075 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/set' <<'END_OF_FILE'
+X       set [ +-options ] [ +-o option name ] ... [ -A [name] ] [
+X              arg  ] ...
+X              Set the options for the shell and/or set the  posi-
+X              tional  parameters,  or  declare an array.  For the
+X              meaning of the flags, see OPTIONS above.  Flags may
+X              be  specified  by name using the -o option.  If the
+X              -A flag is specified, name is set to an array  con-
+X              taining  the  given  args; if no name is specified,
+X              all arrays are printed.  Otherwise  the  positional
+X              parameters  are  set.   If  no arguments are given,
+X              then the names and values  of  all  parameters  are
+X              printed  on the standard output.  If the only argu-
+X              ment is +, the names of all parameters are printed.
+X
+X       unset [ -m ] name ...
+X              Each named parameter is unset. If the  -m  flag  is
+X              specified  the  arguments  are  taken  as  patterns
+X              (should be quoted) and all parameters with matching
+X              names are unset.
+END_OF_FILE
+  if test 1075 -ne `wc -c <'zsh-2.5.0/help/set'`; then
+    echo shar: \"'zsh-2.5.0/help/set'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/set'
+fi
+if test -f 'zsh-2.5.0/help/shift' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/shift'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/shift'\" \(333 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/shift' <<'END_OF_FILE'
+X       shift [ n ] [ name ... ]
+X              The positional parameters from $n+1 ... are renamed
+X              $1,  where  n  is  an  arithmetic  expression  that
+X              defaults to 1.  If any names  are  given  then  the
+X              arrays  with these names are shifted instead of the
+X              positional parameters.
+END_OF_FILE
+  if test 333 -ne `wc -c <'zsh-2.5.0/help/shift'`; then
+    echo shar: \"'zsh-2.5.0/help/shift'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/shift'
+fi
+if test -f 'zsh-2.5.0/help/source' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/source'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/source'\" \(898 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/source' <<'END_OF_FILE'
+X       source Same as ., except that  the  current  directory  is
+X              always  searched  and  is  always  searched  first,
+X              before directories in path.
+X
+X       . file [ arg ... ]
+X              Read commands from file and  execute  them  in  the
+X              current  shell  environment.  If file does not con-
+X              tain a slash, or if PATH_DIRS  is  set,  the  shell
+X              looks  in the components of path to find the direc-
+X              tory containing file.  Files in the current  direc-
+X              tory  are  not read unless "." appears somewhere in
+X              path.  If any arguments arg are given, they  become
+X              the   positional  parameters;  the  old  positional
+X              parameters are restored when the file is done  exe-
+X              cuting.   The exit status is the exit status of the
+X              last command executed.
+END_OF_FILE
+  if test 898 -ne `wc -c <'zsh-2.5.0/help/source'`; then
+    echo shar: \"'zsh-2.5.0/help/source'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/source'
+fi
+if test -f 'zsh-2.5.0/help/suspend' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/suspend'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/suspend'\" \(217 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/suspend' <<'END_OF_FILE'
+X       suspend [ -f ]
+X              Suspend the execution of the shell (send it a SIGT-
+X              STP) until it receives a SIGCONT.  If the -f option
+X              is not given, complain if this is a login shell.
+END_OF_FILE
+  if test 217 -ne `wc -c <'zsh-2.5.0/help/suspend'`; then
+    echo shar: \"'zsh-2.5.0/help/suspend'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/suspend'
+fi
+if test -f 'zsh-2.5.0/help/test' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/test'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/test'\" \(165 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/test' <<'END_OF_FILE'
+X       test arg ...
+X       [ arg ... ]
+X              Like the system version of test.  Added for compat-
+X              ibility; use conditional expressions instead.
+END_OF_FILE
+  if test 165 -ne `wc -c <'zsh-2.5.0/help/test'`; then
+    echo shar: \"'zsh-2.5.0/help/test'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/test'
+fi
+if test -f 'zsh-2.5.0/help/time' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/time'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/time'\" \(359 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/time' <<'END_OF_FILE'
+X              time [ pipeline ]
+X                     The pipeline is executed, and timing statis-
+X                     tics are reported on the standard  error  in
+X                     the form specified by the TIMEFMT parameter.
+X                     If pipeline  is  omitted,  print  statistics
+X                     about the shell process and its children.
+END_OF_FILE
+  if test 359 -ne `wc -c <'zsh-2.5.0/help/time'`; then
+    echo shar: \"'zsh-2.5.0/help/time'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/time'
+fi
+if test -f 'zsh-2.5.0/help/times' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/times'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/times'\" \(124 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/times' <<'END_OF_FILE'
+X       times  Print the accumulated user and system times for the
+X              shell and for processes run from the shell.
+END_OF_FILE
+  if test 124 -ne `wc -c <'zsh-2.5.0/help/times'`; then
+    echo shar: \"'zsh-2.5.0/help/times'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/times'
+fi
+if test -f 'zsh-2.5.0/help/trap' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/trap'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/trap'\" \(1263 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/trap' <<'END_OF_FILE'
+X       trap [ arg ] [ sig ] ...
+X              arg is a command to be read and executed  when  the
+X              shell  receives  sig.   Each  sig can be given as a
+X              number or as the name of a signal.  Inside the com-
+X              mand,  $1  refers to the number of the signal which
+X              caused the trap.  If arg is -, then all  traps  sig
+X              are  reset  to their default values.  If arg is the
+X              null string, then this signal  is  ignored  by  the
+X              shell  and  by  the commands it invokes.  If sig is
+X              ZERR then arg will be executed after  each  command
+X              with  a  nonzero exit status.  If sig is DEBUG then
+X              arg will be executed after each command.  If sig is
+X              0 or EXIT and the trap statement is executed inside
+X              the body of a function, then  the  command  arg  is
+X              executed after the function completes.  If sig is 0
+X              or EXIT and the  trap  statement  is  not  executed
+X              inside the body of a function, then the command arg
+X              is executed when the shell  terminates.   The  trap
+X              command with no arguments prints a list of commands
+X              associated with each signal.
+END_OF_FILE
+  if test 1263 -ne `wc -c <'zsh-2.5.0/help/trap'`; then
+    echo shar: \"'zsh-2.5.0/help/trap'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/trap'
+fi
+if test -f 'zsh-2.5.0/help/ttyctl' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/ttyctl'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/ttyctl'\" \(634 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/ttyctl' <<'END_OF_FILE'
+X       ttyctl -fu
+X              The -f option freezes the tty, and -u unfreezes it.
+X              When  the tty is frozen, no changes made to the tty
+X              settings by external programs will  be  honored  by
+X              the  shell,  except  for changes in the size of the
+X              screen; the shell will simply reset the settings to
+X              their previous values as soon as each command exits
+X              or is suspended.  Thus, stty and  similar  programs
+X              have  no  effect  when  the  tty is frozen. Without
+X              options it reports whether the terminal  is  frozen
+X              or not.
+END_OF_FILE
+  if test 634 -ne `wc -c <'zsh-2.5.0/help/ttyctl'`; then
+    echo shar: \"'zsh-2.5.0/help/ttyctl'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/ttyctl'
+fi
+if test -f 'zsh-2.5.0/help/type' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/type'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/type'\" \(795 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/type' <<'END_OF_FILE'
+X       type   Same as whence -v.
+X
+X       whence [ -acpvm ] name ...
+X              For each name, indicate how it would be interpreted
+X              if used as a command name.  The -v flag produces  a
+X              more  verbose  report.   The  -p  flag  does a path
+X              search for name even if it  is  a  shell  function,
+X              alias,  or  reserved  word.  The -c flag prints the
+X              results in a csh-like format.  The -a flag  does  a
+X              search  for  all occurrences of name throughout the
+X              command path.  With the -m flag the  arguments  are
+X              taken as patterns (should be quoted) and the infor-
+X              mation is displayed for each command  matching  one
+X              of these patterns.
+X
+X       which  Same as whence -c.
+END_OF_FILE
+  if test 795 -ne `wc -c <'zsh-2.5.0/help/type'`; then
+    echo shar: \"'zsh-2.5.0/help/type'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/type'
+fi
+if test -f 'zsh-2.5.0/help/ulimit' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/ulimit'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/ulimit'\" \(1374 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/ulimit' <<'END_OF_FILE'
+X       ulimit [ -Hacdflmnopstv ] [ limit ]
+X              Set or display a resource  limit.  When  setting  a
+X              limit  it  will  apply to the children of the shell
+X              but not to the shell itself. The value of limit can
+X              be  a  number  in  the  unit specified below or the
+X              value unlimited.  If the H flag is given  use  hard
+X              limits instead of soft limits.
+X              -a     Lists all of the current resource limits.
+X              -c     The number of 512-byte blocks on the size of
+X                     core dumps.
+X              -d     The number of K-bytes on  the  size  of  the
+X                     data segment.
+X              -f     The number of 512-byte blocks on the size of
+X                     files written.
+X              -l     The number of K-bytes on the size of locked-
+X                     in memory.
+X              -m     The  number of K-bytes on the size of physi-
+X                     cal memory.
+X              -n     The number of file descriptors.
+X              -o     The number of open files.
+X              -p     The number of processes.
+X              -s     The number of K-bytes on  the  size  of  the
+X                     stack.
+X              -t     The number of CPU seconds to be used.
+X              -v     The number of K-bytes on the size of virtual
+X                     memory.
+END_OF_FILE
+  if test 1374 -ne `wc -c <'zsh-2.5.0/help/ulimit'`; then
+    echo shar: \"'zsh-2.5.0/help/ulimit'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/ulimit'
+fi
+if test -f 'zsh-2.5.0/help/umask' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/umask'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/umask'\" \(243 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/umask' <<'END_OF_FILE'
+X       umask [ mask ]
+X              The umask is set to mask.  mask can  be  either  an
+X              octal  number  or  a symbolic value as described in
+X              chmod(1).  If mask is omitted, the current value is
+X              printed.
+END_OF_FILE
+  if test 243 -ne `wc -c <'zsh-2.5.0/help/umask'`; then
+    echo shar: \"'zsh-2.5.0/help/umask'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/umask'
+fi
+if test -f 'zsh-2.5.0/help/unfunction' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/unfunction'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/unfunction'\" \(289 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/unfunction' <<'END_OF_FILE'
+X       unfunction [ -m ] name ...
+X              The function definition, if any, for each  name  is
+X              removed.  If the -m flag is specified the arguments
+X              are taken as patterns (should be  quoted)  and  all
+X              functions with matching names are removed.
+END_OF_FILE
+  if test 289 -ne `wc -c <'zsh-2.5.0/help/unfunction'`; then
+    echo shar: \"'zsh-2.5.0/help/unfunction'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/unfunction'
+fi
+if test -f 'zsh-2.5.0/help/until' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/until'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/until'\" \(165 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/until' <<'END_OF_FILE'
+X              until list
+X              do list
+X              done   Execute  the  do  list as long as until list
+X                     returns a nonzero exit status.
+END_OF_FILE
+  if test 165 -ne `wc -c <'zsh-2.5.0/help/until'`; then
+    echo shar: \"'zsh-2.5.0/help/until'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/until'
+fi
+if test -f 'zsh-2.5.0/help/vared' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/vared'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/vared'\" \(645 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/vared' <<'END_OF_FILE'
+X       vared [ -c ] [ -p prompt ] [ -r rprompt ] name
+X              The value of the parameter name is loaded into  the
+X              edit  buffer, and the line editor is invoked.  When
+X              the editor exits, name is set to the  string  value
+X              returned  by  the  editor.  If the -c flag is given
+X              the parameter is  created  if  it  doesn't  already
+X              exist.   If  the  -p  flag  is  given the following
+X              string will be taken as the prompt  to  display  at
+X              the  left and if the -r flag is given the following
+X              string gives the prompt to display at the right.
+END_OF_FILE
+  if test 645 -ne `wc -c <'zsh-2.5.0/help/vared'`; then
+    echo shar: \"'zsh-2.5.0/help/vared'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/vared'
+fi
+if test -f 'zsh-2.5.0/help/wait' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/wait'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/wait'\" \(396 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/wait' <<'END_OF_FILE'
+X       wait [ job ... ]
+X              Wait for the specified jobs or processes.   If  job
+X              is  not  given then all currently active child pro-
+X              cesses are waited for.  Each job can  be  either  a
+X              job specification or the process-id of a job in the
+X              job table.  The exit status from  this  command  is
+X              that of the job waited for.
+END_OF_FILE
+  if test 396 -ne `wc -c <'zsh-2.5.0/help/wait'`; then
+    echo shar: \"'zsh-2.5.0/help/wait'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/wait'
+fi
+if test -f 'zsh-2.5.0/help/while' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/while'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/while'\" \(267 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/while' <<'END_OF_FILE'
+X              while list
+X              do list
+X              done   Execute the do list as  long  as  the  while
+X                     list returns a zero exit status.
+X
+X              while ( list ) {
+X              list
+X              }      An alternate form of while.
+END_OF_FILE
+  if test 267 -ne `wc -c <'zsh-2.5.0/help/while'`; then
+    echo shar: \"'zsh-2.5.0/help/while'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/while'
+fi
+if test -f 'zsh-2.5.0/src/.indent.pro' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/.indent.pro'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/.indent.pro'\" \(719 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/.indent.pro' <<'END_OF_FILE'
+X--dont-format-comments
+X--dont-break-procedure-type
+X--no-parameter-indentation
+X--indent-level4
+X--line-comments-indentation4
+X--cuddle-else
+X--brace-indent0
+X--dont-star-comments
+X--blank-lines-after-declarations
+X--blank-lines-after-procedures
+X--no-blank-lines-after-block-comments
+X--no-blank-lines-after-commas
+X--comment-indentation33
+X--declaration-comment-column33
+X--no-comment-delimiters-on-blank-lines
+X--continuation-indentation4
+X--case-indentation0
+X--else-endif-column33
+X--no-space-after-casts
+X--no-blank-before-sizeof
+X--declaration-indentation0
+X--continue-at-parentheses
+X--no-space-after-function-call-names
+X--swallow-optional-blank-lines
+X--dont-space-special-semicolon
+X--tab-size8
+X--line-length132
+X--braces-on-if-line
+END_OF_FILE
+  if test 719 -ne `wc -c <'zsh-2.5.0/src/.indent.pro'`; then
+    echo shar: \"'zsh-2.5.0/src/.indent.pro'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/.indent.pro'
+fi
+if test -f 'zsh-2.5.0/src/buildzsh' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/buildzsh'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/buildzsh'\" \(546 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/buildzsh' <<'END_OF_FILE'
+X#! /bin/sh
+X
+Xif test "x$VERSION" != x
+Xthen
+Xsetopt shwordsplit
+Xunsetopt cshjunkiequotes noclobber extendedglob noequals
+Xfi
+X
+XVERSION=`sed 's/.*"\(.*\)".*/\1/' version.h`
+X
+Xif test "Z$1" != "Zhelp"
+Xthen
+Xcat <<foo
+X#
+X# buildzsh -- zsh configuration tool
+X#
+X# try "buildzsh help" for more information
+X#
+X
+XBuilding $VERSION
+Xfoo
+Xfi
+X
+X# the real scripts are at src/config/
+X
+XPATH=config:$PWD:$PATH;export PATH
+X
+X. ./config/bz.init
+X. ./config/bz.argh
+X. ./config/bz.check
+X. ./config/bz.hosttype
+X. ./config/bz.hs
+X. ./config/bz.Makefile
+X. ./config/bz.finale
+X
+Xexit 0
+END_OF_FILE
+  if test 546 -ne `wc -c <'zsh-2.5.0/src/buildzsh'`; then
+    echo shar: \"'zsh-2.5.0/src/buildzsh'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/buildzsh'
+fi
+if test -f 'zsh-2.5.0/src/config/bz.doksh' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/config/bz.doksh'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/config/bz.doksh'\" \(992 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/config/bz.doksh' <<'END_OF_FILE'
+X# --- ksh?
+X# (hopefully sh does not barf before this point...)
+X#
+X# if we are not in ksh but we should try it
+X#
+Xif test -n "$F_must_ksh" -o -n "$B_ksh"
+Xthen
+X  echo
+X# the following trick should tell us whether we have ksh or
+X# just bare sh: ksh has alias builtin, sh does not (I really hope that
+X# no one has "alias" in their PATH as an executable, this trick
+X# will fail major way...)
+X(alias) >/dev/null 2>&1 && echo 'Now running ksh...' || {
+X  set ksh ksh "/bin /usr/bin /usr/local/bin"
+X  . ./config/bz.walk
+X  if test -n "$ksh"
+X  then
+X    test -n "$F_cray" && echo "CRAY's /bin/sh cannot handle buildzsh, a stack overflow will occur."
+X    test -n "$B_ksh"      && echo Will | tr -d '\012'
+X    test -n "$F_must_ksh" && echo MUST | tr -d '\012'
+X    echo " refeed ourselves through $ksh"
+X    echo
+X    exec $ksh $0 `cat $ARGV`
+X    echo "Ooops, something went awfully wrong, failed to 'exec $ksh $0 `cat $ARGV`'"
+X  else
+X    echo 'Aaargh, we should run ksh but cannot find one.'
+X  fi
+X  exit 1
+X}
+Xfi
+END_OF_FILE
+  if test 992 -ne `wc -c <'zsh-2.5.0/src/config/bz.doksh'`; then
+    echo shar: \"'zsh-2.5.0/src/config/bz.doksh'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/config/bz.doksh'
+fi
+if test -f 'zsh-2.5.0/src/config/bz.finale' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/config/bz.finale'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/config/bz.finale'\" \(1022 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/config/bz.finale' <<'END_OF_FILE'
+X# -- finale
+X
+Xif test -z "$B_nomake"
+Xthen
+X
+X# configure the needed variables
+X
+Xtest -z "$make_probe_done" && . ./config/bz.makeprobe
+X
+X# ---
+X
+Xmakeit="$makeprecmd$C_MAKE"
+X
+Xif test -z "$F_bld_eq_src"
+Xthen
+X  if test -n "$make_groks_VPATH"
+X  then
+X    if test -z "$B_makeatbld"
+X    then
+X      makeit="$makeit VPATH=$C_BLDDIR"
+X    else
+X      makeit="$makeit VPATH=`pwd`"	
+X    fi
+X  fi
+Xfi
+X
+X
+Xif test -z "$B_justmake"
+Xthen
+X
+Xcat <<foo
+X
+XYou may want to look at the file(s) I just created:
+X
+Xfoo
+Xtest -n "$B_config_h"  && echo "	${C_BLDDIR}config.h"
+Xtest -n "$B_signals_h" && echo "	${C_BLDDIR}signals.h"
+Xtest -n "$B_Makefile"  && echo "	$MAKEFILE"
+X
+Xcat <<foo
+X
+Xto make sure they are correct.	Or you may just want
+Xto go ahead and try running $C_MAKE to see what happens.
+X
+Xfoo
+Xecho "Shall I execute \"$makeit\" now? " | tr -d '\012' 
+Xread reply
+Xecho
+X
+Xelse
+X  # justmake
+X  reply=yep
+Xfi
+X
+Xcase "$reply" in
+X[yY]*) echo $makeit ; eval $makeit ; exit 0 ;;
+Xesac
+Xcat <<foo
+XIn that case you will have to call the following yourself:
+X
+X	$makeit
+X
+Xfoo
+X
+Xfi
+END_OF_FILE
+  if test 1022 -ne `wc -c <'zsh-2.5.0/src/config/bz.finale'`; then
+    echo shar: \"'zsh-2.5.0/src/config/bz.finale'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/config/bz.finale'
+fi
+if test -f 'zsh-2.5.0/src/config/bz.hs' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/config/bz.hs'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/config/bz.hs'\" \(47 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/config/bz.hs' <<'END_OF_FILE'
+X. ./config/bz.config.h
+X. ./config/bz.signals.h
+END_OF_FILE
+  if test 47 -ne `wc -c <'zsh-2.5.0/src/config/bz.hs'`; then
+    echo shar: \"'zsh-2.5.0/src/config/bz.hs'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/config/bz.hs'
+fi
+if test -f 'zsh-2.5.0/src/config/bz.ifksh' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/config/bz.ifksh'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/config/bz.ifksh'\" \(214 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/config/bz.ifksh' <<'END_OF_FILE'
+X# bz.ifksh
+X#
+X# set the global flag F_must_ksh if we must refeed ourselves
+X# (for some reason or another) through ksh
+X#
+X
+XF_cray="`(uname -m)2>/dev/null|grep -i cray`"
+X
+Xif test -n "$F_cray"
+Xthen
+X  F_must_ksh=yep
+Xfi
+X
+END_OF_FILE
+  if test 214 -ne `wc -c <'zsh-2.5.0/src/config/bz.ifksh'`; then
+    echo shar: \"'zsh-2.5.0/src/config/bz.ifksh'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/config/bz.ifksh'
+fi
+if test -f 'zsh-2.5.0/src/config/bz.init' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/config/bz.init'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/config/bz.init'\" \(91 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/config/bz.init' <<'END_OF_FILE'
+X. ./config/bz.saveargv
+X. ./config/bz.defaults
+X. ./config/bz.ifksh
+X
+Xtrap "$TRAPN" $TRAPSIGS
+END_OF_FILE
+  if test 91 -ne `wc -c <'zsh-2.5.0/src/config/bz.init'`; then
+    echo shar: \"'zsh-2.5.0/src/config/bz.init'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/config/bz.init'
+fi
+if test -f 'zsh-2.5.0/src/config/bz.makecc' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/config/bz.makecc'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/config/bz.makecc'\" \(911 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/config/bz.makecc' <<'END_OF_FILE'
+X# --- bz.makecc
+X
+X# --- find out the C compiler
+X
+Xif test -z "$CC"
+Xthen
+X  if test -n "$C_CC"
+X  then
+X    CC="$C_CC"
+X  else
+X    set c89 c89 "/usr/bin /bin"
+X    . ./config/bz.walk
+X    if test -n "$c89"
+X    then CC=c89; C89=yep
+X    elif test -n "$MIPS"
+X    then CC='cc -systype bsd43'
+X    elif test -n "$TITAN"
+X    then CC='cc -43'
+X    else CC=$DEFAULT_CC	# the default CC
+X    fi
+X  fi
+Xfi
+X
+Xtest -z "$CC" && CC="$DEFAULT_C_CC"
+X
+Xset CC "$CC" "C compiler"
+X. ./config/bz.define
+X
+Xtest -n "$C89" && echo "	(at least judging by name $CC does ANSI...)"
+X
+X# --- GNU cc?
+X
+Xif test -n "$C89" -o -n "$B_gcc" -o -n "$B_strictgcc" -o -n "$B_mediumgcc"
+Xthen
+X  maybegcc="`$CC -v 2>&1|egrep '^gcc version '`"
+X  if test -n "$maybegcc"
+X  then
+X    echo "	($CC seems to be GNU...)"
+X    case "$CC" in
+X    *gcc*) echo "	(surprised?)" ;;
+X    esac
+X  fi
+Xelse
+X  test -n "$CC_MIPS_STYLE" && echo "	($CC might be MIPS style...)"
+Xfi
+X
+Xmakecc_done=yep
+END_OF_FILE
+  if test 911 -ne `wc -c <'zsh-2.5.0/src/config/bz.makecc'`; then
+    echo shar: \"'zsh-2.5.0/src/config/bz.makecc'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/config/bz.makecc'
+fi
+if test -f 'zsh-2.5.0/src/config/bz.makevpath' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/config/bz.makevpath'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/config/bz.makevpath'\" \(1005 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/config/bz.makevpath' <<'END_OF_FILE'
+X# --- bz.makevpath
+X
+X# --- cc?
+X
+Xtest -z "$makecc_done" && . ./config/bz.makecc
+X
+X# --- does $MAKE grok VPATH?
+X
+Xtest -z "$MAKE" && MAKE=make	# failsafe
+Xecho "	checking whether $MAKE understands VPATH..." >&2
+X
+Xmake_groks_VPATH=
+X
+Xoldwd=`pwd`
+Xmkdir $VPATHTMP $VPATHTMPa $VPATHTMPb
+Xif test -d "$VPATHTMP" -a -d "$VPATHTMPa" -a -d "$VPATHTMPb"
+Xthen
+X  cd $VPATHTMPa && echo 'static int foo = 42;' > foo.c
+X  if test -f $VPATHTMPa/foo.c
+X  then
+X    cd $VPATHTMPb && {
+X      cat > Makefile <<'foo'
+Xfoo.o:	foo.c
+X	@$(CC) -c $<
+Xfoo
+X      if test -f $VPATHTMPb/Makefile
+X      then
+X        $MAKE VPATH=$VPATHTMPa 2>/dev/null
+X        test -s $VPATHTMPb/foo.o && make_groks_VPATH=yep
+X        rm -f $VPATHTMPb/foo.o $VPATHTMPb/Makefile
+X      fi
+X    }
+X    rm -f $VPATHTMPa/foo.c
+X  fi
+X  (cd $VPATHTMP && \
+X   rmdir $VPATHTMPa && \
+X   rmdir $VPATHTMPb && \
+X   cd .. && rmdir $VPATHTMP)
+Xfi
+Xcd $oldwd
+X
+Xecho
+Xecho "	($MAKE does "`test -z "$make_groks_VPATH" && echo "not "`"understand VPATH...)"
+Xecho
+X
+Xmake_groks_VPATH_done=yep
+X
+X###
+END_OF_FILE
+  if test 1005 -ne `wc -c <'zsh-2.5.0/src/config/bz.makevpath'`; then
+    echo shar: \"'zsh-2.5.0/src/config/bz.makevpath'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/config/bz.makevpath'
+fi
+if test -f 'zsh-2.5.0/src/config/bz.saveargv' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/config/bz.saveargv'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/config/bz.saveargv'\" \(236 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/config/bz.saveargv' <<'END_OF_FILE'
+X# --- (argument vector saving)
+X
+X_argv=
+Xfor _argi in "$@"
+Xdo
+X  # @@@ ["'] should actually be escaped with \
+X  if test Z"`echo \"$_argi\"|egrep '[ 	]'`" != Z
+X  then
+X    _argv="$_argv \"$_argi\""
+X  else
+X    _argv="$_argv $_argi"
+X  fi
+Xdone
+END_OF_FILE
+  if test 236 -ne `wc -c <'zsh-2.5.0/src/config/bz.saveargv'`; then
+    echo shar: \"'zsh-2.5.0/src/config/bz.saveargv'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/config/bz.saveargv'
+fi
+if test -f 'zsh-2.5.0/src/config/bz.walk' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/config/bz.walk'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/config/bz.walk'\" \(357 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/config/bz.walk' <<'END_OF_FILE'
+X# --- (subroutine for PATH-like walking)
+X
+X_var_=$1
+X_fil_=$2	# can actually be dirs too
+X_dir_=$3
+X_dfl_=$4
+Xfor _f_ in $_fil_
+Xdo
+X  for _d_ in $_dir_
+X  do
+X    _df="$_d_/$_f_"
+X    if test -f "$_df" -o -d "$_df"
+X    then
+X      eval $_var_="$_df"
+X      break
+X    fi
+X  done
+X  eval "test -n \"\$$_var_\" || $_var_=$_dfl_"
+X  eval "test -n \"\$$_var_\" && break"
+Xdone
+END_OF_FILE
+  if test 357 -ne `wc -c <'zsh-2.5.0/src/config/bz.walk'`; then
+    echo shar: \"'zsh-2.5.0/src/config/bz.walk'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/config/bz.walk'
+fi
+if test -f 'zsh-2.5.0/src/makepro.sed' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/makepro.sed'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/makepro.sed'\" \(183 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/makepro.sed' <<'END_OF_FILE'
+X/^[^{]*\/\*\*\/$/{
+Xs/^\(.*\)(.*$/\1 DCLPROTO((/
+Xh
+X:loop
+Xn
+Xs/;/,/
+XH
+Xtloop
+Xg
+Xs/,\n{/));/
+Xs/\n//g
+Xs/{.*$/void));/
+Xp
+X}
+X
+X/^{.*\/\*\*\/$/{
+Xg
+Xs/^\([^(]*\)(.*$/\1 DCLPROTO((void));/
+Xp
+Xd
+X}
+X
+Xh
+END_OF_FILE
+  if test 183 -ne `wc -c <'zsh-2.5.0/src/makepro.sed'`; then
+    echo shar: \"'zsh-2.5.0/src/makepro.sed'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/makepro.sed'
+fi
+if test -f 'zsh-2.5.0/src/version.h' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/version.h'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/version.h'\" \(31 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/version.h' <<'END_OF_FILE'
+X#define VERSIONSTR "zsh 2.5.0"
+END_OF_FILE
+  if test 31 -ne `wc -c <'zsh-2.5.0/src/version.h'`; then
+    echo shar: \"'zsh-2.5.0/src/version.h'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/version.h'
+fi
+echo shar: End of archive 18 \(of 18\).
+cp /dev/null ark18isdone
+MISSING=""
+for I in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 ; do
+    if test ! -f ark${I}isdone ; then
+	MISSING="${MISSING} ${I}"
+    fi
+done
+if test "${MISSING}" = "" ; then
+    echo You have unpacked all 18 archives.
+    rm -f ark[1-9]isdone ark[1-9][0-9]isdone
+    echo Standby... Linking help files.
+    ln zsh-2.5.0/help/cd zsh-2.5.0/help/chdir
+    ln zsh-2.5.0/help/elif zsh-2.5.0/help/else
+    ln zsh-2.5.0/help/bye zsh-2.5.0/help/exit
+    ln zsh-2.5.0/help/for zsh-2.5.0/help/foreach
+    ln zsh-2.5.0/help/declare zsh-2.5.0/help/functions
+    ln zsh-2.5.0/help/fc zsh-2.5.0/help/history
+    ln zsh-2.5.0/help/elif zsh-2.5.0/help/if
+    ln zsh-2.5.0/help/declare zsh-2.5.0/help/integer
+    ln zsh-2.5.0/help/declare zsh-2.5.0/help/local
+    ln zsh-2.5.0/help/print zsh-2.5.0/help/pwd
+    ln zsh-2.5.0/help/fc zsh-2.5.0/help/r
+    ln zsh-2.5.0/help/false zsh-2.5.0/help/true
+    ln zsh-2.5.0/help/declare zsh-2.5.0/help/typeset
+    ln zsh-2.5.0/help/alias zsh-2.5.0/help/unalias
+    ln zsh-2.5.0/help/hash zsh-2.5.0/help/unhash
+    ln zsh-2.5.0/help/set zsh-2.5.0/help/unset
+    ln zsh-2.5.0/help/setopt zsh-2.5.0/help/unsetopt
+    ln zsh-2.5.0/help/type zsh-2.5.0/help/whence
+    ln zsh-2.5.0/help/type zsh-2.5.0/help/which
+    ln zsh-2.5.0/help/bindkey zsh-2.5.0/help/zle
+    echo Done.
+else
+    echo You still must unpack the following archives:
+    echo "        " ${MISSING}
+fi
+exit 0
+exit 0 # Just in case...

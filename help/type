@@ -1,0 +1,16 @@
+       type   Same as whence -v.
+
+       whence [ -acpvm ] name ...
+              For each name, indicate how it would be interpreted
+              if used as a command name.  The -v flag produces  a
+              more  verbose  report.   The  -p  flag  does a path
+              search for name even if it  is  a  shell  function,
+              alias,  or  reserved  word.  The -c flag prints the
+              results in a csh-like format.  The -a flag  does  a
+              search  for  all occurrences of name throughout the
+              command path.  With the -m flag the  arguments  are
+              taken as patterns (should be quoted) and the infor-
+              mation is displayed for each command  matching  one
+              of these patterns.
+
+       which  Same as whence -c.

@@ -1,0 +1,5 @@
+. ./config/bz.saveargv
+. ./config/bz.defaults
+. ./config/bz.ifksh
+
+trap "$TRAPN" $TRAPSIGS

@@ -1,0 +1,26 @@
+       ulimit [ -Hacdflmnopstv ] [ limit ]
+              Set or display a resource  limit.  When  setting  a
+              limit  it  will  apply to the children of the shell
+              but not to the shell itself. The value of limit can
+              be  a  number  in  the  unit specified below or the
+              value unlimited.  If the H flag is given  use  hard
+              limits instead of soft limits.
+              -a     Lists all of the current resource limits.
+              -c     The number of 512-byte blocks on the size of
+                     core dumps.
+              -d     The number of K-bytes on  the  size  of  the
+                     data segment.
+              -f     The number of 512-byte blocks on the size of
+                     files written.
+              -l     The number of K-bytes on the size of locked-
+                     in memory.
+              -m     The  number of K-bytes on the size of physi-
+                     cal memory.
+              -n     The number of file descriptors.
+              -o     The number of open files.
+              -p     The number of processes.
+              -s     The number of K-bytes on  the  size  of  the
+                     stack.
+              -t     The number of CPU seconds to be used.
+              -v     The number of K-bytes on the size of virtual
+                     memory.

@@ -1,0 +1,7 @@
+       enable [ -m ] arg ...
+              Enable  the  specified builtin commands, presumably
+              disabled earlier with disable.   Without  arguments
+              the  enabled  builtins  are printed and with the -m
+              flag the arguments are taken as patterns (should be
+              quoted)  and  all  builtins matching these patterns
+              are enabled.

@@ -1,0 +1,4345 @@
+Path: news.csc.fi!news.eunet.fi!EU.net!uunet!sparky!not-for-mail
+From: zsh-list@sterling.com (Bas de Bakker)
+Newsgroups: comp.sources.misc
+Subject: v43i096:  zsh - The Z shell, version 2.5.0, Part07/18
+Followup-To: comp.sources.d
+Date: 13 Jul 1994 23:04:04 -0500
+Organization: Sterling Software
+Lines: 4330
+Sender: kent@sparky.sterling.com
+Approved: kent@sparky.sterling.com
+Message-ID: <302dfk$t14@sparky.sterling.com>
+References: <csm-v43i089=zsh.230017@sparky.sterling.com>
+NNTP-Posting-Host: sparky.sterling.com
+X-Md4-Signature: defc7d8f7b7ceea727de99fb9fa2b4b8
+
+Submitted-by: zsh-list@sterling.com (Bas de Bakker)
+Posting-number: Volume 43, Issue 96
+Archive-name: zsh/part07
+Environment: UNIX
+Supersedes: zsh: Volume 35, Issue 51-72
+
+#! /bin/sh
+# This is a shell archive.  Remove anything before this line, then feed it
+# into a shell via "sh file" or similar.  To overwrite existing files,
+# type "sh file -c".
+# Contents:  zsh-2.5.0/src/config/bz.argh zsh-2.5.0/src/parse.c
+#   zsh-2.5.0/src/utils.c
+# Wrapped by kent@sparky on Tue Jul 12 16:47:20 1994
+PATH=/bin:/usr/bin:/usr/ucb:/usr/local/bin:/usr/lbin:$PATH ; export PATH
+echo If this archive is complete, you will see the following message:
+echo '          "shar: End of archive 7 (of 18)."'
+if test -f 'zsh-2.5.0/src/config/bz.argh' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/config/bz.argh'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/config/bz.argh'\" \(1092 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/config/bz.argh' <<'END_OF_FILE'
+X# --- (argument handling)
+X
+Xeval set X "$_argv"; shift
+X
+Xfor parm
+Xdo
+X  case "$parm" in
+X  help)
+X	. ./config/bz.help
+X	;;
+X  *=* ) set Z `echo "$parm"|sed 's/=/ /'`
+X	var="$2"
+X	for cp in $CONFIG_PARMS
+X	do
+X	  if test Z"$cp" = Z"$var"
+X	  then
+X	    cpok=yep
+X	    break
+X	  fi
+X	done
+X	if test -z "$cpok"
+X	then
+X	  echo 'Unrecognized configurable parameter "'$var'" in assignment'
+X	  echo 'Configurable parameters : '$CONFIG_PARMS
+X	  echo 'Try "'$0' help" for more information.'
+X	  echo 'Aborting.'
+X	  exit 1
+X	fi
+X	shift
+X	shift
+X	eval "C_$var=\"$@\""
+X	;;
+X  hs)
+X	B_signals_h=yep
+X	B_config_h=yep
+X	;;
+X  Makefile | makefile | mf)
+X	B_Makefile=yep
+X	;;
+X  gcc|mediumgcc|strictgcc)
+X        eval "B_$parm=yep"
+X	B_gcc=yep
+X	CC=gcc
+X	;;
+X  signals.h|config.h)
+X        eval "B_`echo $parm|tr . _`=yep"
+X	;;
+X  ksh|query|probe|auto|noopt|debug|zshdebug|install|nomake)
+X        eval "B_$parm=yep"
+X	;;
+X  * )	echo 'Unrecognized parameter "'$parm'"'
+X	echo 'Assignable parameters : '$CONFIG_PARMS
+X	echo 'Boolean parameters : '$BOOL_PARMS
+X        echo 'Try "'$0' help" for more information.'
+X	echo 'Aborting.'
+X	exit 1
+X	;;
+X  esac
+Xdone
+END_OF_FILE
+  if test 1092 -ne `wc -c <'zsh-2.5.0/src/config/bz.argh'`; then
+    echo shar: \"'zsh-2.5.0/src/config/bz.argh'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/config/bz.argh'
+fi
+if test -f 'zsh-2.5.0/src/parse.c' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/parse.c'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/parse.c'\" \(23967 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/parse.c' <<'END_OF_FILE'
+X/*
+X *
+X * parse.c - parser
+X *
+X * This file is part of zsh, the Z shell.
+X *
+X * This software is Copyright 1992 by Paul Falstad
+X *
+X * Permission is hereby granted to copy, reproduce, redistribute or otherwise
+X * use this software as long as: there is no monetary profit gained
+X * specifically from the use or reproduction of this software, it is not
+X * sold, rented, traded or otherwise marketed, and this copyright notice is
+X * included prominently in any copy made.
+X *
+X * The author make no claims as to the fitness or correctness of this software
+X * for any use whatsoever, and it is provided as is. Any use of this software
+X * is at the user's own risk.
+X *
+X */
+X
+X#include "zsh.h"
+X
+X#define YYERROR { tok = LEXERR; return NULL; }
+X#define YYERRORV { tok = LEXERR; return; }
+X
+X#define make_list() allocnode(N_LIST)
+X#define make_sublist() allocnode(N_SUBLIST)
+X#define make_pline() allocnode(N_PLINE)
+X#define make_cmd() allocnode(N_CMD)
+X#define make_forcmd() allocnode(N_FOR)
+X#define make_casecmd() allocnode(N_CASE)
+X#define make_ifcmd() allocnode(N_IF)
+X#define make_whilecmd() allocnode(N_WHILE)
+X#define make_varnode() allocnode(N_VARASG)
+X#define make_cond() allocnode(N_COND)
+X
+X/*
+X * event	: ENDINPUT
+X *			| SEPER
+X *			| sublist [ SEPER | AMPER ]
+X */
+XList parse_event()
+X{				/**/
+X    tok = ENDINPUT;
+X    incmdpos = 1;
+X    yylex();
+X    return par_event();
+X}
+X
+XList par_event()
+X{				/**/
+X    Sublist sl;
+X    List l = NULL;
+X
+X    while (tok == SEPER) {
+X	if (isnewlin > 0)
+X	    return NULL;
+X	yylex();
+X    }
+X    if (tok == ENDINPUT)
+X	return NULL;
+X    if ((sl = par_sublist()))
+X	if (tok == ENDINPUT) {
+X	    l = (List) make_list();
+X	    l->type = SYNC;
+X	    l->left = sl;
+X	} else if (tok == SEPER) {
+X	    l = (List) make_list();
+X	    l->type = SYNC;
+X	    l->left = sl;
+X	    if (isnewlin <= 0)
+X		yylex();
+X	} else if (tok == AMPER) {
+X	    l = (List) make_list();
+X	    l->type = ASYNC;
+X	    l->left = sl;
+X	    yylex();
+X	} else
+X	    l = NULL;
+X    if (!l) {
+X	if (errflag) {
+X	    yyerror();
+X	    return NULL;
+X	}
+X	yyerror();
+X	errflag = 0;
+X	if (isnewlin <= 0) {
+X	    int c;
+X
+X	    hwbegin();
+X	    while ((c = hgetc()) != '\n' && !lexstop);
+X	    if (c == '\n')
+X		hungetc('\n');
+X	    hwaddc(HISTSPACE);
+X	    hwadd();
+X	}
+X	errflag = 1;
+X	return NULL;
+X    } else {
+X	l->right = par_event();
+X    }
+X    return l;
+X}
+X
+XList parse_list()
+X{				/**/
+X    List ret;
+X
+X    tok = ENDINPUT;
+X    incmdpos = 1;
+X    yylex();
+X    ret = par_list();
+X    if (tok == LEXERR) {
+X	yyerror();
+X	return NULL;
+X    }
+X    return ret;
+X}
+X
+X/*
+X * list	: { SEPER } [ sublist [ { SEPER | AMPER } list ] ]
+X */
+XList par_list()
+X{				/**/
+X    Sublist sl;
+X    List l = NULL;
+X
+X    while (tok == SEPER)
+X	yylex();
+X    if ((sl = par_sublist()))
+X	if (tok == SEPER || tok == AMPER) {
+X	    l = (List) make_list();
+X	    l->left = sl;
+X	    l->type = (tok == SEPER) ? SYNC : ASYNC;
+X	    incmdpos = 1;
+X	    while (tok == SEPER || tok == AMPER)
+X		yylex();
+X	    l->right = par_list();
+X	} else {
+X	    l = (List) make_list();
+X	    l->left = sl;
+X	    l->type = SYNC;
+X	}
+X    return l;
+X}
+X
+XList par_list1()
+X{				/**/
+X    Sublist sl;
+X    List l = NULL;
+X
+X    if ((sl = par_sublist())) {
+X	l = (List) make_list();
+X	l->type = SYNC;
+X	l->left = sl;
+X    }
+X    return l;
+X}
+X
+X/*
+X * sublist	: sublist2 [ ( DBAR | DAMPER ) { SEPER } sublist ]
+X */
+XSublist par_sublist()
+X{				/**/
+X    Sublist sl;
+X
+X    if ((sl = par_sublist2()))
+X	if (tok == DBAR || tok == DAMPER) {
+X	    int qtok = tok;
+X
+X	    cmdpush(tok == DBAR ? CS_CMDOR : CS_CMDAND);
+X	    yylex();
+X	    while (tok == SEPER)
+X		yylex();
+X	    sl->right = par_sublist();
+X	    sl->type = (qtok == DBAR) ? ORNEXT : ANDNEXT;
+X	    cmdpop();
+X	}
+X    return sl;
+X}
+X
+X/*
+X * sublist2	: [ COPROC | BANG ] pline
+X */
+XSublist par_sublist2()
+X{				/**/
+X    Sublist sl;
+X    Pline p;
+X
+X    sl = (Sublist) make_sublist();
+X    if (tok == COPROC) {
+X	sl->flags |= PFLAG_COPROC;
+X	yylex();
+X    } else if (tok == BANG) {
+X	sl->flags |= PFLAG_NOT;
+X	yylex();
+X    }
+X    if (!(p = par_pline()) && !sl->flags)
+X	return NULL;
+X    sl->left = p;
+X    return sl;
+X}
+X
+X/*
+X * pline	: cmd [ ( BAR | BARAMP ) { SEPER } pline ]
+X */
+XPline par_pline()
+X{				/**/
+X    Cmd c;
+X    Pline p, p2;
+X
+X    if (!(c = par_cmd()))
+X	return NULL;
+X    if (tok == BAR) {
+X	c->flags &= ~CFLAG_EXEC;
+X	cmdpush(CS_PIPE);
+X	yylex();
+X	while (tok == SEPER)
+X	    yylex();
+X	p2 = par_pline();
+X	cmdpop();
+X	p = (Pline) make_pline();
+X	p->left = c;
+X	p->right = p2;
+X	p->type = PIPE;
+X	return p;
+X    } else if (tok == BARAMP) {
+X	struct redir *rdr = (struct redir *)allocnode(N_REDIR);
+X
+X	c->flags &= ~CFLAG_EXEC;
+X	rdr->type = MERGEOUT;
+X	rdr->fd1 = 2;
+X	rdr->fd2 = 1;
+X	addnode(c->redir, rdr);
+X
+X	cmdpush(CS_ERRPIPE);
+X	yylex();
+X	p2 = par_pline();
+X	cmdpop();
+X	p = (Pline) make_pline();
+X	p->left = c;
+X	p->right = p2;
+X	p->type = PIPE;
+X	return p;
+X    } else {
+X	p = (Pline) make_pline();
+X	p->left = c;
+X	p->type = END;
+X	return p;
+X    }
+X}
+X
+X/*
+X * cmd	: { redir } ( for | case | if | while | repeat |
+X *				subsh | funcdef | time | dinbrack | dinpar | simple ) { redir }
+X */
+XCmd par_cmd()
+X{				/**/
+X    Cmd c;
+X
+X    c = (Cmd) make_cmd();
+X    c->lineno = lineno;
+X    c->args = newlist();
+X    c->redir = newlist();
+X    c->vars = newlist();
+X    while (IS_REDIROP(tok))
+X	par_redir(c->redir);
+X    switch (tok) {
+X    case FOR:
+X	cmdpush(CS_FOR);
+X	par_for(c);
+X	cmdpop();
+X	break;
+X    case FOREACH:
+X	cmdpush(CS_FOREACH);
+X	par_for(c);
+X	cmdpop();
+X	break;
+X    case SELECT:
+X	cmdpush(CS_SELECT);
+X	par_for(c);
+X	cmdpop();
+X	break;
+X    case CASE:
+X	cmdpush(CS_CASE);
+X	par_case(c);
+X	cmdpop();
+X	break;
+X    case IF:
+X	par_if(c);
+X	break;
+X    case WHILE:
+X	cmdpush(CS_WHILE);
+X	par_while(c);
+X	cmdpop();
+X	break;
+X    case UNTIL:
+X	cmdpush(CS_UNTIL);
+X	par_while(c);
+X	cmdpop();
+X	break;
+X    case REPEAT:
+X	cmdpush(CS_REPEAT);
+X	par_repeat(c);
+X	cmdpop();
+X	break;
+X    case INPAR:
+X	cmdpush(CS_SUBSH);
+X	par_subsh(c);
+X	cmdpop();
+X	break;
+X    case INBRACE:
+X	cmdpush(CS_CURSH);
+X	par_subsh(c);
+X	cmdpop();
+X	break;
+X    case FUNC:
+X	cmdpush(CS_FUNCDEF);
+X	par_funcdef(c);
+X	cmdpop();
+X	break;
+X    case TIME:
+X	par_time(c);
+X	break;
+X    case DINBRACK:
+X	cmdpush(CS_COND);
+X	par_dinbrack(c);
+X	cmdpop();
+X	break;
+X    case DINPAR:
+X	cmdpush(CS_MATH);
+X	par_dinpar(c);
+X	cmdpop();
+X	break;
+X    default:
+X	if (!par_simple(c))
+X	    return NULL;
+X	break;
+X    }
+X    while (IS_REDIROP(tok))
+X	par_redir(c->redir);
+X    incmdpos = 1;
+X    incasepat = 0;
+X    incond = 0;
+X    return c;
+X}
+X
+X/*
+X * for	: ( FOR[EACH] | SELECT ) name ( "in" wordlist | INPAR wordlist OUTPAR )
+X				{ SEPER } ( DO list DONE | INBRACE list OUTBRACE |
+X				list ZEND | list1 )
+X */
+Xvoid par_for(c)			/**/
+XCmd c;
+X{
+X    struct forcmd *f;
+X    int csh = (tok == FOREACH);
+X
+X    f = (struct forcmd *)make_forcmd();
+X    c->type = (tok == SELECT) ? CSELECT : CFOR;
+X    incmdpos = 0;
+X    yylex();
+X    if (tok != STRING || !isident(tokstr))
+X	YYERRORV;
+X    f->name = tokstr;
+X    incmdpos = 1;
+X    yylex();
+X    if (tok == STRING && !strcmp(tokstr, "in")) {
+X	f->inflag = 1;
+X	incmdpos = 0;
+X	yylex();
+X	c->args = par_wordlist();
+X	if (tok != SEPER)
+X	    YYERRORV;
+X    } else if (tok == INPAR && (csh || isset(CSHJUNKIEPAREN))) {
+X	f->inflag = 1;
+X	incmdpos = 0;
+X	yylex();
+X	c->args = par_nl_wordlist();
+X	if (tok != OUTPAR)
+X	    YYERRORV;
+X	incmdpos = 1;
+X	yylex();
+X    }
+X    incmdpos = 1;
+X    while (tok == SEPER)
+X	yylex();
+X    if (tok == DO) {
+X	yylex();
+X	f->list = par_list();
+X	if (tok != DONE)
+X	    YYERRORV;
+X	yylex();
+X    } else if (tok == INBRACE) {
+X	yylex();
+X	f->list = par_list();
+X	if (tok != OUTBRACE)
+X	    YYERRORV;
+X	yylex();
+X    } else if (csh || isset(CSHJUNKIELOOPS)) {
+X	f->list = par_list();
+X	if (tok != ZEND)
+X	    YYERRORV;
+X	yylex();
+X    } else if (isset(NOSHORTLOOPS)) {
+X	YYERRORV;
+X    } else
+X	f->list = par_list1();
+X    c->u.forcmd = f;
+X}
+X
+X/*
+X * case	: CASE STRING { SEPER } ( "in" | INBRACE )
+X				{ { SEPER } STRING { BAR STRING } OUTPAR list [ DSEMI ] }
+X				{ SEPER } ( "esac" | OUTBRACE )
+X */
+Xvoid par_case(c)		/**/
+XCmd c;
+X{
+X    int brflag;
+X    Lklist pats, lists;
+X    int n = 0;
+X    char **pp;
+X    List *ll;
+X    Lknode no;
+X    struct casecmd *cc;
+X
+X    c->type = CCASE;
+X    incmdpos = 0;
+X    yylex();
+X    if (tok != STRING)
+X	YYERRORV;
+X    addnode(c->args, tokstr);
+X    incmdpos = 1;
+X    yylex();
+X    while (tok == SEPER)
+X	yylex();
+X    if (!(tok == STRING && !strcmp(tokstr, "in")) && tok != INBRACE)
+X	YYERRORV;
+X    brflag = (tok == INBRACE);
+X    incasepat = 1;
+X    incmdpos = 0;
+X    yylex();
+X    cc = c->u.casecmd = (struct casecmd *)make_casecmd();
+X    pats = newlist();
+X    lists = newlist();
+X    for (;;) {
+X	char *str;
+X
+X	while (tok == SEPER)
+X	    yylex();
+X	if (tok == OUTBRACE) {
+X	    yylex();
+X	    break;
+X	}
+X	if (tok != STRING)
+X	    YYERRORV;
+X	if (!strcmp(tokstr, "esac")) {
+X	    yylex();
+X	    break;
+X	}
+X	str = tokstr;
+X	yylex();
+X	while (tok == BAR) {
+X	    char *str2;
+X	    int sl = strlen(str);
+X
+X	    yylex();
+X	    if (tok != STRING)
+X		YYERRORV;
+X	    str2 = (char *)alloc(sl + strlen(tokstr) + 2);
+X	    strcpy(str2, str);
+X	    str2[sl] = Bar;
+X	    strcpy(str2 + sl + 1, tokstr);
+X	    str = str2;
+X	    yylex();
+X	}
+X	if (tok != OUTPAR)
+X	    YYERRORV;
+X	incasepat = 0;
+X	incmdpos = 1;
+X	yylex();
+X	addnode(pats, str);
+X	addnode(lists, par_list());
+X	n++;
+X	if ((tok == ESAC && !brflag) || (tok == OUTBRACE && brflag)) {
+X	    yylex();
+X	    break;
+X	}
+X	if (tok != DSEMI)
+X	    YYERRORV;
+X	incasepat = 1;
+X	incmdpos = 0;
+X	yylex();
+X    }
+X
+X    cc->pats = (char **)alloc((n + 1) * sizeof(char *));
+X
+X    for (pp = cc->pats, no = firstnode(pats); no; incnode(no))
+X	*pp++ = (char *)getdata(no);
+X    *pp = NULL;
+X    cc->lists = (List *) alloc((n + 1) * sizeof(List));
+X    for (ll = cc->lists, no = firstnode(lists); no; incnode(no), ll++)
+X	if (!(*ll = (List) getdata(no)))
+X	    *ll = &dummy_list;
+X    *ll = NULL;
+X}
+X
+X/*
+X * if	: { ( IF | ELIF ) { SEPER } ( INPAR list OUTPAR | list )
+X			{ SEPER } ( THEN list | INBRACE list OUTBRACE | list1 ) }
+X			[ FI | ELSE list FI | ELSE { SEPER } INBRACE list OUTBRACE ]
+X			(you get the idea...?)
+X */
+Xvoid par_if(c)			/**/
+XCmd c;
+X{
+X    struct ifcmd *i;
+X    int xtok;
+X    unsigned char nc;
+X    Lklist ifsl, thensl;
+X    Lknode no;
+X    int ni = 0, nt = 0;
+X    List l, *ll;
+X
+X    ifsl = newlist();
+X    thensl = newlist();
+X
+X    c->type = CIF;
+X    for (;;) {
+X	xtok = tok;
+X	cmdpush(xtok == IF ? CS_IF : CS_ELIF);
+X	yylex();
+X	if (xtok == FI)
+X	    break;
+X	if (xtok == ELSE)
+X	    break;
+X	while (tok == SEPER)
+X	    yylex();
+X	if (!(xtok == IF || xtok == ELIF)) {
+X	    cmdpop();
+X	    YYERRORV;
+X	}
+X	if (tok == INPAR && isset(CSHJUNKIEPAREN)) {
+X	    yylex();
+X	    l = par_list();
+X	    if (tok != OUTPAR) {
+X		cmdpop();
+X		YYERRORV;
+X	    }
+X	    addnode(ifsl, l);
+X	    ni++;
+X	    incmdpos = 1;
+X	    yylex();
+X	} else {
+X	    addnode(ifsl, par_list());
+X	    ni++;
+X	    incmdpos = 1;
+X	}
+X	while (tok == SEPER)
+X	    yylex();
+X	xtok = FI;
+X	nc = cmdstack[cmdsp - 1] == CS_IF ? CS_IFTHEN : CS_ELIFTHEN;
+X	if (tok == THEN) {
+X	    cmdpop();
+X	    cmdpush(nc);
+X	    yylex();
+X	    addnode(thensl, par_list());
+X	    nt++;
+X	    incmdpos = 1;
+X	    cmdpop();
+X	} else if (isset(CSHJUNKIEPAREN)) {
+X	    if (tok == INBRACE) {
+X		cmdpop();
+X		cmdpush(nc);
+X		yylex();
+X		l = par_list();
+X		if (tok != OUTBRACE) {
+X		    cmdpop();
+X		    YYERRORV;
+X		}
+X		addnode(thensl, l);
+X		nt++;
+X		yylex();
+X		incmdpos = 1;
+X		if (tok == SEPER)
+X		    break;
+X		cmdpop();
+X	    } else if (isset(NOSHORTLOOPS)) {
+X		cmdpop();
+X		YYERRORV;
+X	    } else {
+X		cmdpop();
+X		cmdpush(nc);
+X		addnode(thensl, par_list1());
+X		nt++;
+X		cmdpop();
+X		incmdpos = 1;
+X		break;
+X	    }
+X	} else {
+X	    cmdpop();
+X	    YYERRORV;
+X	}
+X    }
+X    cmdpop();
+X    if (xtok == ELSE) {
+X	cmdpush(CS_ELSE);
+X	while (tok == SEPER)
+X	    yylex();
+X	if (tok == INBRACE) {
+X	    yylex();
+X	    l = par_list();
+X	    if (tok != OUTBRACE) {
+X		cmdpop();
+X		YYERRORV;
+X	    }
+X	    addnode(thensl, l);
+X	    nt++;
+X	    yylex();
+X	} else {
+X	    l = par_list();
+X	    if (tok != FI) {
+X		cmdpop();
+X		YYERRORV;
+X	    }
+X	    addnode(thensl, l);
+X	    nt++;
+X	    yylex();
+X	}
+X	cmdpop();
+X    }
+X    i = (struct ifcmd *)make_ifcmd();
+X    i->ifls = (List *) alloc((ni + 1) * sizeof(List));
+X    i->thenls = (List *) alloc((nt + 1) * sizeof(List));
+X
+X    for (ll = i->ifls, no = firstnode(ifsl); no; incnode(no), ll++)
+X	if (!(*ll = (List) getdata(no)))
+X	    *ll = &dummy_list;
+X    *ll = NULL;
+X    for (ll = i->thenls, no = firstnode(thensl); no; incnode(no), ll++)
+X	if (!(*ll = (List) getdata(no)))
+X	    *ll = &dummy_list;
+X    *ll = NULL;
+X
+X    c->u.ifcmd = i;
+X}
+X
+X/*
+X * while	: ( WHILE | UNTIL ) ( INPAR list OUTPAR | list ) { SEPER }
+X				( DO list DONE | INBRACE list OUTBRACE | list ZEND )
+X */
+Xvoid par_while(c)		/**/
+XCmd c;
+X{
+X    struct whilecmd *w;
+X
+X    c->type = CWHILE;
+X    w = c->u.whilecmd = (struct whilecmd *)make_whilecmd();
+X    w->cond = (tok == UNTIL);
+X    yylex();
+X    if (tok == INPAR && isset(CSHJUNKIEPAREN)) {
+X	yylex();
+X	w->cont = par_list();
+X	if (tok != OUTPAR)
+X	    YYERRORV;
+X	yylex();
+X    } else {
+X	w->cont = par_list();
+X    }
+X    incmdpos = 1;
+X    while (tok == SEPER)
+X	yylex();
+X    if (tok == DO) {
+X	yylex();
+X	w->loop = par_list();
+X	if (tok != DONE)
+X	    YYERRORV;
+X	yylex();
+X    } else if (tok == INBRACE) {
+X	yylex();
+X	w->loop = par_list();
+X	if (tok != OUTBRACE)
+X	    YYERRORV;
+X	yylex();
+X    } else if (isset(CSHJUNKIELOOPS)) {
+X	w->loop = par_list();
+X	if (tok != ZEND)
+X	    YYERRORV;
+X	yylex();
+X    } else
+X	YYERRORV;
+X}
+X
+X/*
+X * repeat	: REPEAT STRING { SEPER } ( DO list DONE | list1 )
+X */
+Xvoid par_repeat(c)		/**/
+XCmd c;
+X{
+X    c->type = CREPEAT;
+X    incmdpos = 0;
+X    yylex();
+X    if (tok != STRING)
+X	YYERRORV;
+X    addnode(c->args, tokstr);
+X    incmdpos = 1;
+X    yylex();
+X    while (tok == SEPER)
+X	yylex();
+X    if (tok == DO) {
+X	yylex();
+X	c->u.list = par_list();
+X	if (tok != DONE)
+X	    YYERRORV;
+X	yylex();
+X    } else {
+X	c->u.list = par_list1();
+X    }
+X}
+X
+X/*
+X * subsh	: ( INPAR | INBRACE ) list ( OUTPAR | OUTBRACE )
+X */
+Xvoid par_subsh(c)		/**/
+XCmd c;
+X{
+X    c->type = (tok == INPAR) ? SUBSH : CURSH;
+X    yylex();
+X    c->u.list = par_list();
+X    if (tok != ((c->type == SUBSH) ? OUTPAR : OUTBRACE))
+X	YYERRORV;
+X    incmdpos = 0;
+X    yylex();
+X}
+X
+X/*
+X * funcdef	: FUNCTION wordlist [ INOUTPAR ] { SEPER }
+X *					( list1 | INBRACE list OUTBRACE )
+X */
+Xvoid par_funcdef(c)		/**/
+XCmd c;
+X{
+X    nocorrect = 1;
+X    incmdpos = 0;
+X    yylex();
+X    c->type = FUNCDEF;
+X    c->args = newlist();
+X    incmdpos = 1;
+X    while (tok == STRING) {
+X	if (*tokstr == Inbrace && !tokstr[1]) {
+X	    tok = INBRACE;
+X	    break;
+X	}
+X	addnode(c->args, tokstr);
+X	yylex();
+X    }
+X    nocorrect = 0;
+X    if (tok == INOUTPAR)
+X	yylex();
+X    while (tok == SEPER)
+X	yylex();
+X    if (tok == INBRACE) {
+X	yylex();
+X	c->u.list = par_list();
+X	if (tok != OUTBRACE)
+X	    YYERRORV;
+X	yylex();
+X    } else if (isset(NOSHORTLOOPS)) {
+X	YYERRORV;
+X    } else
+X	c->u.list = par_list1();
+X}
+X
+X/*
+X * time	: TIME sublist2
+X */
+Xvoid par_time(c)		/**/
+XCmd c;
+X{
+X    yylex();
+X    c->type = ZCTIME;
+X    c->u.pline = par_sublist2();
+X}
+X
+X/*
+X * dinbrack	: DINBRACK cond DOUTBRACK
+X */
+Xvoid par_dinbrack(c)		/**/
+XCmd c;
+X{
+X    c->type = COND;
+X    incond = 1;
+X    incmdpos = 0;
+X    yylex();
+X    c->u.cond = par_cond();
+X    if (tok != DOUTBRACK)
+X	YYERRORV;
+X    incond = 0;
+X    incmdpos = 1;
+X    yylex();
+X}
+X
+X/*
+X * dinpar : DINPAR expr DOUTPAR
+X */
+Xvoid par_dinpar(c)		/**/
+XCmd c;
+X{
+X    c->type = SIMPLE;
+X    addnode(c->args, dupstring("builtin"));
+X    addnode(c->args, dupstring("let"));
+X    incmdpos = 0;
+X    yylex();
+X    if (tok != DOUTPAR)
+X	YYERRORV;
+X    addnode(c->args, tokstr);
+X    if (underscore)
+X	free(underscore);
+X    underscore = ztrdup(tokstr);
+X    untokenize(underscore);
+X    incmdpos = 1;
+X    yylex();
+X}
+X
+X/*
+X * simple	: { COMMAND | EXEC | NOGLOB | NOCORRECT | DASH }
+X					{ STRING | ENVSTRING | ENVARRAY wordlist OUTPAR | redir }
+X					[ INOUTPAR { SEPER } ( list1 | INBRACE list OUTBRACE ) ]
+X */
+XCmd par_simple(c)		/**/
+XCmd c;
+X{
+X    int isnull = 1;
+X
+X    c->type = SIMPLE;
+X    for (;;) {
+X	if (tok == COMMAND)
+X	    c->flags |= CFLAG_COMMAND;
+X	else if (tok == EXEC)
+X	    c->flags |= CFLAG_EXEC;
+X	else if (tok == NOGLOB)
+X	    c->flags |= CFLAG_NOGLOB;
+X	else if (tok == NOCORRECT)
+X	    nocorrect = 1;
+X	else if (tok == DASH)
+X	    c->flags = CFLAG_DASH;
+X	else
+X	    break;
+X	yylex();
+X    }
+X    if (tok == AMPER)
+X	YYERROR;
+X    for (;;) {
+X	if (tok == STRING) {
+X	    incmdpos = 0;
+X	    addnode(c->args, tokstr);
+X	    yylex();
+X	} else if (tok == ENVSTRING) {
+X	    struct varasg *v = (struct varasg *)make_varnode();
+X
+X	    v->type = PMFLAG_s;
+X	    equalsplit(v->name = tokstr, &v->str);
+X	    addnode(c->vars, v);
+X	    yylex();
+X	} else if (tok == ENVARRAY) {
+X	    struct varasg *v = (struct varasg *)make_varnode();
+X	    int oldcmdpos = incmdpos;
+X
+X	    v->type = PMFLAG_A;
+X	    incmdpos = 0;
+X	    v->name = tokstr;
+X	    cmdpush(CS_ARRAY);
+X	    yylex();
+X	    v->arr = par_nl_wordlist();
+X	    cmdpop();
+X	    if (tok != OUTPAR)
+X		YYERROR;
+X	    incmdpos = oldcmdpos;
+X	    yylex();
+X	    addnode(c->vars, v);
+X	} else if (IS_REDIROP(tok)) {
+X	    par_redir(c->redir);
+X	} else if (tok == INOUTPAR) {
+X	    incmdpos = 1;
+X	    cmdpush(CS_FUNCDEF);
+X	    yylex();
+X	    while (tok == SEPER)
+X		yylex();
+X	    if (tok == INBRACE) {
+X		yylex();
+X		c->u.list = par_list();
+X		if (tok != OUTBRACE) {
+X		    cmdpop();
+X		    YYERROR;
+X		}
+X		yylex();
+X	    } else if (isset(NOSHORTLOOPS)) {
+X		cmdpop();
+X		YYERROR;
+X	    } else
+X		c->u.list = par_list1();
+X	    cmdpop();
+X	    c->type = FUNCDEF;
+X	} else
+X	    break;
+X	isnull = 0;
+X    }
+X    if (isnull && empty(c->redir))
+X	return NULL;
+X    if (full(c->args)) {
+X	if (underscore)
+X	    free(underscore);
+X	underscore = ztrdup(getdata(lastnode(c->args)));
+X	untokenize(underscore);
+X    }
+X    incmdpos = 1;
+X    return c;
+X}
+X
+X/*
+X * cond	: cond_1 { SEPER } [ DBAR { SEPER } cond ]
+X */
+XCond par_cond()
+X{				/**/
+X    Cond c, c2;
+X
+X    c = par_cond_1();
+X    while (tok == SEPER)
+X	yylex();
+X    if (tok == DBAR) {
+X	yylex();
+X	while (tok == SEPER)
+X	    yylex();
+X	c2 = (Cond) make_cond();
+X	c2->left = (vptr) c;
+X	c2->right = (vptr) par_cond();
+X	c2->type = COND_OR;
+X	return c2;
+X    }
+X    return c;
+X}
+X
+X/*
+X * cond_1 : cond_2 { SEPER } [ DAMPER { SEPER } cond_1 ]
+X */
+XCond par_cond_1()
+X{				/**/
+X    Cond c, c2;
+X
+X    c = par_cond_2();
+X    while (tok == SEPER)
+X	yylex();
+X    if (tok == DAMPER) {
+X	yylex();
+X	while (tok == SEPER)
+X	    yylex();
+X	c2 = (Cond) make_cond();
+X	c2->left = (vptr) c;
+X	c2->right = (vptr) par_cond_1();
+X	c2->type = COND_AND;
+X	return c2;
+X    }
+X    return c;
+X}
+X
+X/*
+X * cond_2	: BANG cond_2
+X				| INPAR { SEPER } cond_2 { SEPER } OUTPAR
+X				| STRING STRING STRING
+X				| STRING STRING
+X				| STRING ( INANG | OUTANG ) STRING
+X */
+XCond par_cond_2()
+X{				/**/
+X    Cond c, c2;
+X    char *s1, *s2, *s3;
+X    int xtok;
+X
+X    if (tok == BANG) {
+X	yylex();
+X	c = par_cond_2();
+X	c2 = (Cond) make_cond();
+X	c2->left = (vptr) c;
+X	c2->type = COND_NOT;
+X	return c2;
+X    }
+X    if (tok == INPAR) {
+X	yylex();
+X	while (tok == SEPER)
+X	    yylex();
+X	c = par_cond();
+X	while (tok == SEPER)
+X	    yylex();
+X	if (tok != OUTPAR)
+X	    YYERROR;
+X	yylex();
+X	return c;
+X    }
+X    if (tok != STRING)
+X	YYERROR;
+X    s1 = tokstr;
+X    yylex();
+X    xtok = tok;
+X    if (tok == INANG || tok == OUTANG) {
+X	yylex();
+X	if (tok != STRING)
+X	    YYERROR;
+X	s3 = tokstr;
+X	yylex();
+X	c = (Cond) make_cond();
+X	c->left = (vptr) s1;
+X	c->right = (vptr) s3;
+X	c->type = (xtok == INANG) ? COND_STRLT : COND_STRGTR;
+X	c->ntype = NT_SET(N_COND, 1, NT_STR, NT_STR, 0, 0);
+X	return c;
+X    }
+X    if (tok != STRING)
+X	YYERROR;
+X    s2 = tokstr;
+X    incond++;			/* parentheses do globbing */
+X    yylex();
+X    incond--;			/* parentheses do grouping */
+X    if (tok == STRING) {
+X	s3 = tokstr;
+X	yylex();
+X	return par_cond_triple(s1, s2, s3);
+X    } else
+X	return par_cond_double(s1, s2);
+X}
+X
+X/*
+X * redir	: ( OUTANG | ... | TRINANG ) STRING
+X */
+Xvoid par_redir(l)		/**/
+XLklist l;
+X{
+X    char *toks;
+X    struct redir *fn = (struct redir *)allocnode(N_REDIR);
+X    int mergerror = 0;
+X    int oldcmdpos, oldnc;
+X    unsigned char bc = bangchar;
+X
+X    oldcmdpos = incmdpos;
+X    incmdpos = 0;
+X    oldnc = nocorrect;
+X    if (tok != INANG)
+X	nocorrect = 1;
+X    fn->type = redirtab[tok - OUTANG];
+X    fn->fd1 = tokfd;
+X    if (fn->type == HEREDOC || fn->type == HEREDOCDASH)
+X	bangchar = '\0';
+X    yylex();
+X    bangchar = bc;
+X    if (tok != STRING && tok != ENVSTRING)
+X	YYERRORV;
+X    toks = tokstr;
+X    incmdpos = oldcmdpos;
+X    nocorrect = oldnc;
+X    yylex();
+X
+X/* assign default fd */
+X
+X    if (fn->fd1 == -1)
+X	fn->fd1 = IS_READFD(fn->type) ? 0 : 1;
+X
+X/* > >(...) or < <(...) */
+X
+X    if ((*toks == Inang || *toks == Outang) && toks[1] == Inpar) {
+X	if ((fn->type & ~1) == WRITE)
+X	    fn->type = OUTPIPE;
+X	else if (fn->type == READ)
+X	    fn->type = INPIPE;
+X	else
+X	    YYERRORV;
+X	fn->name = toks;
+X
+X    /* <<[-] name */
+X
+X    } else if (fn->type == HEREDOC || fn->type == HEREDOCDASH) {
+X	char tbuf[256], *tlin = NULL;
+X	int tsiz = 0, redirl;
+X
+X    /* Save the rest of the current line for later tokenization */
+X	if (!isnewlin) {
+X	    while (hgets(tbuf, 256) != NULL) {
+X		redirl = strlen(tbuf);
+X		if (tsiz == 0) {
+X		    tlin = ztrdup(tbuf);	/* Test for failure? */
+X		    tsiz = redirl;
+X		} else {
+X		    tlin = realloc(tlin, tsiz + redirl + 1);	/* Test for failure? */
+X		    strcpy(&tlin[tsiz], tbuf);
+X		    tsiz += redirl;
+X		}
+X		if (tbuf[redirl - 1] == '\n')
+X		    break;
+X	    }
+X	}
+X	cmdpush(fn->type == HEREDOC ? CS_HEREDOC : CS_HEREDOCD);
+X    /* Now grab the document */
+X	fn->name = gethere(toks, fn->type);
+X	fn->type = HERESTR;
+X	cmdpop();
+X    /* Put back the saved line to resume tokenizing */
+X	if (tsiz > 0) {
+X	    hungets(tlin);
+X	    free(tlin);
+X	}
+X    /* >& name or >>& name */
+X
+X    } else if (IS_ERROR_REDIR(fn->type) && getfdstr(toks) == FD_WORD) {
+X	mergerror = 1;
+X	fn->name = toks;
+X	fn->type = UN_ERROR_REDIR(fn->type);
+X
+X    /* >>& and >>&! are only valid with a name after them */
+X
+X    } else if (fn->type == ERRAPP || fn->type == ERRAPPNOW) {
+X	YYERRORV;
+X
+X    /* >& # */
+X
+X    } else if (fn->type == MERGE || fn->type == MERGEOUT) {
+X	fn->fd2 = getfdstr(toks);
+X	if (fn->fd2 == FD_CLOSE)
+X	    fn->type = CLOSE;
+X	else if (fn->fd2 == FD_WORD)
+X	    fn->fd2 = (fn->type == MERGEOUT) ? 1 : 0;
+X    } else
+X	fn->name = toks;
+X    addnode(l, fn);
+X    if (mergerror) {
+X	struct redir *fe = (struct redir *)allocnode(N_REDIR);
+X
+X	fe->fd1 = 2;
+X	fe->fd2 = fn->fd1;
+X	fe->type = MERGEOUT;
+X	addnode(l, fe);
+X    }
+X}
+X
+X/*
+X * wordlist	: { STRING }
+X */
+XLklist par_wordlist()
+X{				/**/
+X    Lklist l;
+X
+X    l = newlist();
+X    while (tok == STRING) {
+X	addnode(l, tokstr);
+X	yylex();
+X    }
+X    return l;
+X}
+X
+X/*
+X * nl_wordlist	: { STRING | SEPER }
+X */
+XLklist par_nl_wordlist()
+X{				/**/
+X    Lklist l;
+X
+X    l = newlist();
+X    while (tok == STRING || tok == SEPER) {
+X	if (tok != SEPER)
+X	    addnode(l, tokstr);
+X	yylex();
+X    }
+X    return l;
+X}
+X
+X/* get fd associated with str */
+X
+Xint getfdstr(s)			/**/
+Xchar *s;
+X{
+X    if (s[1])
+X	return FD_WORD;
+X    if (idigit(*s))
+X	return *s - '0';
+X    if (*s == 'p')
+X	return FD_COPROC;
+X    if (*s == '-')
+X	return FD_CLOSE;
+X    return FD_WORD;
+X}
+X
+XCond par_cond_double(a, b)	/**/
+Xchar *a;
+Xchar *b;
+X{
+X    Cond n = (Cond) make_cond();
+X
+X    if (a[0] != '-' || !a[1] || a[2]) {
+X	zerr("parse error: condition expected: %s", a, 0);
+X	return NULL;
+X    }
+X    n->left = (vptr) b;
+X    n->type = a[1];
+X    n->ntype = NT_SET(N_COND, 1, NT_STR, NT_STR, 0, 0);
+X    return n;
+X}
+X
+Xint get_cond_num(tst)		/**/
+Xchar *tst;
+X{
+X    static char *condstrs[] =
+X    {
+X	"nt", "ot", "ef", "eq", "ne", "lt", "gt", "le", "ge", NULL
+X    };
+X    int t0;
+X
+X    for (t0 = 0; condstrs[t0]; t0++)
+X	if (!strcmp(condstrs[t0], tst))
+X	    return t0;
+X    return -1;
+X}
+X
+XCond par_cond_triple(a, b, c)	/**/
+Xchar *a;
+Xchar *b;
+Xchar *c;
+X{
+X    Cond n = (Cond) make_cond();
+X    int t0;
+X
+X    if ((b[0] == Equals || b[0] == '=') && !b[1])
+X	n->type = COND_STREQ;
+X    else if (b[0] == '!' && (b[1] == Equals || b[1] == '=') && !b[2])
+X	n->type = COND_STRNEQ;
+X    else if (b[0] == '-') {
+X	if ((t0 = get_cond_num(b + 1)) > -1)
+X	    n->type = t0 + COND_NT;
+X	else
+X	    zerr("unrecognized condition: %s", b, 0);
+X    } else
+X	zerr("condition expected: %s", b, 0);
+X    n->left = (vptr) a;
+X    n->right = (vptr) c;
+X    n->ntype = NT_SET(N_COND, 1, NT_STR, NT_STR, 0, 0);
+X    return n;
+X}
+X
+Xvoid yyerror()
+X{				/**/
+X    int t0;
+X
+X    for (t0 = 0; t0 != 20; t0++)
+X	if (!yytext[t0] || yytext[t0] == '\n' || yytext[t0] == HISTSPACE)
+X	    break;
+X    if (t0 == 20)
+X	zerr("parse error near `%l...'", yytext, 20);
+X    else if (t0)
+X	zerr("parse error near `%l'", yytext, t0);
+X    else
+X	zerr("parse error", NULL, 0);
+X}
+END_OF_FILE
+  if test 23967 -ne `wc -c <'zsh-2.5.0/src/parse.c'`; then
+    echo shar: \"'zsh-2.5.0/src/parse.c'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/parse.c'
+fi
+if test -f 'zsh-2.5.0/src/utils.c' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/utils.c'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/utils.c'\" \(56218 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/utils.c' <<'END_OF_FILE'
+X/*
+X *
+X * utils.c - miscellaneous utilities
+X *
+X * This file is part of zsh, the Z shell.
+X *
+X * This software is Copyright 1992 by Paul Falstad
+X *
+X * Permission is hereby granted to copy, reproduce, redistribute or otherwise
+X * use this software as long as: there is no monetary profit gained
+X * specifically from the use or reproduction of this software, it is not
+X * sold, rented, traded or otherwise marketed, and this copyright notice is
+X * included prominently in any copy made.
+X *
+X * The author make no claims as to the fitness or correctness of this software
+X * for any use whatsoever, and it is provided as is. Any use of this software
+X * is at the user's own risk.
+X *
+X */
+X
+X#include "zsh.h"
+X#include <pwd.h>
+X#include <errno.h>
+X#include <fcntl.h>
+X
+X/* source a file */
+X
+Xint source(s)			/**/
+Xchar *s;
+X{
+X    int fd, cj = thisjob;
+X    int oldlineno = lineno, oldshst;
+X    FILE *obshin = bshin;
+X    int osubsh = subsh;
+X
+X    fd = SHIN;
+X    lineno = 0;
+X    oldshst = opts[SHINSTDIN];
+X    opts[SHINSTDIN] = OPT_UNSET;
+X    if ((SHIN = movefd(open(s, O_RDONLY))) == -1) {
+X	SHIN = fd;
+X	thisjob = cj;
+X	opts[SHINSTDIN] = oldshst;
+X	return 1;
+X    }
+X    bshin = fdopen(SHIN, "r");
+X    subsh = 0;
+X    sourcelevel++;
+X    loop(0);
+X    sourcelevel--;
+X    fclose(bshin);
+X    bshin = obshin;
+X    subsh = osubsh;
+X    opts[SHINSTDIN] = oldshst;
+X    SHIN = fd;
+X    thisjob = cj;
+X    errflag = 0;
+X    retflag = 0;
+X    lineno = oldlineno;
+X    return 0;
+X}
+X
+X/* try to source a file in the home directory */
+X
+Xvoid sourcehome(s)		/**/
+Xchar *s;
+X{
+X    char buf[MAXPATHLEN];
+X    char *h;
+X
+X    if (!(h = getsparam("ZDOTDIR")))
+X	h = home;
+X    sprintf(buf, "%s/%s", h, s);
+X    (void)source(buf);
+X}
+X
+X/* print an error */
+X
+Xvoid zwarnnam(cmd, fmt, str, num)	/**/
+Xchar *cmd;
+Xchar *fmt;
+Xchar *str;
+Xint num;
+X{
+X    int waserr = errflag;
+X
+X    zerrnam(cmd, fmt, str, num);
+X    errflag = waserr;
+X}
+X
+Xvoid zerrnam(cmd, fmt, str, num)/**/
+Xchar *cmd;
+Xchar *fmt;
+Xchar *str;
+Xint num;
+X{
+X    if (cmd) {
+X	if (errflag || noerrs)
+X	    return;
+X	errflag = 1;
+X	trashzle();
+X	if (isset(SHINSTDIN))
+X	    fprintf(stderr, "%s: ", cmd);
+X	else
+X	    fprintf(stderr, "%s: %s: ", argzero, cmd);
+X    }
+X    while (*fmt)
+X	if (*fmt == '%') {
+X	    fmt++;
+X	    switch (*fmt++) {
+X	    case 's':
+X		while (*str)
+X		    niceputc(*str++, stderr);
+X		break;
+X	    case 'l':
+X		while (num--)
+X		    niceputc(*str++, stderr);
+X		break;
+X	    case 'd':
+X		fprintf(stderr, "%d", num);
+X		break;
+X	    case '%':
+X		putc('%', stderr);
+X		break;
+X	    case 'c':
+X		niceputc(num, stderr);
+X		break;
+X	    case 'e':
+X		if (num == EINTR) {
+X		    fputs("interrupt\n", stderr);
+X		    errflag = 1;
+X		    return;
+X		}
+X		if (num == EIO)
+X		    fputs(sys_errlist[num], stderr);
+X		else {
+X		    fputc(tulower(sys_errlist[num][0]), stderr);
+X		    fputs(sys_errlist[num] + 1, stderr);
+X		}
+X		break;
+X	    }
+X	} else
+X	    putc(*fmt++, stderr);
+X    if (unset(SHINSTDIN) && lineno)
+X	fprintf(stderr, " [%ld]\n", lineno);
+X    else
+X	putc('\n', stderr);
+X    fflush(stderr);
+X}
+X
+Xvoid zerr(fmt, str, num)	/**/
+Xchar *fmt;
+Xchar *str;
+Xint num;
+X{
+X    if (errflag || noerrs)
+X	return;
+X    errflag = 1;
+X    trashzle();
+X    fprintf(stderr, "%s: ", (isset(SHINSTDIN)) ? "zsh" : argzero);
+X    zerrnam(NULL, fmt, str, num);
+X}
+X
+Xvoid niceputc(c, f)		/**/
+Xint c;
+XFILE *f;
+X{
+X    if (itok(c)) {
+X	if (c >= Pound && c <= Comma)
+X	    putc(ztokens[c - Pound], f);
+X	return;
+X    }
+X    c &= 0xff;
+X    if (isprint(c))
+X	putc(c, f);
+X    else if (c == '\n') {
+X	putc('\\', f);
+X	putc('n', f);
+X    } else {
+X	putc('^', f);
+X	putc(c | '@', f);
+X    }
+X}
+X
+Xvoid sig_handle(sig)		/**/
+Xint sig;
+X{
+X#ifdef POSIX
+X
+X    struct sigaction act;
+X
+X    act.sa_handler = (SIGVEC_HANDTYPE) handler;
+X    sigemptyset(&act.sa_mask);
+X    sigaddset(&act.sa_mask, sig);
+X#ifdef SA_INTERRUPT
+X    if (interact)
+X	act.sa_flags = SA_INTERRUPT;
+X    else
+X#endif
+X	act.sa_flags = 0;
+X    sigaction(sig, &act, (struct sigaction *)NULL);
+X
+X#else
+X#ifdef SV_INTERRUPT
+X
+X    struct sigvec vec;
+X
+X    vec.sv_handler = (SIGVEC_HANDTYPE) handler;
+X    vec.sv_mask = sigmask(sig);
+X    vec.sv_flags = SV_INTERRUPT;
+X    sigvec(sig, &vec, (struct sigvec *)NULL);
+X
+X#else
+X
+X    signal(sig, handler);
+X
+X#endif
+X#endif
+X}
+X
+Xvoid sig_ignore(sig)		/**/
+Xint sig;
+X{
+X    signal(sig, SIG_IGN);
+X}
+X
+Xvoid sig_default(sig)		/**/
+Xint sig;
+X{
+X    signal(sig, SIG_DFL);
+X}
+X
+X/* enable ^C interrupts */
+X
+Xvoid intr()
+X{				/**/
+X    if (interact)
+X	sig_handle(SIGINT);
+X}
+X
+X/* disable ^C interrupts */
+X
+Xvoid nointr()
+X{				/**/
+X    if (interact)
+X	sig_ignore(SIGINT);
+X}
+X
+X/* temporary hold ^C interrupts */
+X
+Xvoid holdintr()
+X{				/**/
+X    if (interact) {
+X#ifdef SIGNAL_MASKS
+X	sig_block(sig_mask(SIGINT));
+X#else
+X	sig_ignore(SIGINT);
+X#endif
+X    }
+X}
+X
+X/* release ^C interrupts */
+X
+Xvoid noholdintr()
+X{				/**/
+X    if (interact) {
+X#ifdef SIGNAL_MASKS
+X	sig_unblock(sig_mask(SIGINT));
+X#else
+X	sig_handle(SIGINT);
+X#endif
+X    }
+X}
+X
+X/* block or unblock a signal */
+X
+Xsigset_t sig_mask(sig)		/**/
+Xint sig;
+X{
+X    sigset_t set;
+X
+X    sigemptyset(&set);
+X    if (sig)
+X	sigaddset(&set, sig);
+X    return set;
+X}
+X
+Xsigset_t sig_notmask(sig)	/**/
+Xint sig;
+X{
+X    sigset_t set;
+X
+X    sigfillset(&set);
+X    if (sig)
+X	sigdelset(&set, sig);
+X    return set;
+X}
+X
+X#if !defined(POSIX) && !defined(SIGNAL_MASKS)
+Xstatic sigset_t heldset;
+X
+X#endif
+X
+Xsigset_t sig_block(set)		/**/
+Xsigset_t set;
+X{
+X    sigset_t oset;
+X
+X#ifdef POSIX
+X    sigprocmask(SIG_BLOCK, &set, &oset);
+X#else
+X#ifdef SIGNAL_MASKS
+X    oset = sigblock(set);
+X#else
+X    int i;
+X
+X    oset = heldset;
+X    for (i = 1; i <= NSIG; ++i) {
+X	if (sigismember(&set, i) && !sigismember(&heldset, i)) {
+X	    sigaddset(&heldset, i);
+X	    sighold(i);
+X	}
+X    }
+X#endif
+X#endif
+X
+X    return oset;
+X}
+X
+Xsigset_t sig_unblock(set)	/**/
+Xsigset_t set;
+X{
+X    sigset_t oset;
+X
+X#ifdef POSIX
+X    sigprocmask(SIG_UNBLOCK, &set, &oset);
+X#else
+X#ifdef SIGNAL_MASKS
+X    sigfillset(&oset);
+X    oset = sigsetmask(oset);
+X    sigsetmask(oset & ~set);
+X#else
+X    int i;
+X
+X    oset = heldset;
+X    for (i = 1; i <= NSIG; ++i) {
+X	if (sigismember(&set, i) && sigismember(&heldset, i)) {
+X	    sigdelset(&heldset, i);
+X	    sigrelse(i);
+X	}
+X    }
+X#endif
+X#endif
+X
+X    return oset;
+X}
+X
+Xsigset_t sig_setmask(set)	/**/
+Xsigset_t set;
+X{
+X    sigset_t oset;
+X
+X#ifdef POSIX
+X    sigprocmask(SIG_SETMASK, &set, &oset);
+X#else
+X#ifdef SIGNAL_MASKS
+X    oset = sigsetmask(set);
+X#else
+X    int i;
+X
+X    oset = heldset;
+X    for (i = 1; i <= NSIG; ++i) {
+X	if (sigismember(&set, i) && !sigismember(&heldset, i)) {
+X	    sigaddset(&heldset, i);
+X	    sighold(i);
+X	} else if (!sigismember(&set, i) && sigismember(&heldset, i)) {
+X	    sigdelset(&heldset, i);
+X	    sigrelse(i);
+X	}
+X    }
+X#endif
+X#endif
+X
+X    return oset;
+X}
+X
+Xint sig_suspend(sig, sig2)		/**/
+Xint sig;
+Xint sig2;
+X{
+X    int ret;
+X
+X#ifdef POSIX
+X    sigset_t set;
+X
+X    if (sig) {
+X	set = sig_notmask(sig);
+X	sigdelset(&set, SIGHUP);
+X	sigdelset(&set, sig2);
+X    } else
+X	sigemptyset(&set);
+X    ret = sigsuspend(&set);
+X#else
+X#ifdef HAS_SIGRELSE
+X    /* Use System V version of sigpause.  */
+X    ret = sigpause(sig);
+X#else
+X    /* Use BSD version of sigpause.  */
+X    sigset_t set = sig_notmask(sig);
+X    if (sig2)
+X      sigdelset(&set, sig2);
+X    ret = sigpause(set);
+X#endif
+X#endif
+X
+X    return ret;
+X}
+X
+X/* get a symlink-free pathname for s relative to PWD */
+X
+Xchar *findpwd(s)		/**/
+Xchar *s;
+X{
+X    char *t;
+X
+X    if (*s == '/')
+X	return xsymlink(s);
+X    s = tricat((pwd[1]) ? pwd : "", "/", s);
+X    t = xsymlink(s);
+X    zsfree(s);
+X    return t;
+X}
+X
+Xstatic char xbuf[MAXPATHLEN];
+X
+Xint ispwd(s)			/**/
+Xchar *s;
+X{
+X    struct stat sbuf, tbuf;
+X
+X    if (stat(s, &sbuf) == 0 && stat(".", &tbuf) == 0)
+X	if (sbuf.st_dev == tbuf.st_dev && sbuf.st_ino == tbuf.st_ino)
+X	    return 1;
+X    return 0;
+X}
+X
+X/* expand symlinks in s, and remove other weird things */
+X
+Xchar *xsymlink(s)		/**/
+Xchar *s;
+X{
+X    if (unset(CHASELINKS))
+X	return ztrdup(s);
+X    if (*s != '/')
+X	return NULL;
+X    strcpy(xbuf, "");
+X    if (xsymlinks(s + 1, 1))
+X	return ztrdup(s);
+X    if (!*xbuf)
+X	return ztrdup("/");
+X    return ztrdup(xbuf);
+X}
+X
+Xchar **slashsplit(s)		/**/
+Xchar *s;
+X{
+X    char *t, **r, **q;
+X    int t0;
+X
+X    if (!*s)
+X	return (char **)zcalloc(sizeof(char **));
+X
+X    for (t = s, t0 = 0; *t; t++)
+X	if (*t == '/')
+X	    t0++;
+X    q = r = (char **)zalloc(sizeof(char **) * (t0 + 2));
+X
+X    while ((t = strchr(s, '/'))) {
+X	*t = '\0';
+X	*q++ = ztrdup(s);
+X	*t = '/';
+X	while (*t == '/')
+X	    t++;
+X	if (!*t) {
+X	    *q = NULL;
+X	    return r;
+X	}
+X	s = t;
+X    }
+X    *q++ = ztrdup(s);
+X    *q = NULL;
+X    return r;
+X}
+X
+X/* expands symlinks and .. or . expressions */
+X/* if flag = 0, only expand .. and . expressions */
+X
+Xint xsymlinks(s, flag)		/**/
+Xchar *s;
+Xint flag;
+X{
+X    char **pp, **opp;
+X    char xbuf2[MAXPATHLEN], xbuf3[MAXPATHLEN];
+X    int t0;
+X
+X    opp = pp = slashsplit(s);
+X    for (; *pp; pp++) {
+X	if (!strcmp(*pp, ".")) {
+X	    zsfree(*pp);
+X	    continue;
+X	}
+X	if (!strcmp(*pp, "..")) {
+X	    char *p;
+X
+X	    zsfree(*pp);
+X	    if (!strcmp(xbuf, "/"))
+X		continue;
+X	    p = xbuf + strlen(xbuf);
+X	    while (*--p != '/');
+X	    *p = '\0';
+X	    continue;
+X	}
+X	if (unset(CHASELINKS)) {
+X	    strcat(xbuf, "/");
+X	    strcat(xbuf, *pp);
+X	    zsfree(*pp);
+X	    continue;
+X	}
+X	sprintf(xbuf2, "%s/%s", xbuf, *pp);
+X	t0 = readlink(xbuf2, xbuf3, MAXPATHLEN);
+X	if (t0 == -1 || !flag) {
+X	    strcat(xbuf, "/");
+X	    strcat(xbuf, *pp);
+X	    zsfree(*pp);
+X	} else {
+X	    xbuf3[t0] = '\0';	/* STUPID */
+X	    if (*xbuf3 == '/') {
+X		strcpy(xbuf, "");
+X		if (xsymlinks(xbuf3 + 1, flag))
+X		    return 1;
+X	    } else if (xsymlinks(xbuf3, flag))
+X		return 1;
+X	    zsfree(*pp);
+X	}
+X    }
+X    free(opp);
+X    return 0;
+X}
+X
+X/* print a directory */
+X
+Xvoid fprintdir(s, f)		/**/
+Xchar *s;
+XFILE *f;
+X{
+X    int t0;
+X
+X    t0 = finddir(s);
+X    if (t0 == -1) {
+X	fputs(s, f);
+X    } else {
+X	putc('~', f);
+X	fputs(namdirs[t0].name, f);
+X	fputs(s + namdirs[t0].len, f);
+X    }
+X}
+X
+Xvoid printdir(s)		/**/
+Xchar *s;
+X{
+X    fprintdir(s, stdout);
+X}
+X
+Xvoid printdircr(s)		/**/
+Xchar *s;
+X{
+X    fprintdir(s, stdout);
+X    putchar('\n');
+X}
+X
+Xint findname(s)			/**/
+Xchar *s;
+X{
+X    int t0;
+X
+X    for (t0 = 0; t0 < userdirct; t0++)
+X	if (!strcmp(namdirs[t0].name, s))
+X	    return t0;
+X    return -1;
+X}
+X
+X/* see if a path has a named directory as its prefix */
+X
+Xint finddir(s)			/**/
+Xchar *s;
+X{
+X    int t0, slen, min, max;
+X    static int last = -1;
+X    static char previous[MAXPATHLEN] = "\0";
+X
+X    if (!s) {			/* Invalidate directory cache */
+X	*previous = '\0';
+X	return last = -1;
+X    }
+X    if (!strcmp(s, previous))
+X	return last;
+X
+X/* The named directories are sorted in increasing length of the path. For the
+X   same path length, it is sorted in DECREASING order of name length, unless
+X   HIDE_NAMES is defined, in which case the last included name comes last. */
+X
+X/* This binary search doesn't seem to make much difference but... */
+X
+X    slen = strlen(s);
+X    min = 0;
+X    max = userdirct;
+X    while ((t0 = (min + max) >> 1) != min)
+X	if (slen < namdirs[t0].len)
+X	    max = t0;
+X	else
+X	    min = t0;
+X
+X/* Binary search alone doesn't work because we want the longest match, not
+X   necessarily an exact one */
+X
+X    for (t0 = min; t0 >= 0; t0--)
+X	if (namdirs[t0].len <= slen && !dircmp(namdirs[t0].dir, s)) {
+X	    strcpy(previous, s);
+X	    return last = t0;
+X	}
+X    return -1;
+X}
+X
+X/* add a named directory */
+X
+Xvoid adduserdir(s, t, ishomedir, always)	/**/
+Xchar *s;
+Xchar *t;
+Xint ishomedir;
+Xint always;
+X{
+X    int t0 = -1, t1, t2;
+X
+X    if (!interact)
+X	return;
+X
+X    if (ishomedir) {
+X	if (!strcmp(t, "/") || (t0 = findname(s) != -1))
+X	    return;
+X    } else if (!t || *t != '/' || !strcmp(t, "/")) {
+X	if ((t0 = findname(s)) != -1) {	/* remove the name */
+X	    zsfree(namdirs[t0].name);
+X	    zsfree(namdirs[t0].dir);
+X	    for (; t0 < userdirct - 1; t0++)
+X		memcpy((vptr) & namdirs[t0], (vptr) & namdirs[t0 + 1],
+X		       sizeof *namdirs);
+X	    userdirct--;
+X	    finddir(0);
+X	}
+X	return;
+X    }
+X    if (unset(AUTONAMEDIRS) && findname(s) == -1 && always == 2)
+X	return;
+X
+X    t2 = strlen(t);
+X    if (!ishomedir && t2 < MAXPATHLEN && (t0 = findname(s)) != -1) {
+X
+X    /* update value */
+X
+X	zsfree(namdirs[t0].dir);
+X	namdirs[t0].dir = ztrdup(t);
+X	t1 = namdirs[t0].len;
+X	namdirs[t0].len = t2;
+X	if (t2 < t1)
+X	    qsort((vptr) namdirs, t0 + 1, sizeof *namdirs,
+X		  (int (*)DCLPROTO((const void *, const void *)))lencmp);
+X	else
+X	    qsort((vptr) & namdirs[t0], userdirct - t0, sizeof *namdirs,
+X		  (int (*)DCLPROTO((const void *, const void *)))lencmp);
+X
+X	finddir(0);		/* Invalidate directory cache */
+X	return;
+X    }
+X /* add the name */
+X
+X    if (userdirsz == userdirct) {
+X	userdirsz *= 2;
+X	namdirs = (Nameddirs) realloc((vptr) namdirs,
+X				      sizeof *namdirs * userdirsz);
+X	if (!namdirs)
+X	    return;
+X    }
+X    for (t0 = 0; t0 < userdirct; t0++)
+X	if (namdirs[t0].len > t2)
+X	    break;
+X    for (t1 = userdirct; t1 > t0; t1--)
+X	memcpy((vptr) & namdirs[t1], (vptr) & namdirs[t1 - 1],
+X	       sizeof *namdirs);
+X    namdirs[t0].len = t2;
+X    namdirs[t0].namelen = strlen(s);
+X    namdirs[t0].name = ztrdup(s);
+X    namdirs[t0].dir = ztrdup(t);
+X    namdirs[t0].homedir = ishomedir;
+X    userdirct++;
+X    if (t0 && namdirs[t0 - 1].len == t2)
+X	qsort((vptr) namdirs, t0 + 1, sizeof *namdirs,
+X	      (int (*)DCLPROTO((const void *, const void *)))lencmp);
+X    finddir(0);
+X}
+X
+Xint dircmp(s, t)		/**/
+Xchar *s;
+Xchar *t;
+X{
+X    if (s) {
+X	for (; *s == *t; s++, t++)
+X	    if (!*s)
+X		return 0;
+X	if (!*s && *t == '/')
+X	    return 0;
+X    }
+X    return 1;
+X}
+X
+Xint lencmp(first, sec)		/**/
+Xvptr first;
+Xvptr sec;
+X{
+X    int i;
+X
+X#ifndef HIDE_NAMES
+X    if ((i = ((Nameddirs) first)->len - ((Nameddirs) sec)->len))
+X	return i;
+X    else
+X	return			/* for paths with the same lenght put the shortest name AFTER */
+X	    ((Nameddirs) sec)->namelen - ((Nameddirs) first)->namelen;
+X#else
+X    return ((Nameddirs) first)->len - ((Nameddirs) sec)->len;
+X#endif
+X}
+X
+Xint ddifftime(t1, t2)		/**/
+Xtime_t t1;
+Xtime_t t2;
+X{
+X    return ((long)t2 - (long)t1);
+X}
+X
+X/* see if jobs need printing */
+X
+Xvoid scanjobs()
+X{				/**/
+X    int t0;
+X
+X    for (t0 = 1; t0 != MAXJOB; t0++)
+X	if (jobtab[t0].stat & STAT_CHANGED)
+X	    printjob(jobtab + t0, 0);
+X}
+X
+X/* do pre-prompt stuff */
+X
+Xvoid preprompt()
+X{				/**/
+X    int diff;
+X    List list;
+X    struct schedcmd *sch, *schl;
+X
+X    if (unset(NOTIFY))
+X	scanjobs();
+X    if (errflag)
+X	return;
+X    if ((list = getshfunc("precmd")))
+X	doshfuncnoval(list, NULL, 0);
+X    if (errflag)
+X	return;
+X    if (period && (time(NULL) > lastperiod + period) &&
+X	(list = getshfunc("periodic"))) {
+X	doshfuncnoval(list, NULL, 0);
+X	lastperiod = time(NULL);
+X    }
+X    if (errflag)
+X	return;
+X    if (watch) {
+X	diff = (int)ddifftime(lastwatch, time(NULL));
+X	if (diff > logcheck) {
+X	    dowatch();
+X	    lastwatch = time(NULL);
+X	}
+X    }
+X    if (errflag)
+X	return;
+X    diff = (int)ddifftime(lastmailcheck, time(NULL));
+X    if (diff > mailcheck) {
+X	if (mailpath && *mailpath && **mailpath)
+X	    checkmailpath(mailpath);
+X	else if (mailfile && *mailfile) {
+X	    char *x[2];
+X
+X	    x[0] = mailfile;
+X	    x[1] = NULL;
+X	    checkmailpath(x);
+X	}
+X	lastmailcheck = time(NULL);
+X    }
+X    for (schl = (struct schedcmd *)&schedcmds, sch = schedcmds; sch;
+X	 sch = (schl = sch)->next) {
+X	if (sch->time < time(NULL)) {
+X	    execstring(sch->cmd);
+X	    schl->next = sch->next;
+X	    zsfree(sch->cmd);
+X	    zfree(sch, sizeof(struct schedcmd));
+X
+X	    sch = schl;
+X	}
+X	if (errflag)
+X	    return;
+X    }
+X}
+X
+Xint arrlen(s)			/**/
+Xchar **s;
+X{
+X    int t0;
+X
+X    for (t0 = 0; *s; s++, t0++);
+X    return t0;
+X}
+X
+Xvoid checkmailpath(s)		/**/
+Xchar **s;
+X{
+X    struct stat st;
+X    char *v, *u, c;
+X
+X    while (*s) {
+X	for (v = *s; *v && *v != '?'; v++);
+X	c = *v;
+X	*v = '\0';
+X	if (c != '?')
+X	    u = NULL;
+X	else
+X	    u = v + 1;
+X	if (**s == 0) {
+X	    *v = c;
+X	    zerr("empty MAILPATH component: %s", *s, 0);
+X	} else if (stat(*s, &st) == -1) {
+X	    if (errno != ENOENT)
+X		zerr("%e: %s", *s, errno);
+X	} else if (S_ISDIR(st.st_mode)) {
+X	    Lklist l;
+X	    DIR *lock = opendir(*s);
+X	    char buf[MAXPATHLEN * 2], **arr, **ap;
+X	    struct dirent *de;
+X	    int ct = 1;
+X
+X	    if (lock) {
+X		pushheap();
+X		heapalloc();
+X		l = newlist();
+X		readdir(lock);
+X		readdir(lock);
+X		while ((de = readdir(lock))) {
+X		    if (errflag)
+X			break;
+X		    if (u)
+X			sprintf(buf, "%s/%s?%s", *s, de->d_name, u);
+X		    else
+X			sprintf(buf, "%s/%s", *s, de->d_name);
+X		    addnode(l, dupstring(buf));
+X		    ct++;
+X		}
+X		closedir(lock);
+X		ap = arr = (char **)alloc(ct * sizeof(char *));
+X
+X		while ((*ap++ = (char *)ugetnode(l)));
+X		checkmailpath(arr);
+X		popheap();
+X	    }
+X	} else {
+X	    if (st.st_size && st.st_atime <= st.st_mtime &&
+X		st.st_mtime > lastmailcheck)
+X		if (!u) {
+X		    fprintf(stderr, "You have new mail.\n");
+X		    fflush(stderr);
+X		} else {
+X		    char *z = u;
+X
+X		    while (*z)
+X			if (*z == '$' && z[1] == '_') {
+X			    fprintf(stderr, "%s", *s);
+X			    z += 2;
+X			} else
+X			    fputc(*z++, stderr);
+X		    fputc('\n', stderr);
+X		    fflush(stderr);
+X		}
+X	    if (isset(MAILWARNING) && st.st_atime > st.st_mtime &&
+X		st.st_atime > lastmailcheck && st.st_size) {
+X		fprintf(stderr, "The mail in %s has been read.\n", *s);
+X		fflush(stderr);
+X	    }
+X	}
+X	*v = c;
+X	s++;
+X    }
+X}
+X
+Xvoid saveoldfuncs(x, y)		/**/
+Xchar *x;
+XCmdnam y;
+X{
+X    Cmdnam cc;
+X
+X    if (y->flags & (SHFUNC | DISABLED)) {
+X	cc = (Cmdnam) zcalloc(sizeof *cc);
+X	*cc = *y;
+X	y->u.list = NULL;
+X	addhnode(ztrdup(x), cc, cmdnamtab, freecmdnam);
+X    }
+X}
+X
+X/* create command hashtable */
+X
+Xvoid newcmdnamtab()
+X{				/**/
+X    Hashtab oldcnt;
+X
+X    oldcnt = cmdnamtab;
+X    permalloc();
+X    cmdnamtab = newhtable(101);
+X    addbuiltins();
+X    if (oldcnt) {
+X	listhtable(oldcnt, (HFunc) saveoldfuncs);
+X	freehtab(oldcnt, freecmdnam);
+X    }
+X    lastalloc();
+X    pathchecked = path;
+X}
+X
+Xvoid freecmdnam(a)		/**/
+Xvptr a;
+X{
+X    struct cmdnam *c = (struct cmdnam *)a;
+X
+X    if (c->flags & SHFUNC) {
+X	if (c->u.list)
+X	    freestruct(c->u.list);
+X    } else if ((c->flags & HASHCMD) == HASHCMD)
+X	zsfree(c->u.cmd);
+X
+X    zfree(c, sizeof(struct cmdnam));
+X}
+X
+Xvoid freecompcond(a)		/**/
+Xvptr a;
+X{
+X    Compcond cc = (Compcond) a;
+X    Compcond and, or, c;
+X    int n;
+X
+X    for (c = cc; c; c = or) {
+X	or = c->or;
+X	for (; c; c = and) {
+X	    and = c->and;
+X	    if (c->type == CCT_POS ||
+X		c->type == CCT_NUMWORDS) {
+X		free(c->u.r.a);
+X		free(c->u.r.b);
+X	    } else if (c->type == CCT_CURSUF ||
+X		       c->type == CCT_CURPRE) {
+X		for (n = 0; n < c->n; n++)
+X		    if (c->u.s.s[n])
+X			zsfree(c->u.s.s[n]);
+X		free(c->u.s.s);
+X	    } else if (c->type == CCT_RANGESTR ||
+X		       c->type == CCT_RANGEPAT) {
+X		for (n = 0; n < c->n; n++)
+X		    if (c->u.l.a[n])
+X			zsfree(c->u.l.a[n]);
+X		free(c->u.l.a);
+X		for (n = 0; n < c->n; n++)
+X		    if (c->u.l.b[n])
+X			zsfree(c->u.l.b[n]);
+X		free(c->u.l.b);
+X	    } else {
+X		for (n = 0; n < c->n; n++)
+X		    if (c->u.s.s[n])
+X			zsfree(c->u.s.s[n]);
+X		free(c->u.s.p);
+X		free(c->u.s.s);
+X	    }
+X	    zfree(c, sizeof(struct compcond));
+X	}
+X    }
+X}
+X
+Xvoid freecompctl(a)		/**/
+Xvptr a;
+X{
+X    Compctl cc = (Compctl) a;
+X
+X    if (cc == &cc_default ||
+X	cc == &cc_compos ||
+X	--cc->refc > 0)
+X	return;
+X
+X    zsfree(cc->keyvar);
+X    zsfree(cc->glob);
+X    zsfree(cc->str);
+X    zsfree(cc->func);
+X    zsfree(cc->explain);
+X    zsfree(cc->prefix);
+X    zsfree(cc->suffix);
+X    zsfree(cc->hpat);
+X    zsfree(cc->subcmd);
+X    if (cc->cond)
+X	freecompcond(cc->cond);
+X    if (cc->ext) {
+X	Compctl n, m;
+X
+X	n = cc->ext;
+X	do {
+X	    m = (Compctl) (n->next);
+X	    freecompctl(n);
+X	    n = m;
+X	}
+X	while (n);
+X    }
+X    if (cc->xor && cc->xor != &cc_default)
+X	freecompctl(cc->xor);
+X    zfree(cc, sizeof(struct compctl));
+X}
+X
+Xvoid freecompctlp(a)		/**/
+Xvptr a;
+X{
+X    Compctlp ccp = (Compctlp) a;
+X
+X    freecompctl(ccp->cc);
+X}
+X
+Xvoid freestr(a)			/**/
+Xvptr a;
+X{
+X    zsfree(a);
+X}
+X
+Xvoid freeanode(a)		/**/
+Xvptr a;
+X{
+X    struct alias *c = (struct alias *)a;
+X
+X    zsfree(c->text);
+X    zfree(c, sizeof(struct alias));
+X}
+X
+Xvoid freepm(a)			/**/
+Xvptr a;
+X{
+X    struct param *pm = (Param) a;
+X
+X    zfree(pm, sizeof(struct param));
+X}
+X
+Xvoid gettyinfo(ti)		/**/
+Xstruct ttyinfo *ti;
+X{
+X    if (SHTTY != -1) {
+X#ifdef HAS_TERMIOS
+X#ifdef HAS_TCCRAP
+X	if (tcgetattr(SHTTY, &ti->tio) == -1)
+X#else
+X	if (ioctl(SHTTY, TCGETS, &ti->tio) == -1)
+X#endif
+X	    zerr("bad tcgets: %e", NULL, errno);
+X#else
+X#ifdef HAS_TERMIO
+X	ioctl(SHTTY, TCGETA, &ti->tio);
+X#else
+X	ioctl(SHTTY, TIOCGETP, &ti->sgttyb);
+X	ioctl(SHTTY, TIOCLGET, &ti->lmodes);
+X	ioctl(SHTTY, TIOCGETC, &ti->tchars);
+X	ioctl(SHTTY, TIOCGLTC, &ti->ltchars);
+X#endif
+X#endif
+X#ifdef TIOCGWINSZ
+X/*	if (ioctl(SHTTY, TIOCGWINSZ, &ti->winsize) == -1)
+X	    	zerr("bad tiocgwinsz: %e",NULL,errno);*/
+X	ioctl(SHTTY, TIOCGWINSZ, (char *)&ti->winsize);
+X#endif
+X    }
+X}
+X
+Xvoid settyinfo(ti)		/**/
+Xstruct ttyinfo *ti;
+X{
+X    if (SHTTY != -1) {
+X#ifdef HAS_TERMIOS
+X#ifdef HAS_TCCRAP
+X#ifndef TCSADRAIN
+X#define TCSADRAIN 1		/* XXX Princeton's include files are screwed up */
+X#endif
+X	tcsetattr(SHTTY, TCSADRAIN, &ti->tio);
+X    /* if (tcsetattr(SHTTY, TCSADRAIN, &ti->tio) == -1) */
+X#else
+X	ioctl(SHTTY, TCSETS, &ti->tio);
+X    /* if (ioctl(SHTTY, TCSETS, &ti->tio) == -1) */
+X#endif
+X	/*	zerr("settyinfo: %e",NULL,errno)*/ ;
+X#else
+X#ifdef HAS_TERMIO
+X	ioctl(SHTTY, TCSETA, &ti->tio);
+X#else
+X	ioctl(SHTTY, TIOCSETN, &ti->sgttyb);
+X	ioctl(SHTTY, TIOCLSET, &ti->lmodes);
+X	ioctl(SHTTY, TIOCSETC, &ti->tchars);
+X	ioctl(SHTTY, TIOCSLTC, &ti->ltchars);
+X#endif
+X#endif
+X    }
+X}
+X
+X#ifdef TIOCGWINSZ
+Xextern winchanged;
+X
+Xvoid adjustwinsize()
+X{				/**/
+X    int oldcols = columns, oldrows = lines;
+X
+X    if (SHTTY == -1)
+X	return;
+X
+X    ioctl(SHTTY, TIOCGWINSZ, (char *)&shttyinfo.winsize);
+X    if (shttyinfo.winsize.ws_col)
+X	columns = shttyinfo.winsize.ws_col;
+X    if (shttyinfo.winsize.ws_row)
+X	lines = shttyinfo.winsize.ws_row;
+X    if (oldcols != columns) {
+X	if (zleactive) {
+X	    resetneeded = winchanged = 1;
+X	    refresh();
+X	}
+X	setintenv("COLUMNS", columns);
+X    }
+X    if (oldrows != lines)
+X	setintenv("LINES", lines);
+X}
+X#endif
+X
+Xint zyztem(s, t)		/**/
+Xchar *s;
+Xchar *t;
+X{
+X    int cj = thisjob;
+X
+X    s = tricat(s, " ", t);
+X    execstring(s);		/* Depends on recursion condom in execute() */
+X    zsfree(s);
+X    thisjob = cj;
+X    return lastval;
+X}
+X
+X/* move a fd to a place >= 10 */
+X
+Xint movefd(fd)			/**/
+Xint fd;
+X{
+X    int fe;
+X
+X    if (fd == -1)
+X	return fd;
+X#ifdef F_DUPFD
+X    fe = fcntl(fd, F_DUPFD, 10);
+X#else
+X    if ((fe = dup(fd)) < 10)
+X	fe = movefd(fe);
+X#endif
+X    close(fd);
+X    return fe;
+X}
+X
+X/* move fd x to y */
+X
+Xvoid redup(x, y)		/**/
+Xint x;
+Xint y;
+X{
+X    if (x != y) {
+X	dup2(x, y);
+X	close(x);
+X    }
+X}
+X
+Xvoid settrap(t0, l)		/**/
+Xint t0;
+XList l;
+X{
+X    Cmd c;
+X
+X    if (l) {
+X	c = l->left->left->left;
+X	if (c->type == SIMPLE && empty(c->args) && empty(c->redir)
+X	    && empty(c->vars) && !c->flags)
+X	    l = NULL;
+X    }
+X    if (t0 == -1)
+X	return;
+X    if (jobbing && (t0 == SIGTTOU || t0 == SIGTSTP || t0 == SIGTTIN
+X		    || t0 == SIGPIPE)) {
+X	zerr("can't trap SIG%s in interactive shells", sigs[t0], 0);
+X	return;
+X    }
+X    if (sigfuncs[t0])
+X	freestruct(sigfuncs[t0]);
+X    if (!l) {
+X	sigtrapped[t0] = 2;
+X	sigfuncs[t0] = NULL;
+X	if (t0 && t0 <= SIGCOUNT &&
+X#ifdef SIGWINCH
+X	    t0 != SIGWINCH &&
+X#endif
+X	    t0 != SIGCHLD)
+X	    sig_ignore(t0);
+X    } else {
+X	if (t0 && t0 <= SIGCOUNT &&
+X#ifdef SIGWINCH
+X	    t0 != SIGWINCH &&
+X#endif
+X	    t0 != SIGCHLD)
+X	    sig_handle(t0);
+X	sigtrapped[t0] = 1;
+X	permalloc();
+X	sigfuncs[t0] = (List) dupstruct(l);
+X	heapalloc();
+X    }
+X}
+X
+Xvoid unsettrap(t0)		/**/
+Xint t0;
+X{
+X    if (t0 == -1)
+X	return;
+X    if (jobbing && (t0 == SIGTTOU || t0 == SIGTSTP || t0 == SIGTTIN
+X		    || t0 == SIGPIPE)) {
+X	return;
+X    }
+X    sigtrapped[t0] = 0;
+X    if (t0 == SIGINT)
+X	intr();
+X    else if (t0 == SIGHUP)
+X	sig_handle(t0);
+X    else if (t0 && t0 <= SIGCOUNT &&
+X#ifdef SIGWINCH
+X	     t0 != SIGWINCH &&
+X#endif
+X	     t0 != SIGCHLD)
+X	sig_default(t0);
+X    if (sigfuncs[t0]) {
+X	freestruct(sigfuncs[t0]);
+X	sigfuncs[t0] = NULL;
+X    }
+X}
+X
+Xvoid dotrap(sig)		/**/
+Xint sig;
+X{
+X    int sav, savval;
+X
+X    sav = sigtrapped[sig];
+X    savval = lastval;
+X    if (sav == 2)
+X	return;
+X    sigtrapped[sig] = 2;
+X    if (sigfuncs[sig]) {
+X	Lklist args;
+X	char *name, num[4];
+X
+X	lexsave();
+X	permalloc();
+X	args = newlist();
+X	name = (char *)zalloc(5 + strlen(sigs[sig]));
+X	sprintf(name, "TRAP%s", sigs[sig]);
+X	addnode(args, name);
+X	sprintf(num, "%d", sig);
+X	addnode(args, num);
+X	trapreturn = -1;
+X	doshfuncnoval(sigfuncs[sig], args, 0);
+X	lexrestore();
+X	freetable(args, (FFunc) NULL);
+X	zsfree(name);
+X	if (trapreturn > 0) {
+X	    breaks = loops;
+X	    errflag = 1;
+X	} else
+X	    trapreturn = 0;
+X    }
+X    if (sigtrapped[sig])
+X	sigtrapped[sig] = sav;
+X    lastval = savval;
+X}
+X
+X/* copy len chars from t into s, and null terminate */
+X
+Xvoid ztrncpy(s, t, len)		/**/
+Xchar *s;
+Xchar *t;
+Xint len;
+X{
+X    while (len--)
+X	*s++ = *t++;
+X    *s = '\0';
+X}
+X
+X/* copy t into *s and update s */
+X
+Xvoid strucpy(s, t)		/**/
+Xchar **s;
+Xchar *t;
+X{
+X    char *u = *s;
+X
+X    while ((*u++ = *t++));
+X    *s = u - 1;
+X}
+X
+Xvoid struncpy(s, t, n)		/**/
+Xchar **s;
+Xchar *t;
+Xint n;
+X{
+X    char *u = *s;
+X
+X    while (n--)
+X	*u++ = *t++;
+X    *s = u;
+X    *u = '\0';
+X}
+X
+Xint checkrmall(s)		/**/
+Xchar *s;
+X{
+X    fflush(stdin);
+X    if (*s == '/')
+X	fprintf(stderr, "zsh: sure you want to delete all the files in %s? ", s);
+X    else
+X	fprintf(stderr, "zsh: sure you want to delete all the files in %s/%s? ",
+X		(pwd[1]) ? pwd : "", s);
+X    fflush(stderr);
+X    feep();
+X    return (getquery() == 'y');
+X}
+X
+Xint getquery()
+X{				/**/
+X    char c, d;
+X    int val, isem = !strcmp(term, "emacs");
+X
+X    attachtty(mypgrp);
+X    if (!isem)
+X	setcbreak();
+X#ifdef FIONREAD
+X    ioctl(SHTTY, FIONREAD, (char *)&val);
+X    if (val) {
+X	if (!isem)
+X	    settyinfo(&shttyinfo);
+X	write(2, "n\n", 2);
+X	return 'n';
+X    }
+X#endif
+X    if (read(SHTTY, &c, 1) == 1)
+X	if (c == 'y' || c == 'Y' || c == '\t')
+X	    c = 'y';
+X    if (isem) {
+X	if (c != '\n')
+X	    while (read(SHTTY, &d, 1) == 1 && d != '\n');
+X    } else {
+X	settyinfo(&shttyinfo);
+X	if (c != '\n')
+X	    write(2, "\n", 1);
+X    }
+X    return (int)c;
+X}
+X
+Xstatic int d;
+Xstatic char *guess, *best;
+X
+Xvoid spscan(s, junk)		/**/
+Xchar *s;
+Xchar *junk;
+X{
+X    int nd;
+X
+X    nd = spdist(s, guess, (int)strlen(guess) / 4 + 1);
+X    if (nd <= d) {
+X	best = s;
+X	d = nd;
+X    }
+X}
+X
+X/* spellcheck a word */
+X/* fix s and s2 ; if s2 is non-null, fix the history list too */
+X
+Xvoid spckword(s, s2, tptr, cmd, ask)	/**/
+Xchar **s;
+Xchar **s2;
+Xchar **tptr;
+Xint cmd;
+Xint ask;
+X{
+X    char *t, *u;
+X    char firstchar;
+X    int x;
+X    int pram = 0;
+X
+X    if (**s == '-' || **s == '%')
+X	return;
+X    if (!strcmp(*s, "in"))
+X	return;
+X    if (!(*s)[0] || !(*s)[1])
+X	return;
+X    if (gethnode(*s, cmdnamtab) || gethnode(*s, aliastab))
+X	return;
+X    else if (isset(HASHLISTALL)) {
+X	fullhash();
+X	if (gethnode(*s, cmdnamtab))
+X	    return;
+X    }
+X    t = *s;
+X    if (*t == Tilde || *t == Equals || *t == String)
+X	t++;
+X    for (; *t; t++)
+X	if (itok(*t))
+X	    return;
+X    best = NULL;
+X    for (t = *s; *t; t++)
+X	if (*t == '/')
+X	    break;
+X    if (**s == String) {
+X	if (*t)
+X	    return;
+X	pram = 1;
+X	guess = *s + 1;
+X	while (*guess == '+' || *guess == '^' ||
+X	       *guess == '#' || *guess == '~' ||
+X	       *guess == '=')
+X	    guess++;
+X	d = 100;
+X	listhtable(paramtab, spscan);
+X    } else {
+X	if ((u = spname(guess = *s)) != *s)
+X	    best = u;
+X	if (!*t && !cmd) {
+X	    if (access(*s, F_OK) == 0)
+X		return;
+X	    if (hashcmd(*s, pathchecked))
+X		return;
+X	    guess = *s;
+X	    d = 100;
+X	    listhtable(aliastab, spscan);
+X	    listhtable(cmdnamtab, spscan);
+X	}
+X    }
+X    if (errflag)
+X	return;
+X    if (best && (int)strlen(best) > 1 && strcmp(best, guess)) {
+X	if (ask) {
+X	    char *pp;
+X	    int junk;
+X
+X	    rstring = best;
+X	    Rstring = guess;
+X	    firstchar = *guess;
+X	    if (*guess == Tilde)
+X		*guess = '~';
+X	    else if (*guess == String)
+X		*guess = '$';
+X	    else if (*guess == Equals)
+X		*guess = '=';
+X	    pp = putprompt(sprompt, &junk, 1);
+X	    *guess = firstchar;
+X	    fprintf(stderr, "%s", pp);
+X	    fflush(stderr);
+X	    feep();
+X	    x = getquery();
+X	} else
+X	    x = 'y';
+X	if (x == 'y' || x == ' ') {
+X	    if (!pram) {
+X		*s = dupstring(best);
+X	    } else {
+X		*s = (char *)alloc(strlen(best) + 2);
+X		strcpy(*s + 1, best);
+X		**s = String;
+X	    }
+X	    if (s2) {
+X		if (*tptr && !strcmp(hlastw, *s2) && hlastw < hptr) {
+X		    char *z;
+X
+X		    hptr = hlastw;
+X		    if (pram)
+X			hwaddc('$');
+X		    for (z = best; *z; z++)
+X			hwaddc(*z);
+X		    hwaddc(HISTSPACE);
+X		    *tptr = hptr - 1;
+X		    **tptr = '\0';
+X		}
+X		*s2 = dupstring(best);
+X	    }
+X	} else if (x == 'a') {
+X	    histdone |= HISTFLAG_NOEXEC;
+X	} else if (x == 'e') {
+X	    histdone |= HISTFLAG_NOEXEC | HISTFLAG_RECALL;
+X	}
+X    }
+X}
+X
+Xint ztrftime(buf, bufsize, fmt, tm)	/**/
+Xchar *buf;
+Xint bufsize;
+Xchar *fmt;
+Xstruct tm *tm;
+X{
+X    static char *astr[] =
+X    {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+X    static char *estr[] =
+X    {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
+X     "Aug", "Sep", "Oct", "Nov", "Dec"};
+X    static char *lstr[] =
+X    {"12", " 1", " 2", " 3", " 4", " 5", " 6", " 7", " 8", " 9",
+X     "10", "11"};
+X    char tmp[3];
+X
+X#ifdef HAS_STRFTIME
+X    char *origbuf = buf;
+X
+X#endif
+X
+X    tmp[0] = '%';
+X    tmp[2] = '\0';
+X    while (*fmt)
+X	if (*fmt == '%') {
+X	    fmt++;
+X	    switch (*fmt++) {
+X	    case 'a':
+X		strucpy(&buf, astr[tm->tm_wday]);
+X		break;
+X	    case 'b':
+X		strucpy(&buf, estr[tm->tm_mon]);
+X		break;
+X	    case 'd':
+X		*buf++ = '0' + tm->tm_mday / 10;
+X		*buf++ = '0' + tm->tm_mday % 10;
+X		break;
+X	    case 'e':
+X		if (tm->tm_mday > 9)
+X		    *buf++ = '0' + tm->tm_mday / 10;
+X		*buf++ = '0' + tm->tm_mday % 10;
+X		break;
+X	    case 'k':
+X		if (tm->tm_hour > 9)
+X		    *buf++ = '0' + tm->tm_hour / 10;
+X		*buf++ = '0' + tm->tm_hour % 10;
+X		break;
+X	    case 'l':
+X		strucpy(&buf, lstr[tm->tm_hour % 12]);
+X		break;
+X	    case 'm':
+X		*buf++ = '0' + (tm->tm_mon + 1) / 10;
+X		*buf++ = '0' + (tm->tm_mon + 1) % 10;
+X		break;
+X	    case 'M':
+X		*buf++ = '0' + tm->tm_min / 10;
+X		*buf++ = '0' + tm->tm_min % 10;
+X		break;
+X	    case 'p':
+X		*buf++ = (tm->tm_hour > 11) ? 'p' : 'a';
+X		*buf++ = 'm';
+X		break;
+X	    case 'S':
+X		*buf++ = '0' + tm->tm_sec / 10;
+X		*buf++ = '0' + tm->tm_sec % 10;
+X		break;
+X	    case 'y':
+X		*buf++ = '0' + tm->tm_year / 10;
+X		*buf++ = '0' + tm->tm_year % 10;
+X		break;
+X	    default:
+X#ifdef HAS_STRFTIME
+X		*buf = '\0';
+X		tmp[1] = fmt[-1];
+X		strftime(buf, bufsize - strlen(origbuf), tmp, tm);
+X		buf += strlen(buf);
+X#else
+X		*buf++ = '%';
+X		*buf++ = fmt[-1];
+X#endif
+X		break;
+X	    }
+X	} else
+X	    *buf++ = *fmt++;
+X    *buf = '\0';
+X    return 0;
+X}
+X
+Xchar *join(arr, delim)		/**/
+Xchar **arr;
+Xint delim;
+X{
+X    int len = 0;
+X    char **s, *ret, *ptr;
+X    static char *lastmem = NULL;
+X
+X    for (s = arr; *s; s++)
+X	len += strlen(*s) + 1;
+X    if (!len)
+X	return "";
+X    zsfree(lastmem);
+X    lastmem = ptr = ret = (char *)zalloc(len);
+X    for (s = arr; *s; s++) {
+X	strucpy(&ptr, *s);
+X	*ptr++ = delim;
+X    }
+X    ptr[-1] = '\0';
+X    return ret;
+X}
+X
+Xchar *spacejoin(s)		/**/
+Xchar **s;
+X{
+X    return join(s, *ifs);
+X}
+X
+Xchar **colonsplit(s)		/**/
+Xchar *s;
+X{
+X    int ct;
+X    char *t, **ret, **ptr;
+X
+X    for (t = s, ct = 0; *t; t++)
+X	if (*t == ':')
+X	    ct++;
+X    ptr = ret = (char **)zalloc(sizeof(char **) * (ct + 2));
+X
+X    t = s;
+X    do {
+X	for (s = t; *t && *t != ':'; t++);
+X	*ptr = (char *)zalloc((t - s) + 1);
+X	ztrncpy(*ptr++, s, t - s);
+X    }
+X    while (*t++);
+X    *ptr = NULL;
+X    return ret;
+X}
+X
+Xchar **spacesplit(s)		/**/
+Xchar *s;
+X{
+X    int ct;
+X    char *t, **ret, **ptr;
+X
+X    for (t = s, ct = 0; *t; t++)
+X	if (isep(*t))
+X	    ct++;
+X    ptr = ret = (char **)zalloc(sizeof(char **) * (ct + 2));
+X
+X    t = s;
+X    do {
+X	for (s = t; *t && !isep(*t); t++);
+X	*ptr = (char *)zalloc((t - s) + 1);
+X	ztrncpy(*ptr++, s, t - s);
+X    }
+X    while (*t++);
+X    *ptr = NULL;
+X    return ret;
+X}
+X
+Xint findsep(s, sep)		/**/
+Xchar **s;
+Xchar *sep;
+X{
+X    int i;
+X    char *t, *tt;
+X
+X    if (!sep) {
+X	for (t = *s, i = 1; i && *t;) {
+X	    for (tt = ifs, i = 1; i && *tt; tt++)
+X		if (*tt == *t)
+X		    i = 0;
+X	    if (i)
+X		t++;
+X	}
+X	i = t - *s;
+X	*s = t;
+X	return i;
+X    }
+X    if (!sep[0]) {
+X	i = strlen(*s);
+X	*s += i;
+X	return i;
+X    }
+X    for (i = 0; **s; (*s)++, i++) {
+X	for (t = sep, tt = *s; *t && *tt && *t == *tt; t++, tt++);
+X	if (!*t)
+X	    return i;
+X    }
+X    return -1;
+X}
+X
+Xchar *findword(s, sep)		/**/
+Xchar **s;
+Xchar *sep;
+X{
+X    char *r, *t, *tt;
+X    int f, sl;
+X
+X    if (!**s)
+X	return NULL;
+X
+X    if (sep) {
+X	sl = strlen(sep);
+X	r = *s;
+X	while (!(f = findsep(s, sep))) {
+X	    r = *s += sl;
+X	}
+X	return r;
+X    }
+X    for (t = *s, f = 1; f && *t;) {
+X	for (tt = ifs, f = 0; !f && *tt; tt++)
+X	    if (*tt == *t)
+X		f = 1;
+X	if (f)
+X	    t++;
+X    }
+X    *s = t;
+X    findsep(s, sep);
+X    return t;
+X}
+X
+Xint wordcount(s, sep, mul)	/**/
+Xchar *s;
+Xchar *sep;
+Xint mul;
+X{
+X    int r = 1, sl, c, cc;
+X    char *t = s, *ti;
+X
+X    if (sep) {
+X	sl = strlen(sep);
+X	for (; (c = findsep(&t, sep)) >= 0; t += sl)
+X	    if ((c && *(t + sl)) || mul)
+X		r++;
+X    } else {
+X	if (!mul)
+X	    for (c = 1; c && *t;) {
+X		for (c = 0, ti = ifs; !c && *ti; ti++)
+X		    if (*ti == *t)
+X			c = 1;
+X		if (c)
+X		    t++;
+X	    }
+X	if (!*t)
+X	    return 0;
+X	for (; *t; t++) {
+X	    for (c = 0, ti = ifs; !c && *ti; ti++)
+X		if (*ti == *t)
+X		    c = 1;
+X	    if (c && !mul) {
+X		for (cc = 1, t++; cc && *t;) {
+X		    for (cc = 0, ti = ifs; !cc && *ti; ti++)
+X			if (*ti == *t)
+X			    cc = 1;
+X		    if (cc)
+X			t++;
+X		}
+X		if (*t)
+X		    r++;
+X	    } else if (c)
+X		r++;
+X	}
+X    }
+X    return r;
+X}
+X
+Xchar *sepjoin(s, sep)		/**/
+Xchar **s;
+Xchar *sep;
+X{
+X    char *r, *p, **t;
+X    int l, sl, elide = 0;
+X    static char *lastmem = NULL;
+X    char sepbuf[2];
+X
+X    if (!*s)
+X	return "";
+X    if (!sep) {
+X	elide = 1;
+X	sep = sepbuf;
+X	sepbuf[0] = *ifs;
+X	sepbuf[1] = '\0';
+X    }
+X    sl = strlen(sep);
+X    for (t = s, l = 1 - sl; *t; l += strlen(*t) + sl, t++);
+X    if (l == 1)
+X	return "";
+X    zsfree(lastmem);
+X    lastmem = r = p = (char *)zalloc(l);
+X    t = s;
+X    if (elide)
+X	while (*t && !**t)
+X	    t++;
+X    for (; *t; t++) {
+X	strucpy(&p, *t);
+X	if (t[1] && (!elide || t[1][0]))
+X	    strucpy(&p, sep);
+X    }
+X    return r;
+X}
+X
+Xchar **sepsplit(s, sep)		/**/
+Xchar *s;
+Xchar *sep;
+X{
+X    int n, sl, f;
+X    char *t, *tt, **r, **p;
+X
+X    if (!sep)
+X	return spacesplit(s);
+X
+X    sl = strlen(sep);
+X    n = wordcount(s, sep, 1);
+X    r = p = (char **)zalloc((n + 1) * sizeof(char *));
+X
+X    for (t = s; n--;) {
+X	tt = t;
+X	f = findsep(&t, sep);	/* f set not but not used? ++jhi; */
+X	*p = (char *)zalloc(t - tt + 1);
+X	strncpy(*p, tt, t - tt);
+X	(*p)[t - tt] = '\0';
+X	p++;
+X	t += sl;
+X    }
+X    *p = NULL;
+X
+X    return r;
+X}
+X
+XList getshfunc(nam)		/**/
+Xchar *nam;
+X{
+X    Cmdnam x = (Cmdnam) gethnode(nam, cmdnamtab);
+X
+X    if (x && (x->flags & SHFUNC)) {
+X	if (x->flags & PMFLAG_u) {
+X	    List l;
+X
+X	    if (!(l = getfpfunc(nam))) {
+X		zerr("function not found: %s", nam, 0);
+X		return NULL;
+X	    }
+X	    x->flags &= ~PMFLAG_u;
+X	    permalloc();
+X	    x->u.list = (List) dupstruct(l);
+X	    lastalloc();
+X	}
+X	return x->u.list;
+X    }
+X    return NULL;
+X}
+X
+X/* allocate a tree element */
+X
+Xstatic int sizetab[N_COUNT] =
+X{
+X    sizeof(struct list),
+X    sizeof(struct sublist),
+X    sizeof(struct pline),
+X    sizeof(struct cmd),
+X    sizeof(struct redir),
+X    sizeof(struct cond),
+X    sizeof(struct forcmd),
+X    sizeof(struct casecmd),
+X    sizeof(struct ifcmd),
+X    sizeof(struct whilecmd),
+X    sizeof(struct varasg)};
+X
+Xstatic int flagtab[N_COUNT] =
+X{
+X    NT_SET(N_LIST, 1, NT_NODE, NT_NODE, 0, 0),
+X    NT_SET(N_SUBLIST, 2, NT_NODE, NT_NODE, 0, 0),
+X    NT_SET(N_PLINE, 1, NT_NODE, NT_NODE, 0, 0),
+X    NT_SET(N_CMD, 2, NT_STR | NT_LIST, NT_NODE, NT_NODE | NT_LIST, NT_NODE | NT_LIST),
+X    NT_SET(N_REDIR, 3, NT_STR, 0, 0, 0),
+X    NT_SET(N_COND, 1, NT_NODE, NT_NODE, 0, 0),
+X    NT_SET(N_FOR, 1, NT_STR, NT_NODE, 0, 0),
+X    NT_SET(N_CASE, 0, NT_STR | NT_ARR, NT_NODE | NT_ARR, 0, 0),
+X    NT_SET(N_IF, 0, NT_NODE | NT_ARR, NT_NODE | NT_ARR, 0, 0),
+X    NT_SET(N_WHILE, 1, NT_NODE, NT_NODE, 0, 0),
+X    NT_SET(N_VARASG, 1, NT_STR, NT_STR, NT_STR | NT_LIST, 0)};
+X
+Xvptr allocnode(type)		/**/
+Xint type;
+X{
+X    struct node *n = (struct node *)alloc(sizetab[type]);
+X
+X    memset((char *)n, 0, sizetab[type]);
+X    n->type = flagtab[type];
+X    if (useheap)
+X	n->type |= NT_HEAP;
+X
+X    return (vptr) n;
+X}
+X
+Xvptr dupstruct(a)		/**/
+Xvptr a;
+X{
+X    struct node *n = (struct node *)a, *r;
+X
+X    if (!a || ((List) a) == &dummy_list)
+X	return (vptr) a;
+X
+X    if ((n->type & NT_HEAP) && !useheap) {
+X	heapalloc();
+X	n = (struct node *)dupstruct2((vptr) n);
+X	permalloc();
+X	n = simplifystruct(n);
+X    }
+X    r = (struct node *)dupstruct2((vptr) n);
+X
+X    if (!(n->type & NT_HEAP) && useheap)
+X	r = expandstruct(r, N_LIST);
+X
+X    return (vptr) r;
+X}
+X
+Xstruct node *simplifystruct(n)	/**/
+Xstruct node *n;
+X{
+X    if (!n || ((List) n) == &dummy_list)
+X	return n;
+X
+X    switch (NT_TYPE(n->type)) {
+X    case N_LIST:
+X	{
+X	    List l = (List) n;
+X
+X	    l->left = (Sublist) simplifystruct((struct node *)l->left);
+X	    if (l->type == SYNC && !l->right)
+X		return (struct node *)l->left;
+X	}
+X	break;
+X    case N_SUBLIST:
+X	{
+X	    Sublist sl = (Sublist) n;
+X
+X	    sl->left = (Pline) simplifystruct((struct node *)sl->left);
+X	    if (sl->type == END && !sl->flags && !sl->right)
+X		return (struct node *)sl->left;
+X	}
+X	break;
+X    case N_PLINE:
+X	{
+X	    Pline pl = (Pline) n;
+X
+X	    pl->left = (Cmd) simplifystruct((struct node *)pl->left);
+X	    if (pl->type == END && !pl->right)
+X		return (struct node *)pl->left;
+X	}
+X	break;
+X    case N_CMD:
+X	{
+X	    Cmd c = (Cmd) n;
+X	    int i = 0;
+X
+X	    if (empty(c->args))
+X		c->args = NULL, i++;
+X	    if (empty(c->redir))
+X		c->redir = NULL, i++;
+X	    if (empty(c->vars))
+X		c->vars = NULL, i++;
+X
+X	    c->u.list = (List) simplifystruct((struct node *)c->u.list);
+X	    if (i == 3 && !c->flags &&
+X		(c->type == CWHILE || c->type == CIF ||
+X		 c->type == COND))
+X		return (struct node *)c->u.list;
+X	}
+X	break;
+X    case N_FOR:
+X	{
+X	    struct forcmd *f = (struct forcmd *)n;
+X
+X	    f->list = (List) simplifystruct((struct node *)f->list);
+X	}
+X	break;
+X    case N_CASE:
+X	{
+X	    struct casecmd *c = (struct casecmd *)n;
+X	    List *l;
+X
+X	    for (l = c->lists; *l; l++)
+X		*l = (List) simplifystruct((struct node *)*l);
+X	}
+X	break;
+X    case N_IF:
+X	{
+X	    struct ifcmd *i = (struct ifcmd *)n;
+X	    List *l;
+X
+X	    for (l = i->ifls; *l; l++)
+X		*l = (List) simplifystruct((struct node *)*l);
+X	    for (l = i->thenls; *l; l++)
+X		*l = (List) simplifystruct((struct node *)*l);
+X	}
+X	break;
+X    case N_WHILE:
+X	{
+X	    struct whilecmd *w = (struct whilecmd *)n;
+X
+X	    w->cont = (List) simplifystruct((struct node *)w->cont);
+X	    w->loop = (List) simplifystruct((struct node *)w->loop);
+X	}
+X    }
+X
+X    return n;
+X}
+X
+Xstruct node *expandstruct(n, exp)	/**/
+Xstruct node *n;
+Xint exp;
+X{
+X    struct node *m;
+X
+X    if (!n || ((List) n) == &dummy_list)
+X	return n;
+X
+X    if (exp != N_COUNT && exp != NT_TYPE(n->type)) {
+X	switch (exp) {
+X	case N_LIST:
+X	    {
+X		List l;
+X
+X		m = (struct node *)allocnode(N_LIST);
+X		l = (List) m;
+X		l->type = SYNC;
+X		l->left = (Sublist) expandstruct(n, N_SUBLIST);
+X
+X		return (struct node *)l;
+X	    }
+X	case N_SUBLIST:
+X	    {
+X		Sublist sl;
+X
+X		m = (struct node *)allocnode(N_SUBLIST);
+X		sl = (Sublist) m;
+X		sl->type = END;
+X		sl->left = (Pline) expandstruct(n, N_PLINE);
+X
+X		return (struct node *)sl;
+X	    }
+X	case N_PLINE:
+X	    {
+X		Pline pl;
+X
+X		m = (struct node *)allocnode(N_PLINE);
+X		pl = (Pline) m;
+X		pl->type = END;
+X		pl->left = (Cmd) expandstruct(n, N_CMD);
+X
+X		return (struct node *)pl;
+X	    }
+X	case N_CMD:
+X	    {
+X		Cmd c;
+X
+X		m = (struct node *)allocnode(N_CMD);
+X		c = (Cmd) m;
+X		switch (NT_TYPE(n->type)) {
+X		case N_WHILE:
+X		    c->type = CWHILE;
+X		    break;
+X		case N_IF:
+X		    c->type = CIF;
+X		    break;
+X		case N_COND:
+X		    c->type = COND;
+X		}
+X		c->u.list = (List) expandstruct(n, NT_TYPE(n->type));
+X		c->args = newlist();
+X		c->vars = newlist();
+X		c->redir = newlist();
+X
+X		return (struct node *)c;
+X	    }
+X	}
+X    } else
+X	switch (NT_TYPE(n->type)) {
+X	case N_LIST:
+X	    {
+X		List l = (List) n;
+X
+X		l->left = (Sublist) expandstruct((struct node *)l->left,
+X						 N_SUBLIST);
+X		l->right = (List) expandstruct((struct node *)l->right,
+X					       N_LIST);
+X	    }
+X	    break;
+X	case N_SUBLIST:
+X	    {
+X		Sublist sl = (Sublist) n;
+X
+X		sl->left = (Pline) expandstruct((struct node *)sl->left,
+X						N_PLINE);
+X		sl->right = (Sublist) expandstruct((struct node *)sl->right,
+X						   N_SUBLIST);
+X	    }
+X	    break;
+X	case N_PLINE:
+X	    {
+X		Pline pl = (Pline) n;
+X
+X		pl->left = (Cmd) expandstruct((struct node *)pl->left,
+X					      N_CMD);
+X		pl->right = (Pline) expandstruct((struct node *)pl->right,
+X						 N_PLINE);
+X	    }
+X	    break;
+X	case N_CMD:
+X	    {
+X		Cmd c = (Cmd) n;
+X
+X		if (!c->args)
+X		    c->args = newlist();
+X		if (!c->vars)
+X		    c->vars = newlist();
+X		if (!c->redir)
+X		    c->redir = newlist();
+X
+X		switch (c->type) {
+X		case CFOR:
+X		case CSELECT:
+X		    c->u.list = (List) expandstruct((struct node *)c->u.list,
+X						    N_FOR);
+X		    break;
+X		case CWHILE:
+X		    c->u.list = (List) expandstruct((struct node *)c->u.list,
+X						    N_WHILE);
+X		    break;
+X		case CIF:
+X		    c->u.list = (List) expandstruct((struct node *)c->u.list,
+X						    N_IF);
+X		    break;
+X		case CCASE:
+X		    c->u.list = (List) expandstruct((struct node *)c->u.list,
+X						    N_CASE);
+X		    break;
+X		case COND:
+X		    c->u.list = (List) expandstruct((struct node *)c->u.list,
+X						    N_COND);
+X		    break;
+X		case ZCTIME:
+X		    c->u.list = (List) expandstruct((struct node *)c->u.list,
+X						    N_SUBLIST);
+X		    break;
+X		default:
+X		    c->u.list = (List) expandstruct((struct node *)c->u.list,
+X						    N_LIST);
+X		}
+X	    }
+X	    break;
+X	case N_FOR:
+X	    {
+X		struct forcmd *f = (struct forcmd *)n;
+X
+X		f->list = (List) expandstruct((struct node *)f->list,
+X					      N_LIST);
+X	    }
+X	    break;
+X	case N_CASE:
+X	    {
+X		struct casecmd *c = (struct casecmd *)n;
+X		List *l;
+X
+X		for (l = c->lists; *l; l++)
+X		    *l = (List) expandstruct((struct node *)*l, N_LIST);
+X	    }
+X	    break;
+X	case N_IF:
+X	    {
+X		struct ifcmd *i = (struct ifcmd *)n;
+X		List *l;
+X
+X		for (l = i->ifls; *l; l++)
+X		    *l = (List) expandstruct((struct node *)*l, N_LIST);
+X		for (l = i->thenls; *l; l++)
+X		    *l = (List) expandstruct((struct node *)*l, N_LIST);
+X	    }
+X	    break;
+X	case N_WHILE:
+X	    {
+X		struct whilecmd *w = (struct whilecmd *)n;
+X
+X		w->cont = (List) expandstruct((struct node *)w->cont,
+X					      N_LIST);
+X		w->loop = (List) expandstruct((struct node *)w->loop,
+X					      N_LIST);
+X	    }
+X	}
+X
+X    return n;
+X}
+X
+X/* duplicate a syntax tree node of given type, argument number */
+X
+Xvptr dupnode(type, a, argnum)	/**/
+Xint type;
+Xvptr a;
+Xint argnum;
+X{
+X    if (!a)
+X	return NULL;
+X    switch (NT_N(type, argnum)) {
+X    case NT_NODE:
+X	return (vptr) dupstruct2(a);
+X    case NT_STR:
+X	return (useheap) ? ((vptr) dupstring(a)) :
+X	    ((vptr) ztrdup(a));
+X    case NT_LIST | NT_NODE:
+X	if (type & NT_HEAP)
+X	    if (useheap)
+X		return (vptr) duplist(a, (VFunc) dupstruct2);
+X	    else
+X		return (vptr) list2arr(a, (VFunc) dupstruct2);
+X	else if (useheap)
+X	    return (vptr) arr2list(a, (VFunc) dupstruct2);
+X	else
+X	    return (vptr) duparray(a, (VFunc) dupstruct2);
+X    case NT_LIST | NT_STR:
+X	if (type & NT_HEAP)
+X	    if (useheap)
+X		return (vptr) duplist(a, (VFunc) dupstring);
+X	    else
+X		return (vptr) list2arr(a, (VFunc) ztrdup);
+X	else if (useheap)
+X	    return (vptr) arr2list(a, (VFunc) dupstring);
+X	else
+X	    return (vptr) duparray(a, (VFunc) ztrdup);
+X    case NT_NODE | NT_ARR:
+X	return (vptr) duparray(a, (VFunc) dupstruct2);
+X    case NT_STR | NT_ARR:
+X	return (vptr) duparray(a, (VFunc) (useheap ? dupstring : ztrdup));
+X    default:
+X	abort();
+X    }
+X}
+X
+X/* Free a syntax tree node of given type, argument number */
+X
+Xvoid freenode(type, a, argnum)	/**/
+Xint type;
+Xvptr a;
+Xint argnum;
+X{
+X    if (!a)
+X	return;
+X    switch (NT_N(type, argnum)) {
+X    case NT_NODE:
+X	freestruct(a);
+X	break;
+X    case NT_STR:
+X	zsfree(a);
+X	break;
+X    case NT_LIST | NT_NODE:
+X    case NT_NODE | NT_ARR:
+X	{
+X	    char **p = (char **)a;
+X
+X	    while (*p)
+X		freestruct(*p++);
+X	    free(a);
+X	}
+X	break;
+X    case NT_LIST | NT_STR:
+X    case NT_STR | NT_ARR:
+X	freearray(a);
+X	break;
+X    default:
+X	abort();
+X    }
+X}
+X
+X/* duplicate a syntax tree */
+X
+Xvptr *dupstruct2(a)		/**/
+Xvptr a;
+X{
+X    struct node *n = (struct node *)a, *m;
+X    int type;
+X
+X    if (!n || ((List) n) == &dummy_list)
+X	return a;
+X    type = n->type;
+X    m = (struct node *)alloc(sizetab[NT_TYPE(type)]);
+X    m->type = (type & ~NT_HEAP);
+X    if (useheap)
+X	m->type |= NT_HEAP;
+X    switch (NT_TYPE(type)) {
+X    case N_LIST:
+X	{
+X	    List nl = (List) n;
+X	    List ml = (List) m;
+X
+X	    ml->type = nl->type;
+X	    ml->left = (Sublist) dupnode(type, nl->left, 0);
+X	    ml->right = (List) dupnode(type, nl->right, 1);
+X	}
+X	break;
+X    case N_SUBLIST:
+X	{
+X	    Sublist nsl = (Sublist) n;
+X	    Sublist msl = (Sublist) m;
+X
+X	    msl->type = nsl->type;
+X	    msl->flags = nsl->flags;
+X	    msl->left = (Pline) dupnode(type, nsl->left, 0);
+X	    msl->right = (Sublist) dupnode(type, nsl->right, 1);
+X	}
+X	break;
+X    case N_PLINE:
+X	{
+X	    Pline npl = (Pline) n;
+X	    Pline mpl = (Pline) m;
+X
+X	    mpl->type = npl->type;
+X	    mpl->left = (Cmd) dupnode(type, npl->left, 0);
+X	    mpl->right = (Pline) dupnode(type, npl->right, 1);
+X	}
+X	break;
+X    case N_CMD:
+X	{
+X	    Cmd nc = (Cmd) n;
+X	    Cmd mc = (Cmd) m;
+X
+X	    mc->type = nc->type;
+X	    mc->flags = nc->flags;
+X	    mc->lineno = nc->lineno;
+X	    mc->args = (Lklist) dupnode(type, nc->args, 0);
+X	    mc->u.generic = (vptr) dupnode(type, nc->u.generic, 1);
+X	    mc->redir = (Lklist) dupnode(type, nc->redir, 2);
+X	    mc->vars = (Lklist) dupnode(type, nc->vars, 3);
+X	}
+X	break;
+X    case N_REDIR:
+X	{
+X	    Redir nr = (Redir) n;
+X	    Redir mr = (Redir) m;
+X
+X	    mr->type = nr->type;
+X	    mr->fd1 = nr->fd1;
+X	    mr->fd2 = nr->fd2;
+X	    mr->name = (char *)dupnode(type, nr->name, 0);
+X	}
+X	break;
+X    case N_COND:
+X	{
+X	    Cond nco = (Cond) n;
+X	    Cond mco = (Cond) m;
+X
+X	    mco->type = nco->type;
+X	    mco->left = (vptr) dupnode(type, nco->left, 0);
+X	    mco->right = (vptr) dupnode(type, nco->right, 1);
+X	}
+X	break;
+X    case N_FOR:
+X	{
+X	    struct forcmd *nf = (struct forcmd *)n;
+X	    struct forcmd *mf = (struct forcmd *)m;
+X
+X	    mf->inflag = nf->inflag;
+X	    mf->name = (char *)dupnode(type, nf->name, 0);
+X	    mf->list = (List) dupnode(type, nf->list, 1);
+X	}
+X	break;
+X    case N_CASE:
+X	{
+X	    struct casecmd *ncc = (struct casecmd *)n;
+X	    struct casecmd *mcc = (struct casecmd *)m;
+X
+X	    mcc->pats = (char **)dupnode(type, ncc->pats, 0);
+X	    mcc->lists = (List *) dupnode(type, ncc->lists, 1);
+X	}
+X	break;
+X    case N_IF:
+X	{
+X	    struct ifcmd *nic = (struct ifcmd *)n;
+X	    struct ifcmd *mic = (struct ifcmd *)m;
+X
+X	    mic->ifls = (List *) dupnode(type, nic->ifls, 0);
+X	    mic->thenls = (List *) dupnode(type, nic->thenls, 1);
+X
+X	}
+X	break;
+X    case N_WHILE:
+X	{
+X	    struct whilecmd *nwc = (struct whilecmd *)n;
+X	    struct whilecmd *mwc = (struct whilecmd *)m;
+X
+X	    mwc->cond = nwc->cond;
+X	    mwc->cont = (List) dupnode(type, nwc->cont, 0);
+X	    mwc->loop = (List) dupnode(type, nwc->loop, 1);
+X	}
+X	break;
+X    case N_VARASG:
+X	{
+X	    Varasg nva = (Varasg) n;
+X	    Varasg mva = (Varasg) m;
+X
+X	    mva->type = nva->type;
+X	    mva->name = (char *)dupnode(type, nva->name, 0);
+X	    mva->str = (char *)dupnode(type, nva->str, 1);
+X	    mva->arr = (Lklist) dupnode(type, nva->arr, 2);
+X	}
+X	break;
+X    }
+X    return (vptr *) m;
+X}
+X
+X/* free a syntax tree */
+X
+Xvoid freestruct(a)		/**/
+Xvptr a;
+X{
+X    struct node *n = (struct node *)a;
+X    int type;
+X
+X    if (!n || ((List) n) == &dummy_list)
+X	return;
+X
+X    type = n->type;
+X    switch (NT_TYPE(type)) {
+X    case N_LIST:
+X	{
+X	    List nl = (List) n;
+X
+X	    freenode(type, nl->left, 0);
+X	    freenode(type, nl->right, 1);
+X	}
+X	break;
+X    case N_SUBLIST:
+X	{
+X	    Sublist nsl = (Sublist) n;
+X
+X	    freenode(type, nsl->left, 0);
+X	    freenode(type, nsl->right, 1);
+X	}
+X	break;
+X    case N_PLINE:
+X	{
+X	    Pline npl = (Pline) n;
+X
+X	    freenode(type, npl->left, 0);
+X	    freenode(type, npl->right, 1);
+X	}
+X	break;
+X    case N_CMD:
+X	{
+X	    Cmd nc = (Cmd) n;
+X
+X	    freenode(type, nc->args, 0);
+X	    freenode(type, nc->u.generic, 1);
+X	    freenode(type, nc->redir, 2);
+X	    freenode(type, nc->vars, 3);
+X	}
+X	break;
+X    case N_REDIR:
+X	{
+X	    Redir nr = (Redir) n;
+X
+X	    freenode(type, nr->name, 0);
+X	}
+X	break;
+X    case N_COND:
+X	{
+X	    Cond nco = (Cond) n;
+X
+X	    freenode(type, nco->left, 0);
+X	    freenode(type, nco->right, 1);
+X	}
+X	break;
+X    case N_FOR:
+X	{
+X	    struct forcmd *nf = (struct forcmd *)n;
+X
+X	    freenode(type, nf->name, 0);
+X	    freenode(type, nf->list, 1);
+X	}
+X	break;
+X    case N_CASE:
+X	{
+X	    struct casecmd *ncc = (struct casecmd *)n;
+X
+X	    freenode(type, ncc->pats, 0);
+X	    freenode(type, ncc->lists, 1);
+X	}
+X	break;
+X    case N_IF:
+X	{
+X	    struct ifcmd *nic = (struct ifcmd *)n;
+X
+X	    freenode(type, nic->ifls, 0);
+X	    freenode(type, nic->thenls, 1);
+X
+X	}
+X	break;
+X    case N_WHILE:
+X	{
+X	    struct whilecmd *nwc = (struct whilecmd *)n;
+X
+X	    freenode(type, nwc->cont, 0);
+X	    freenode(type, nwc->loop, 1);
+X	}
+X	break;
+X    case N_VARASG:
+X	{
+X	    Varasg nva = (Varasg) n;
+X
+X	    freenode(type, nva->name, 0);
+X	    freenode(type, nva->str, 1);
+X	    freenode(type, nva->arr, 2);
+X	}
+X	break;
+X    }
+X    zfree(n, sizetab[NT_TYPE(type)]);
+X}
+X
+XLklist duplist(l, func)		/**/
+XLklist l;
+XVFunc func;
+X{
+X    Lklist ret;
+X    Lknode node;
+X
+X    ret = newlist();
+X    for (node = firstnode(l); node; incnode(node))
+X	addnode(ret, func(getdata(node)));
+X    return ret;
+X}
+X
+Xchar **duparray(arr, func)	/**/
+Xchar **arr;
+XVFunc func;
+X{
+X    char **ret = (char **)alloc((arrlen(arr) + 1) * sizeof(char *)), **rr;
+X
+X    for (rr = ret; *arr;)
+X	*rr++ = (char *)func(*arr++);
+X    *rr = NULL;
+X
+X    return ret;
+X}
+X
+Xchar **list2arr(l, func)	/**/
+XLklist l;
+XVFunc func;
+X{
+X    char **arr, **r;
+X    Lknode n;
+X
+X    arr = r = (char **)alloc((countnodes(l) + 1) * sizeof(char *));
+X
+X    for (n = firstnode(l); n; incnode(n))
+X	*r++ = (char *)func(getdata(n));
+X    *r = NULL;
+X
+X    return arr;
+X}
+X
+XLklist arr2list(arr, func)	/**/
+Xchar **arr;
+XVFunc func;
+X{
+X    Lklist l = newlist();
+X
+X    while (*arr)
+X	addnode(l, func(*arr++));
+X
+X    return l;
+X}
+X
+Xchar **mkarray(s)		/**/
+Xchar *s;
+X{
+X    char **t = (char **)zalloc((s) ? (2 * sizeof s) : (sizeof s));
+X
+X    if ((*t = s))
+X	t[1] = NULL;
+X    return t;
+X}
+X
+Xvoid feep()
+X{				/**/
+X    if (unset(NOBEEP))
+X	write(2, "\07", 1);
+X}
+X
+Xvoid freearray(s)		/**/
+Xchar **s;
+X{
+X    char **t = s;
+X
+X    while (*s)
+X	zsfree(*s++);
+X    free(t);
+X}
+X
+Xint equalsplit(s, t)		/**/
+Xchar *s;
+Xchar **t;
+X{
+X    for (; *s && *s != '='; s++);
+X    if (*s == '=') {
+X	*s++ = '\0';
+X	*t = s;
+X	return 1;
+X    }
+X    return 0;
+X}
+X
+X/* see if the right side of a list is trivial */
+X
+Xvoid simplifyright(l)		/**/
+XList l;
+X{
+X    Cmd c;
+X
+X    if (l == &dummy_list || !l->right)
+X	return;
+X    if (l->right->right || l->right->left->right ||
+X	l->right->left->flags || l->right->left->left->right ||
+X	l->left->flags)
+X	return;
+X    c = l->left->left->left;
+X    if (c->type != SIMPLE || full(c->args) || full(c->redir)
+X	|| full(c->vars))
+X	return;
+X    l->right = NULL;
+X    return;
+X}
+X
+X/* initialize the ztypes table */
+X
+Xvoid inittyptab()
+X{				/**/
+X    int t0;
+X    char *s;
+X
+X    for (t0 = 0; t0 != 256; t0++)
+X	typtab[t0] = 0;
+X    for (t0 = 0; t0 != 32; t0++)
+X	typtab[t0] = typtab[t0 + 128] = ICNTRL;
+X    typtab[127] = ICNTRL;
+X    for (t0 = '0'; t0 <= '9'; t0++)
+X	typtab[t0] = IDIGIT | IALNUM | IWORD | IIDENT | IUSER;
+X    for (t0 = 'a'; t0 <= 'z'; t0++)
+X	typtab[t0] = typtab[t0 - 'a' + 'A'] = IALPHA | IALNUM | IIDENT | IUSER | IWORD;
+X    for (t0 = 0240; t0 != 0400; t0++)
+X	typtab[t0] = IALPHA | IALNUM | IIDENT | IUSER | IWORD;
+X    typtab['_'] = IIDENT | IUSER;
+X    typtab['-'] = IUSER;
+X    typtab[' '] |= IBLANK | INBLANK;
+X    typtab['\t'] |= IBLANK | INBLANK;
+X    typtab['\n'] |= INBLANK;
+X    for (t0 = (int)STOUC(ALPOP); t0 <= (int)STOUC(Nularg);
+X	 t0++)
+X	typtab[t0] |= ITOK;
+X    for (s = ifs; *s; s++)
+X	typtab[(int)(unsigned char)*s] |= ISEP;
+X    for (s = wordchars; *s; s++)
+X	typtab[(int)(unsigned char)*s] |= IWORD;
+X    for (s = SPECCHARS; *s; s++)
+X	typtab[(int)(unsigned char)*s] |= ISPECIAL;
+X}
+X
+Xchar **arrdup(s)		/**/
+Xchar **s;
+X{
+X    char **x, **y;
+X
+X    y = x = (char **)ncalloc(sizeof(char *) * (arrlen(s) + 1));
+X
+X    while ((*x++ = dupstring(*s++)));
+X    return y;
+X}
+X
+X/* next few functions stolen (with changes) from Kernighan & Pike */
+X/* "The UNIX Programming Environment" (w/o permission) */
+X
+Xchar *spname(oldname)		/**/
+Xchar *oldname;
+X{
+X    char *p, spnameguess[MAXPATHLEN + 1], spnamebest[MAXPATHLEN + 1];
+X    static char newname[MAXPATHLEN + 1];
+X    char *new = newname, *old;
+X
+X    if (itok(*oldname)) {
+X	singsub(&oldname);
+X	if (!oldname)
+X	    return NULL;
+X    }
+X    if (access(oldname, F_OK) == 0)
+X	return NULL;
+X    old = oldname;
+X    for (;;) {
+X	while (*old == '/')
+X	    *new++ = *old++;
+X	*new = '\0';
+X	if (*old == '\0')
+X	    return newname;
+X	p = spnameguess;
+X	for (; *old != '/' && *old != '\0'; old++)
+X	    if (p < spnameguess + MAXPATHLEN)
+X		*p++ = *old;
+X	*p = '\0';
+X	if (mindist(newname, spnameguess, spnamebest) >= 3)
+X	    return NULL;
+X	for (p = spnamebest; (*new = *p++);)
+X	    new++;
+X    }
+X}
+X
+Xint mindist(dir, mindistguess, mindistbest)	/**/
+Xchar *dir;
+Xchar *mindistguess;
+Xchar *mindistbest;
+X{
+X    int mindistd, nd;
+X    DIR *dd;
+X    struct dirent *de;
+X    char buf[MAXPATHLEN];
+X
+X    if (dir[0] == '\0')
+X	dir = ".";
+X    mindistd = 100;
+X    sprintf(buf, "%s/%s", dir, mindistguess);
+X    if (access(buf, F_OK) == 0) {
+X	strcpy(mindistbest, mindistguess);
+X	return 0;
+X    }
+X    if (!(dd = opendir(dir)))
+X	return mindistd;
+X    while ((de = readdir(dd))) {
+X	nd = spdist(de->d_name, mindistguess,
+X		    (int)strlen(mindistguess) / 4 + 1);
+X	if (nd <= mindistd) {
+X	    strcpy(mindistbest, de->d_name);
+X	    mindistd = nd;
+X	    if (mindistd == 0)
+X		break;
+X	}
+X    }
+X    closedir(dd);
+X    return mindistd;
+X}
+X
+Xint spdist(s, t, thresh)	/**/
+Xchar *s;
+Xchar *t;
+Xint thresh;
+X{
+X    char *p, *q;
+X    char *keymap =
+X    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\
+X\t1234567890-=\t\
+X\tqwertyuiop[]\t\
+X\tasdfghjkl;'\n\t\
+X\tzxcvbnm,./\t\t\t\
+X\n\n\n\n\n\n\n\n\n\n\n\n\n\n\
+X\t!@#$%^&*()_+\t\
+X\tQWERTYUIOP{}\t\
+X\tASDFGHJKL:\"\n\t\
+X\tZXCVBNM<>?\n\n\t\
+X\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+X
+X    if (!strcmp(s, t))
+X	return 0;
+X/* any number of upper/lower mistakes allowed (dist = 1) */
+X    for (p = s, q = t; *p && tulower(*p) == tulower(*q); p++, q++);
+X    if (!*p && !*q)
+X	return 1;
+X    if (!thresh)
+X	return 200;
+X    for (p = s, q = t; *p && *q; p++, q++)
+X	if (*p == *q)
+X	    continue;		/* don't consider "aa" transposed, ash */
+X	else if (p[1] == q[0] && q[1] == p[0])	/* transpositions */
+X	    return spdist(p + 2, q + 2, thresh - 1) + 1;
+X	else if (p[1] == q[0])	/* missing letter */
+X	    return spdist(p + 1, q + 0, thresh - 1) + 2;
+X	else if (p[0] == q[1])	/* missing letter */
+X	    return spdist(p + 0, q + 1, thresh - 1) + 2;
+X	else if (*p != *q)
+X	    break;
+X    if ((!*p && strlen(q) == 1) || (!*q && strlen(p) == 1))
+X	return 2;
+X    for (p = s, q = t; *p && *q; p++, q++)
+X	if (p[0] != q[0] && p[1] == q[1]) {
+X	    int t0;
+X	    char *z;
+X
+X	/* mistyped letter */
+X
+X	    if (!(z = strchr(keymap, p[0])) || *z == '\n' || *z == '\t')
+X		return spdist(p + 1, q + 1, thresh - 1) + 1;
+X	    t0 = z - keymap;
+X	    if (*q == keymap[t0 - 15] || *q == keymap[t0 - 14] ||
+X		*q == keymap[t0 - 13] ||
+X		*q == keymap[t0 - 1] || *q == keymap[t0 + 1] ||
+X		*q == keymap[t0 + 13] || *q == keymap[t0 + 14] ||
+X		*q == keymap[t0 + 15])
+X		return spdist(p + 1, q + 1, thresh - 1) + 2;
+X	    return 200;
+X	} else if (*p != *q)
+X	    break;
+X    return 200;
+X}
+X
+Xchar *zgetenv(s)		/**/
+Xchar *s;
+X{
+X    char **av, *p, *q;
+X
+X    for (av = environ; *av; av++) {
+X	for (p = *av, q = s; *p && *p != '=' && *q && *p == *q; p++, q++);
+X	if (*p == '=' && !*q)
+X	    return p + 1;
+X    }
+X    return NULL;
+X}
+X
+Xint tulower(c)			/**/
+Xint c;
+X{
+X    c &= 0xff;
+X    return (isupper(c) ? tolower(c) : c);
+X}
+X
+Xint tuupper(c)			/**/
+Xint c;
+X{
+X    c &= 0xff;
+X    return (islower(c) ? toupper(c) : c);
+X}
+X
+X#ifdef SYSV
+X#include <sys/utsname.h>
+X
+Xint gethostname(nameptr, maxlength)
+Xchar *nameptr;
+Xint maxlength;
+X{
+X    struct utsname name;
+X    int result;
+X
+X    result = uname(&name);
+X    if (result >= 0) {
+X	strncpy(nameptr, name.nodename, maxlength);
+X	return 0;
+X    } else
+X	return -1;
+X}
+X
+X#endif
+X
+X/* set cbreak mode, or the equivalent */
+X
+Xvoid setcbreak()
+X{				/**/
+X    struct ttyinfo ti;
+X
+X    ti = shttyinfo;
+X#ifdef HAS_TIO
+X    ti.tio.c_lflag &= ~ICANON;
+X    ti.tio.c_cc[VMIN] = 1;
+X    ti.tio.c_cc[VTIME] = 0;
+X#else
+X    ti.sgttyb.sg_flags |= CBREAK;
+X#endif
+X    settyinfo(&ti);
+X}
+X
+X/* give the tty to some process */
+X
+Xvoid attachtty(pgrp)		/**/
+Xlong pgrp;
+X{
+X    static int ep = 0;
+X
+X    if (jobbing) {
+X#ifdef HAS_TCSETPGRP
+X	if (SHTTY != -1 && tcsetpgrp(SHTTY, pgrp) == -1 && !ep)
+X#else
+X#if ardent
+X	if (SHTTY != -1 && setpgrp() == -1 && !ep)
+X#else
+X	int arg = pgrp;
+X
+X	if (SHTTY != -1 && ioctl(SHTTY, TIOCSPGRP, &arg) == -1 && !ep)
+X#endif
+X#endif
+X	{
+X	    zerr("can't set tty pgrp: %e", NULL, errno);
+X	    fflush(stderr);
+X	    opts[MONITOR] = OPT_UNSET;
+X	    ep = 1;
+X	    errflag = 0;
+X	}
+X    }
+X}
+X
+X/* get the tty pgrp */
+X
+Xlong gettygrp()
+X{				/**/
+X    int arg;
+X
+X    if (SHTTY == -1)
+X	return -1;
+X#ifdef HAS_TCSETPGRP
+X    arg = tcgetpgrp(SHTTY);
+X#else
+X#if ardent
+X    arg = getpgrp();
+X#else
+X    ioctl(SHTTY, TIOCGPGRP, &arg);
+X#endif
+X#endif
+X    return arg;
+X}
+X
+X#if defined(SCO)
+Xvoid gettimeofday(struct timeval *tv, struct timezone *tz)
+X{
+X    tv->tv_usec = 0;
+X    tv->tv_sec = (long)time((time_t) 0);
+X}
+X#endif
+END_OF_FILE
+  if test 56218 -ne `wc -c <'zsh-2.5.0/src/utils.c'`; then
+    echo shar: \"'zsh-2.5.0/src/utils.c'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/utils.c'
+fi
+echo shar: End of archive 7 \(of 18\).
+cp /dev/null ark7isdone
+MISSING=""
+for I in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 ; do
+    if test ! -f ark${I}isdone ; then
+	MISSING="${MISSING} ${I}"
+    fi
+done
+if test "${MISSING}" = "" ; then
+    echo You have unpacked all 18 archives.
+    rm -f ark[1-9]isdone ark[1-9][0-9]isdone
+else
+    echo You still must unpack the following archives:
+    echo "        " ${MISSING}
+fi
+exit 0
+exit 0 # Just in case...

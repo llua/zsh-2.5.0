@@ -1,0 +1,55 @@
+New features in zsh version 2.5
+
+Greatly expanded completion possibilities.  Programmable completion
+allows detailed control over what arguments of what commands can be
+completed to what.  See dots/zcomp in the distribution for examples.
+
+Expand filenames with ~ and = on the right hand side of parameter
+assignments.  New option MAGIC_EQUAL_SUBST to do it in all
+identifier=expression arguments.
+
+${+name} becomes 1 or 0 if name is set or unset.  ${~spec} toggles
+GLOB_SUBST in substitution.  Parameter substitution takes lots
+of flags in the format ${(flags)name}.
+
+New glob qualifiers for block/character special files, times in glob
+qualifiers can be in months, weeks, days, hours, minutes.  Qualifiers
+can work on links or on what they point to.  Qualifiers separated by
+commas are or-ed.
+
+New parameter substitution modifiers (fFwW) to repeat actions.  New
+option CSH_JUNKIE_HISTORY.
+
+New line editor functions history-beginning-search-backward,
+history-beginning-search-forward, expand-or-complete-prefix,
+push-input, push-line-or-edit.
+
+Assign to part of a string, use qualifiers on string subscription with
+$foo[(qual)2,5]
+
+New parameters: EGID, EUID, KEYTIMEOUT
+
+New prompt escape sequence %_ to get constructs like for and while in
+the secondary prompt.  %E in prompt clears to end of screen.
+
+Conditional expressions in PROMPT and WATCHFMT.
+
+New options ALWAYS_LAST_PROMPT, ALWAYS_TO_END, AUTO_PARAM_KEYS,
+COMPLETE_ALIASES, COMPLETE_IN_WORD, CSH_JUNKIE_HISTORY,
+GLOB_SUBST, LIST_AMBIGOUS, MAGIC_EQUAL_SUBST, NO_FLOW_CONTROL,
+PROMPT_SUBST
+
+New option -m to many builtins makes arguments subject to pattern
+matching.
+
+Bindkey can now bind both key sequences and prefixes of those.  You
+can for example bind ESC and function keys sending ESC sequences.
+
+Additional options to read builtin to use in functions called by
+completion.
+
+New options to print to sort arguments and print them in columns.
+
+Some additional resource limits can be specified.
+
+Some editor functions now work in the minibuffer.

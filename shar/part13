@@ -1,0 +1,2439 @@
+Path: news.csc.fi!news.eunet.fi!EU.net!uunet!sparky!not-for-mail
+From: zsh-list@sterling.com (Bas de Bakker)
+Newsgroups: comp.sources.misc
+Subject: v43i102:  zsh - The Z shell, version 2.5.0, Part13/18
+Followup-To: comp.sources.d
+Date: 13 Jul 1994 23:06:51 -0500
+Organization: Sterling Software
+Lines: 2424
+Sender: kent@sparky.sterling.com
+Approved: kent@sparky.sterling.com
+Message-ID: <302dkr$4r@sparky.sterling.com>
+References: <csm-v43i089=zsh.230017@sparky.sterling.com>
+NNTP-Posting-Host: sparky.sterling.com
+X-Md4-Signature: b4c043f0c0c0738762ede4276095d944
+
+Submitted-by: zsh-list@sterling.com (Bas de Bakker)
+Posting-number: Volume 43, Issue 102
+Archive-name: zsh/part13
+Environment: UNIX
+Supersedes: zsh: Volume 35, Issue 51-72
+
+#! /bin/sh
+# This is a shell archive.  Remove anything before this line, then feed it
+# into a shell via "sh file" or similar.  To overwrite existing files,
+# type "sh file -c".
+# Contents:  zsh-2.5.0/FAQ zsh-2.5.0/help/bindkey
+#   zsh-2.5.0/src/zle_hist.c
+# Wrapped by kent@sparky on Tue Jul 12 16:47:25 1994
+PATH=/bin:/usr/bin:/usr/ucb:/usr/local/bin:/usr/lbin:$PATH ; export PATH
+echo If this archive is complete, you will see the following message:
+echo '          "shar: End of archive 13 (of 18)."'
+if test -f 'zsh-2.5.0/FAQ' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/FAQ'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/FAQ'\" \(39799 characters\)
+  sed "s/^X//" >'zsh-2.5.0/FAQ' <<'END_OF_FILE'
+XArchive-Name: unix-faq/shell/zsh
+XLast-Modified: 1994/6/27
+XSubmitted-By: pws@s-a.amtp.liv.ac.uk (Peter Stephenson)
+XVersion: $Id: zsh.FAQ,v 1.26 1994/06/27 13:42:21 pws Exp pws $
+XFrequency: Monthly
+X
+XThis document contains a list of frequently-asked (or otherwise
+Xsignificant) questions concerning the Z-shell, a command interpreter for
+Xmany UNIX systems which is freely available to anyone with FTP access.
+XZsh is more powerful than every other common shell (sh, ksh, csh, tcsh
+Xand bash) put together.
+X
+XInformation on zsh is now available via the World Wide Web at
+Xhttp://noaacdc.colorado.edu/~mdb/zsh/zsh_home.html including this FAQ and
+Xmuch else (thanks to Mark Borges for this).
+X
+XIf you have never heard of `sh', `csh' or `ksh', then you are probably
+Xbetter off to start by reading a general introduction to UNIX rather
+Xthan this document.
+X
+XAnother useful source of information is the collection of FAQ articles
+Xposted frequently to the Usenet news groups comp.unix.questions,
+Xcomp.unix.shells and comp.answers with answers to general questions
+Xabout UNIX.  The fifth of the seven articles deals with shells,
+Xincluding zsh, with a brief description of differences.  (This article
+Xalso talks about shell startup files which would otherwise rate a
+Xmention here.)
+X
+XIf you just want to know how to get your hands on the latest version,
+Xskip to question 4); if you want to know what to do with insoluble
+Xproblems, go to 22).
+X
+XTo encourage you to read on, if you don't know about zsh but are
+Xfamiliar with other UNIX shells, here are some things that zsh is
+Xparticularly good at.  No claim of exclusivity is made, especially as
+Xshells copy one another, though in the areas of command line editing and
+Xglobbing zsh is well ahead of the competition.  I am not aware of a
+Xmajor feature in any other freely-available shell which zsh does not
+Xalso have.
+X  Command line editing:
+X    programmable completion: incorporates the ability to use
+X      the full power of zsh globbing (compctl -g),
+X    multi-line commands editable as a single buffer (even files!),
+X    variable editing (vared),
+X    command buffer stack,
+X    print text straight into the buffer for immediate editing (print -z),
+X    execution of unbound commands,
+X    menu completion,
+X    variable, editing function and option name completion,
+X    inline expansion of variables, history commands.
+X  Globbing --- extremely powerful, including:
+X    recursive globbing (cf. find),
+X    file attribute qualifiers (size, type, etc. also cf. find),
+X    full alternation and negation of patterns.
+X  Handling of multiple redirections (simpler than tee).
+X  Large number of options for tailoring.
+X  Path expansion (=foo -> /usr/bin/foo).
+X  Adaptable messages for spelling, watch, time as well as prompt
+X    (now including conditional expressions).
+X  Named directories.
+X  Comprehensive integer arithmetic.
+X  Manipulation of arrays (including reverse subscripting).
+X  Spelling correction.
+X
+XNotation: Quotes `like this' are ordinary textual quotation
+Xmarks.  Other uses of quotation marks are input to the shell.
+X
+XIf you are reading this file with GNU Emacs 19 and have my
+Xcross-referencing package xref.el (available from
+Xsuna.amtp.liv.ac.uk:/pub/pws), I can supply a suitable set of
+Xcross-references to make reading the file easier.
+X
+XContents:
+X1) What is it?
+X2) On what machines will it run?
+X3) What's the latest version?
+X4) Where do I get it?
+X5) How does zsh differ from sh, ksh, csh, tcsh, bash?
+X6) Why do my csh aliases not work?  (Plus other alias pitfalls.)
+X7) How do I turn off spelling correction for an individual command?
+X8) How do I get the meta key to work on my xterm?
+X9) Why does my terminal act funny in way x?
+X10) Why does `$var' where var="foo bar" not do what I expect?
+X11) My PATH, (MANPATH, ...) sometimes doesn't handle tildes.  What gives?
+X12) How does base arithmetic work?
+X13) How do I get a newline in my prompt?
+X14) Why does `bindkey ^a command-name' or 'stty intr ^-' do something funny?
+X15) Why can't I bind \C-s and \C-q any more?
+X16) How do I execute command `foo' within function `foo'?
+X17) Why can't I get zsh to work with SGI's `userenv'?
+X18) Why do history substitutions with single bangs do something funny?
+X19) Why does zsh kill off all my background jobs when I logout?
+X20) I don't have root access: how do I make zsh my login shell?
+X21) Shouldn't zsh be more/less like ksh/(t)csh?
+X22) What bugs are currently known and unfixed?
+X23) Where do I report bugs, get more info / who's working on zsh?
+X24) What's on the wish-list?
+X--- End of Contents ---
+X
+X
+X1) What is it?
+X
+X  Zsh is a UNIX command interpreter (shell) which of the standard shells
+X  most resembles the Korn shell (ksh), although it is not completely
+X  compatible.  It includes enhancements of many types, notably in the
+X  command-line editor, options for customising its behaviour, filename
+X  globbing, features to make C-shell (csh) users feel more at home and
+X  extra features drawn from tcsh (another `custom' shell).
+X
+X  It was written by Paul Falstad <pf@z-code.com> when a student at
+X  Princeton; however, Paul doesn't maintain it any more and enquiries
+X  should be sent to the mailing list (see question 22).  It is freely
+X  available to anyone under unrestrictive conditions.
+X
+X  For more information, the files doc/intro.txt or doc/intro.troff
+X  included with the source distribution are highly recommended.  A list
+X  of features is given in FEATURES, also with the source.
+X
+X
+X2) On what machines will it run?
+X
+X  Zsh was written for machines of the Berkeley UNIX family; most such
+X  machines (and all the most popular) will run it without major surgery.
+X  Modifications have been made so that it should work under SYSVR4-based
+X  operating systems such as Solaris 2.x and OSF/1.  This best thing is
+X  to suck it and see.  You may not have to change too much: if you do
+X  change anything, arrange for the shell script `buildzsh' to set the
+X  necessary #define's, etc., without human intervention.  Recent
+X  additions include Convex, Unicos and Linux support; there is a project
+X  to allow POSIX.1 compilation (but note that that zsh is not itself
+X  particularly POSIX-compliant at the moment).  Success has been
+X  obtained on older SYSVR3 systems, but you may need to modify the code.
+X  
+X  If you add support for a new machine, it would be appreciated if you
+X  could alter buildzsh to configure zsh automatically and send the
+X  required context diffs to the list (see question 22).
+X
+X
+X3) What's the latest version?
+X  
+X  The latest production version is 2.3.1; at this time zsh was not
+X  ported to as many systems, so (for example) for Solaris 2 you are more
+X  or less constrained to use the beta version.
+X
+X  The current beta version is 2.4.  New patches occur frequently and are
+X  added to the archive (next question).  At the time of writing the
+X  latest patch level was 333.  Note that this `open' development system
+X  does mean bugs are sometimes introduced into the most recent archived
+X  version.  These are usually fixed quickly.  Note also that as the
+X  shell changes, it may become incompatible with older versions; see the
+X  end of question 21 for a partial list.
+X
+X  The next production version will be 2.5 (2.4 will not be released, so
+X  as to minimise confusion over version numbers).  It is expected that
+X  no new features will be added before the release.
+X
+X  ** STOP PRESS ** Release of 2.5 is imminent.  The archive now contains
+X  a preliminary version 2.5.0a; apart from a few fixes, such as a known
+X  bug when completing using complicated compctl expressions and
+X  configuration changes for some machines, this will form the release.
+X
+X
+X4) Where do I get it?
+X
+X  Bas de Bakker (bas@phys.uva.nl) is in charge of the archive and the
+X  latest version is available for users east of the Atlantic from:
+X	carlo.phys.uva.nl(145.18.218.21):/pub/bas/zsh/zsh-2.4beta.tar.gz
+X  The latest full release is in zsh-2.3.1.tar.gz in the same directory.
+X  Note that this is in gzip format: you will need GNU gzip from your
+X  nearest GNU archive to unpack it.  There is also a version under RCS
+X  control which may be more suitable for source hackers.
+X
+X  Rick Ohnemus has a reflector site in the USA:
+X        ftp.sterling.com (192.124.9.3):/zsh
+X
+X  The 2.3.1 distribution is also available from ftp.uu.net and mirrors
+X  in the directory pub/shells/zsh.
+X
+X
+X5) How does zsh differ from sh, ksh, csh, tcsh, bash?
+X
+X  As has already been mentioned, zsh is most similar to ksh, while many
+X  of the additions are to please csh users.
+X
+X  i) ksh:
+X
+X  Most features of ksh (and hence also of sh) are implemented in zsh;
+X  problems can arise because the implementation is slightly different.
+X  Note also that not all ksh's are the same either.  I have based this
+X  on the 11/16/88f version of ksh.
+X
+X  Various options can be turned on which will increase ksh
+X  compatibility, though decrease zsh's abilities: see the manual
+X  entries for GLOB_SUBST, IGNORE_BRACES (though brace expansion occurs
+X  in some versions of ksh), KSH_OPTION_PRINT, NO_BANG_HIST, NO_EQUALS,
+X  NO_HUP, NO_RCS, NO_SHORT_LOOPS, PROMPT_SUBST, RM_STAR_SILENT,
+X  SH_WORD_SPLIT (see question 10) and SINGLE_LINE_ZLE.  Note that you
+X  can also disable any built-in commands which get in your way.  If
+X  invoked as `ksh', the shell will try and set suitable options.
+X
+X  Here are some differences from ksh which might prove significant for
+X  ksh programmers, some of which may be interpreted as bugs; there must
+X  be more.  Note that this list is deliberately rather full and that
+X  most of the items are fairly minor.  Those marked `*' perform in a
+X  ksh-like manner if the shell is invoked with the name `ksh'.
+X  
+X  Syntax:
+X  * Shell word splitting: see question 10).  (This is particularly
+X      frequently asked about.)
+X    Arrays are more csh-like than ksh-like:
+X      subscripts start at 1, not 0; array[0] refers to array[1];
+X      `$array' refers to the whole array, not $array[0];
+X      braces are unnecessary: $a[1] == ${a[1]}, etc.
+X    Coprocesses are established by `coproc'; `|&' behaves like csh.
+X    Opening for both input and output via <> is not yet supported.
+X  Command line substitutions, globbing etc.:
+X  * The results of parameter substitutions are treated as plain text:
+X      `foo="*"; print $foo' prints all files in ksh but * in zsh.
+X      (The GLOB_SUBST option has just been added to fix this.)
+X    The $((...)) version of numeric evaluation is not implemented; use $[...].
+X    Treatment of backslashes within backquotes is subtly different.
+X    $PSn do not do parameter substitution by default (use PROMPT_SUBST 
+X      option).
+X    Globbing does not allow ksh-style `pattern-lists'.  Equivalents:
+X      -------------------------------------------------------------------
+X             ksh             zsh          Meaning
+X            -----           -----        ---------
+X           !(foo)            ^foo        Anything but foo.
+X                      or   foo1~foo2     Anything matching foo1 but foo2.
+X      @(foo1|foo2|...)  (foo1|foo2|...)  One of foo1 or foo2 or ...
+X           ?(foo)           (foo|)       Zero or one occurrences of foo.
+X           *(foo)           (foo)#       Zero or more occurrences of foo.
+X           +(foo)         foo(foo)#      One or more occurrences of foo.
+X      -------------------------------------------------------------------
+X      The last two (with `#') require the EXTENDED_GLOB option.
+X    Unquoted assignments do file expansion after ':'s (intended for PATHs).
+X    `integer' does not allow -i; integers in bases other than 10 do not
+X      have "base#" prefixed to them when printed.
+X  Command execution:
+X  * There is no ENV variable (use /etc/zshrc, ~/.zshrc; note also ZDOTDIR).
+X    The PATH is not searched for commands specified at invocation without -c.
+X  Aliases and functions:
+X    The order in which aliases and functions are defined is significant
+X      (function definitions with () expand aliases -- see question 6).
+X    Aliases and functions cannot be exported.
+X    There are no tracked aliases: command hashing replaces these.
+X    The use of aliases for key bindings is replaced by `bindkey'.
+X  Traps and signals:
+X    By default, background jobs are killed when you log out:  see 18).
+X    Traps and options are not local to functions; traps are not reset
+X      automatically when called; traps are called as functions themselves
+X      (this is a bug for the `trap "..." NAL' form of trap setting).
+X    TRAPERR has become TRAPZERR (this was forced by UNICOS which has SIGERR).
+X  Editing:
+X    The options emacs, gmacs, trackall, viraw are not supported.
+X      Use bindkey to change the editing behaviour: `set -o {emacs,vi}' 
+X      become `bindkey -{e,v}'; for gmacs, go to emacs mode and use
+X      `bindkey \^t gosmacs-transpose-characters'.  `Trackall' is replaced
+X      by `hashcmds'.
+X    The `keyword' option does not exist and -k is instead interactivecomments.
+X      (`keyword' will not be in the next ksh release either.)
+X    Management of histories in multiple shells is different:
+X      the history list is not saved and restored after each command.
+X    \ does not escape editing chars (use ^V).
+X    Not all ksh bindings are set (e.g. `<ESC>#'; try <ESC>q).
+X  * # in an interactive shell is not treated as a comment by default.
+X  Built-in commands:
+X    Some built-ins (r, autoload, history, integer ...) were aliases in ksh.
+X    There is no built-in command newgrp: use a shell function, e.g.
+X      newgrp () { ((SHLVL--)) ; exec command newgrp $* }
+X      (in 2.4 you can get away with `alias newgrp="exec newgrp"'
+X    `jobs' has no `-n' flag.
+X    `read' has no `-s' flag.
+X    In `let "i = foo"', foo is evaluated as a number, not an expression
+X      (although in `let "i = $foo"' it is treated as an expression).
+X  Other idiosyncrasies:
+X    `select' always redisplays the list of selections on each loop.
+X
+X  ii) csh:
+X
+X  Although certain features aim to ease the withdrawal symptoms of csh
+X  (ab)users, the syntax is in general rather different and you should
+X  certainly not try to run scripts without modification.  The c2z script
+X  is provided with the source (in scripts/c2z) to help convert .cshrc
+X  and .login files; see also the next question concerning aliases,
+X  particularly those with arguments.
+X
+X  Csh-compatibility additions include:
+X    Logout, rehash, source, (un)limit built-in commands.
+X    *rc file for interactive shells.
+X    Directory stacks.
+X    Cshjunkie*, ignoreeof options.
+X    The nonomatch option.
+X    >&, |& etc. redirection.
+X    foreach ... loops; alternative syntax for other loops.
+X    Alternative syntax `if ( ... ) ...' (also `for', `which'; this now
+X      requires the CSH_JUNKIE_PAREN option).
+X    $PROMPT as well as $PS1, $status as well as $?, $#argv as well as $#, ....
+X    Escape sequences via % for prompts.
+X    Special array variables $PATH etc. are colon-separated, $path are arrays.
+X    !-type history (which may be turned off via `setopt nobanghist').
+X    Arrays have csh-like features (see i)).
+X
+X  iii) tcsh:
+X
+X  (The previous section applies too, of course.)  Certain features have
+X  been borrowed from tcsh, including $watch, run-help, $savehist,
+X  $histlit, periodic commands etc., extended prompts, sched and
+X  which/where built-ins.  Programmable completion was inspired by, but
+X  is entirely different to, tcsh's `complete'. (There is a perl script
+X  called lete2ctl in the scripts directory of the source distribution to
+X  convert `complete' to `compctl' statements.)  This list is not
+X  definitive: some features have gone in the other direction.
+X
+X  If you're missing the editor function run-fg-editor, try something
+X  with bindkey -s (which binds a string to a keystroke), e.g.
+X	bindkey -s '^z' '\eqfg %$EDITOR:t\n'
+X  which pushes the current line onto the stack and tries to bring a job
+X  with the basename of your editor into the foreground.  Bindkey -s
+X  allows limitless possibilities along these lines.
+X
+X  iv) bash:
+X  
+X  Zsh has almost all the features that bash has (and much more); in
+X  addition it is about twice as fast, though this is less impressive
+X  than it sounds.  With the new malloc by Sven Wischnowsky (only used if
+X  you arranged for USE_ZSH_MALLOC to be defined in config.h when
+X  compiling zsh), zsh uses about the same amount of heap memory as bash,
+X  which was previously the biggest gripe.  The only feature I am aware
+X  of that zsh doesn't have is setting a numerical value for ignoreeof
+X  --- it's always 10 --- but of course I don't use bash :-).
+X
+X  However, zsh has no claims towards Posix compliancy and will not use
+X  GNU readline (zle is more powerful).  In fact, bash is intended more
+X  as an enhanced sh than a ksh work-alike; it doesn't handle [[ ... ]],
+X  for example.
+X
+X
+X6) Why do my csh aliases not work?  (Plus other alias pitfalls.)
+X
+X  First of all, check you are using the syntax
+X	alias newcmd='list of commands'
+X  and not
+X	alias newcmd 'list of commands'
+X  which won't work. (It tells you if `newcmd' and `list of commands' are
+X  already defined as aliases.)
+X
+X  Otherwise, your aliases probably contain references to the command
+X  line of the form `\!*', etc.  Zsh does not handle this behaviour as it
+X  has shell functions which provide a way of solving this problem more
+X  consistent with other forms of argument handling.  For example, the
+X  csh alias
+X	alias cd 'cd \!*; echo $cwd'
+X  can be replaced by the zsh function,
+X	cd() { builtin cd $*; echo $PWD; }
+X  (the `builtin' tells zsh to use its own `cd', avoiding an infinite loop)
+X  or, perhaps better,
+X	cd() { builtin cd $*; print -D $PWD; }
+X  (which converts your home directory to a ~).  In fact, this problem is
+X  better solved by defining the special function chpwd() (see the manual).
+X  Note also that the `;' at the end of the function is optional in zsh,
+X  but not in ksh or sh (for sh's where it exists).
+X
+X  Here is Bart Schaefer's guide to converting csh aliases for zsh.
+X
+X    1.  If the csh alias references "parameters" (\!:1 \!* etc.),
+X        then in zsh you need a function (referencing $1 $* etc.).
+X        Otherwise, you can use a zsh alias.
+X
+X    2.  If you use a zsh function, you need to refer _at_least_ to
+X        $* in the body (inside the { }).  Parameters don't magically
+X        appear inside the { } the way they get appended to an alias.
+X    
+X    3.  If the csh alias references its own name (alias rm "rm -i"),
+X        then in a zsh function you need the "command" keyword
+X        (function rm() { command rm -i $* }), but in a zsh alias
+X        you don't (alias rm="rm -i").
+X
+X    4.  If you have aliases that refer to each other (alias ls "ls -C";
+X        alias lf "ls -F" ==> lf == ls -C -F) then you must either:
+X        a.  convert all of them to zsh functions; or
+X        b.  after converting, be sure your .zshrc defines all of your
+X            aliases before it defines any of your functions.
+X
+X    Those first four are all you really need, but here are four more for
+X    heavy csh alias junkies:
+X
+X    5.  Mapping from csh alias "parameter referencing" into zsh function
+X        (assuming shwordsplit is NOT set in zsh):
+X             csh                   zsh
+X            =====               ==========
+X            \!*                 $*              (or $argv)
+X            \!^                 $1              (or $argv[1])
+X            \!:1                $1
+X            \!:2                $2              (or $argv[2], etc.)
+X            \!$                 $*[$#]          (or $argv[$#], or $*[-1])
+X            \!:1-4              $*[1,4]
+X            \!:1-               $*[1,$#-1]      (or $*[1,-2])
+X            \!^-                $*[1,$#-1]
+X            \!*:q               "$@"            ($*:q doesn't work (yet))
+X            \!*:x               $=*             ($*:x doesn't work (yet))
+X
+X    6.  Remember that it is NOT a syntax error in a zsh function to
+X        refer to a position ($1, $2, etc.) greater than the number of
+X        parameters. (E.g., in a csh alias, a reference to \!:5 will
+X        cause an error if 4 or fewer arguments are given; in a zsh
+X	function, $5 is the empty string if there are 4 or fewer
+X	parameters.)
+X
+X    7.  To begin a zsh alias with a - (dash, hyphen) character, use
+X        "alias --":
+X                 csh                            zsh
+X            ===============             ==================
+X            alias - "fg %-"             alias -- -="fg %-"
+X
+X    8.  Stay away from "alias -g" in zsh until you REALLY know what
+X        you're doing.
+X
+X  There is one other serious problem with aliases: consider
+X        alias l='/bin/ls -F'
+X        l() { /bin/ls -la $* | more }
+X  `l' in the function definition is in command position and is expanded
+X  as an alias, defining `/bin/ls' and `-F' as functions which call
+X  `/bin/ls', which gets a bit recursive.  This can be avoided if you use
+X  `function' to define a function, which doesn't expand aliases.  It is
+X  possible to argue for extra warnings somewhere in this mess.  Luckily,
+X  it is not possible to define `function' as an alias.
+X
+X
+X7) How do I turn off spelling correction for an individual command?
+X
+X  You presumably have `setopt correctall' in an initialisation file, so
+X  that zsh checks the spelling of each word in the command line.  You
+X  probably do not want this behaviour for commands which do not operate
+X  on existing files.
+X  
+X  The answer is to alias the offending command to itself with
+X  `nocorrect' stuck on the front, e.g.
+X       alias mkdir='nocorrect mkdir'
+X
+X
+X8) How do I get the meta key to work on my xterm?
+X
+X  As stated in the manual, zsh needs to be told about the meta key by
+X  using `bindkey -me' or `bindkey -mv' in your .zshrc or on the command
+X  line.  You probably also need to tell the terminal driver to allow the
+X  `meta' bit of the character through; `stty pass8' is the usual
+X  incantation.  Sample .zshrc entry:
+X	[[ $TERM = "xterm" ]] && stty pass8 && bindkey -me
+X  or, on SYSVR4-ish systems without pass8,
+X	[[ $TERM = "xterm" ]] && stty -parenb -istrip cs8 && bindkey -me
+X  (disable parity detection, don't strip high bit, use 8-bit characters).
+X  Make sure this comes *before* any bindkey entries in your .zshrc which
+X  redefine keys normally defined in the emacs/vi keymap.
+X
+X
+X9) Why does my terminal act funny in way x?
+X
+X  If you are using an OpenWindows cmdtool as your terminal, any
+X  escape sequences (such as those produced by cursor keys) will be
+X  swallowed up and never reach zsh.  Either use shelltool or avoid
+X  commands with escape sequences.  You can also disable scrolling from
+X  the cmdtool pane menu (which effectively turns it into a shelltool).
+X  If you still want scrolling, try using an xterm with the scrollbar
+X  activated.
+X
+X  If that's not the problem, and you are using stty to change some tty
+X  settings, make sure you haven't asked zsh to freeze the tty settings:
+X  type
+X	ttyctl -u
+X  before any stty commands you use.
+X
+X  On the other hand, if you aren't using stty and have problems you may
+X  need the opposite:  `ttyctl -f' freezes the terminal to protect it
+X  from hiccups introduced by other programmes (kermit has been known to
+X  do this).
+X
+X  If _that's_ not the problem, and you are having difficulties with
+X  external commands (not part of zsh), and you think some terminal
+X  setting is wrong (e.g. ^V is getting interpreted as `literal next
+X  character' when you don't want it to be), try
+X	ttyctl -u
+X	STTY='lnext "^-"' commandname
+X  (in this example), or just export STTY for all commands to see.  Note
+X  that zsh doesn't reset the terminal completely afterwards: just the
+X  modes it uses itself and a number of special processing characters
+X  (see the stty(1) manual page).
+X
+X  After the release of version 2.5, there is likely to be an overhaul
+X  which allows the terminal modes used by the shell to be modified
+X  separately from those seen by external programmes.  This is partially
+X  implemented already:  in 2.5, the shell will be less susceptible to
+X  mode changes inherited from programmes.
+X
+X
+X10) Why does `$var' where var="foo bar" not do what I expect?
+X
+X  In most Bourne-shell derivatives, multi-word variables such as
+X	var="foo bar"
+X  are split into words when passed to a command or used in a `for foo in
+X  $var' loop.  By default, zsh does not have that behaviour: the
+X  variable remains intact.  (This is not a bug!  See below.)  An option
+X  (shwordsplit) exists to provide compatibility.
+X  
+X  For example, defining the function args to show the number of its
+X  arguments:
+X	args() { echo $#; }
+X  and with our definition of vble,
+X	args $vble
+X  produces the output `1'.  After
+X	setopt shwordsplit
+X  the same function produces the output `2', as with sh and ksh.
+X  
+X  Unless you need strict sh/ksh compatibility, you should ask yourself
+X  whether you really want this behaviour, as it can produce unexpected
+X  effects for variables with entirely innocuous embedded spaces.  The
+X  natural way to produce word-splitting behaviour in zsh is via arrays.
+X  For example,
+X	set -A array one two three twenty
+X  (or
+X        array=(one two three twenty)
+X  if you prefer), followed by
+X	args $array
+X  produces the output `4', regardless of the setting of shwordsplit.
+X  Arrays are also much more versatile than single strings.
+X
+X  Note also the "$@" method of word splitting is always available in zsh
+X  functions and scripts (though strictly this does array splitting, not
+X  word splitting), also the substitution ${=foo} to toggle word
+X  splitting on variable `foo'.
+X
+X  Shwordsplit is set when zsh is invoked with the name `ksh'.
+X
+X
+X11) My PATH, (MANPATH, ...) sometimes doesn't handle tildes.  What gives?
+X
+X  The code has recently been overhauled, so take a look at the latest
+X  version of 2.4beta.  This guarantees that no ~user expansion (or
+X  =command expansion, which takes place at the same time) will happen if
+X  the tilde is quoted, and also rationalises PATH-type variables by
+X  expanding all unquoted assignments as if they are colon-separated
+X  lists (so you may need to add or subtract a few extra quotes, but the
+X  results are more predictable).  In addition typeset, etc., now should
+X  behave like ordinary assignments in this respect; previously tildes in
+X  typeset assignments were unquotable.
+X
+X
+X12) How does base arithmetic work?
+X
+X  The ksh syntax is now understood, i.e.
+X        let 'foo = 16#ff'
+X  or equivalently
+X        (( foo = 16#ff ))
+X  or even
+X        foo=$[16#ff]
+X  (note that `foo=$((16#ff))' is not yet supported).
+X  The original syntax was
+X	(( foo = [16]ff ))
+X  --- this was based on a misunderstanding of the ksh manual page.  It
+X  still works but its use is deprecated.
+X  Then
+X	echo $foo
+X  gives the answer `255'.  It is possible to declare variables explicitly
+X  to be integers, via
+X	typeset -i foo
+X  which has a different effect: namely the base used in the first
+X  assignment (hexadecimal in the example) is subsequently used whenever
+X  `foo' is displayed (although the internal representation is unchanged).
+X  To ensure foo is always displayed in decimal, declare it as
+X	typeset -i 10 foo
+X  which requests base 10 for output.  You can change the output base of an
+X  existing variable in this fashion.  Using the `$[ ... ]' method will
+X  always display in decimal.
+X
+X
+X13) How do I get a newline in my prompt?
+X
+X  You can place a literal newline in quotes, i.e.
+X	PROMPT="Hi Joe,
+X	what now?%# "
+X  If you have the bad taste to set the option cshjunkiequotes, which
+X  inhibits such behaviour, you will have to bracket this with 
+X  `unsetopt cshjunkiequotes' and `setopt cshjunkiequotes', or put it in
+X  your .zshrc before the option is set.
+X  
+X  Arguably the prompt code should handle `print'-like escapes.  Feel
+X  free to write this :-).
+X
+X
+X14) Why does `bindkey ^a command-name' or 'stty intr ^-' do something funny?
+X
+X  You probably have the extendedglob option set in which case ^ and #
+X  are metacharacters.  ^a matches any file except one called a, so the
+X  line is interpreted as bindkey followed by a list of files.  Quote the
+X  ^ with a backslash or put quotation marks around ^a.
+X
+X
+X15) Why can't I bind \C-s and \C-q any more?
+X
+X  The control-s and control-q keys now do flow control by default,
+X  unless you have turned this off with `stty -ixon' or redefined the
+X  keys which control it with `stty start' or `stty stop'.  (This is
+X  done by the system, not zsh; the shell simply respects these
+X  settings.)  In other words, \C-s stops all output to the terminal,
+X  while \C-q resumes it.
+X
+X  There is an option NO_FLOW_CONTROL to stop zsh from allowing flow
+X  control and hence restoring the use of the keys: put `setopt
+X  noflowcontrol' in .zshrc.
+X
+X
+X16) How do I execute command `foo' within function `foo'?
+X
+X  The command `command foo' does just that.  You don't need this with
+X  aliases, but you do with functions.  Note that error messages like
+X        zsh: job table full or recursion limit exceeded
+X  are a good sign that you tried calling `foo' in function `foo' without
+X  using `command'.
+X
+X
+X17) Why can't I get zsh to work with SGI's `userenv'?
+X
+X  It seems the Silicon Graphics `userenv' command interacts weirdly with
+X  the line editor (zsh is not unique in this respect).  Add this line to
+X  the top of your .zshenv file:
+X        if [[ "${ENVONLY:-0}" -eq 1 ]]; then unsetopt zle; fi
+X  --- which will turn the line editor off if it sees a `userenv' coming.
+X  Don't turn zle back on with setopt until [[ $ENVONLY -ne 1 ]].
+X
+X
+X18) Why do history substitutions with single bangs do something funny?
+X
+X  If you have a command like "echo !-2:$ !$", the first history
+X  substitution then sets a default to which later history substitutions
+X  with single unqualified bangs refer, so that !$ becomes equivalent to
+X  !-2:$.  The option CSH_JUNKIE_HISTORY makes all single bangs refer
+X  to the last command.
+X
+X
+X19) Why does zsh kill off all my background jobs when I logout?
+X
+X  Simple answer: you haven't asked it not to.  Zsh (unlike [t]csh) gives
+X  you the option of having background jobs killed or not: the `nohup'
+X  option exists if you don't want them killed.  Note that you can always
+X  run programs with `nohup' in front of the pipeline whether or not the
+X  option is set, which will prevent that job from being killed on
+X  logout.  (Nohup is actually an external command.)
+X
+X  The `disown' builtin is very useful in this respect: if zsh informs
+X  you that you have background jobs when you try to logout, you can
+X  `disown' all the ones you don't want killed when you exit.  This is
+X  also a good way of making jobs you don't need the shell to know about
+X  (such as commands which create new windows) invisible to the shell.
+X
+X
+X20) I don't have root access: how do I make zsh my login shell?
+X
+X  Unfortunately, on many machines you can't use `chsh' to change your
+X  shell unless the name of the shell is contained in /etc/shells, so if
+X  you have your own copy of zsh you need some sleight-of-hand to use it
+X  when you log on.  (Simply typing `zsh' is not really a solution since
+X  you still have your original login shell waiting for when you exit.)
+X  
+X  The basic idea is to use `exec <zsh-path>' to replace the current
+X  shell with zsh.  Often you can do this in a login file such as
+X  .profile (if your shell is sh or ksh) or .login (if it's csh).  Make
+X  sure you have some way of altering the file (e.g. via FTP) before you
+X  try this as `exec' is often rather unforgiving.
+X
+X  If you have zsh in a subdirectory `bin' of your home directory,
+X  put this in .profile:
+X	[ -f $HOME/bin/zsh ] && exec $HOME/bin/zsh -l
+X  or if your login shell is csh or tcsh, put this in .login:
+X	if ( -f ~/bin/zsh ) exec ~/bin/zsh -l
+X  (in each case the -l tells zsh it is a login shell).  
+X
+X  It's not a good idea to put this (even without the -l) into .cshrc, at
+X  least without some tests on what the csh is supposed to be doing, as
+X  that will cause _every_ instance of csh to turn into a zsh and will
+X  cause csh scripts (yes, unfortunately some people write these) which
+X  do not call `csh -f' to fail.  If you want to tell xterm to run zsh,
+X  change the SHELL environment variable to the full path of zsh at the
+X  same time as you exec zsh.  If you have to exec zsh from your .cshrc,
+X  a minimum safety check is `if ($?prompt) exec zsh'.
+X
+X  If you like your login shell to appear in the process list as '-zsh',
+X  you can link zsh to -zsh (e.g. by `ln -s ~/bin/zsh ~/bin/-zsh') and
+X  change the exec to `exec -zsh'.  (Make sure -zsh is in your path.)
+X  This has the same effect as the `-l' option.
+X
+X  Footnote: if you DO have root access, make sure zsh goes in
+X  /etc/shells on all appropriate machines, including NIS clients, or you
+X  may have problems with FTP to that machine.
+X
+X
+X21) Shouldn't zsh be more/less like ksh/(t)csh?
+X
+X  People often ask why zsh has all these `unnecessary' csh-like features,
+X  or alternatively why zsh doesn't understand more csh syntax.  This is
+X  far from a definitive answer and the debate will no doubt continue.
+X
+X  Paul's object in writing zsh was to produce a ksh-like shell which
+X  would have features familiar to csh users.  For a long time, csh was
+X  the preferred interactive shell and there is a strong resistance to
+X  changing to something unfamiliar, hence the additional syntax and
+X  CSH_JUNKIE options.  This argument still holds.  On the other hand,
+X  the arguments for having what is close to a plug-in replacement for ksh
+X  are, if anything, even more powerful:  the deficiencies of csh as a
+X  programming language are well known (look in any Usenet FAQ archive, e.g.
+X    rtfm.mit.edu:pub/usenet-by-group/news.answers/unix-faq/shell/csh-whynot
+X  if you are in any doubt) and zsh is able to run many standard scripts
+X  such as /etc/rc.
+X  
+X  Of course, this makes zsh rather large and quite messy so that it
+X  seems to appeal mainly to hackers.  The only answer, perhaps not
+X  entirely satisfactory, is that you have to ignore the bits you don't
+X  want.
+X
+X
+X22) What bugs are currently known and unfixed?
+X
+X  Here are some of the more well-known ones, very roughly in decreasing
+X  order of significance.  Many of these can also be counted against
+X  differences from ksh in question 5); note that this applies to the
+X  latest beta version and that simple bugs are often fixed quite
+X  quickly.  There is a file BUGS in the source distribution with more
+X  detail.
+X
+X  Pipelines ending in a while/until/for loop are uninterruptible.
+X  Certain built-ins won't allow the `VAR=value command ...' assignment;
+X    the ones that do don't unset VAR after use (may not really be a bug).
+X    (N.B.: `exec foo=bar command' is a workaround for exec.)
+X  The `histlit' option adds newlines to lines in the history
+X    (and is broken in several other ways, e.g. !:x word selection;
+X    it may be removed).
+X  `time' is ignored with builtins and can't be used with {...} or (...);
+X    in shells with no job control the command name is blank.
+X  `set -x' (`setopt xtrace') doesn't show as much as it should.
+X  The line number of errors inside control structures is always given
+X    as the end of the structure (i.e. at `fi', `done', etc.).
+X  $_ returns the last unexpanded word from the previous line (not command).
+X  The :q modifier doesn't split words and -q and -x don't work for variables.
+X  In vi mode, `u' can go past the original modification point.
+X  Autocd won't use globbed filenames.
+X  The singlelinezle option has problems with prompts containing escapes.
+X  `wait' on its own is not interruptible;  interrupting `wait %...'
+X    kills the job; wait does not set the correct status.
+X  Builtins at the end of a pipeline lose their status to previous commands.
+X
+X  Note that a few recent changes introduce incompatibilities (these
+X  are not bugs):
+X  An option CSH_JUNKIE_PAREN has proved necessary for the syntax `if (
+X    <condition> ) <code>' and for similar for and while (but not
+X    foreach) commands.  This is because it is valid Bourne/Korn shell
+X    syntax to have a subshell command immediately after if, and the
+X    default syntax should be compliant with that.
+X  Assignment of `...` and $(...) to variables in the form `foo=$(...)'
+X    is now always scalar; previously the command output was split and
+X    array assignment performed if more than one word resulted.  You
+X    can still generate an array vie `foo=($(...))', which was always
+X    the safe way of doing it.  Again, this is for Bourne/Korn compliance.
+X  The -h option to compctl has been removed (use `-k hosts' for the
+X    same effect); automatic handling of hosts after '@' has been removed
+X    (use e.g. `compctl -u -x "n[-1,@]" -k hosts -- finger').
+X  Handling of backslashes in `echo' and `print' has changed.
+X  umask's behaviour with respect to symbolic operators has reversed
+X    (and is now ksh-compatible).
+X  The option CSH_JUNKIE_TILDE has been upgraded to GLOB_SUBST: instead
+X    of just ~'s and ='s, all characters become eligible for file
+X    expansion and globbing when the option is set.  (The option was
+X    not present in 2.3 at all.)
+X
+X  There is at least one common bug which is not due to zsh.  If you have
+X  abnormal behaviour with file descriptor 4, it's because your password
+X  database is being read from the Network Information System and
+X  getpwent() left this fd open.
+X
+X
+X23) Where do I report bugs, get more info / who's working on zsh?
+X
+X  The shell is being maintained by various (entirely self-appointed)
+X  subscribers to the mailing list,
+X	zsh-list@sterling.com so any suggestions, complaints,
+X  questions and matters for discussion should be sent there.  If you
+X  want someone to mail you directly, say so.  Most patches to zsh appear
+X  there first.
+X  
+X  A lower-volume list,
+X	zsh-announce@sterling.com
+X  exists for announcements of new features and proposed changes
+X  requiring some decisions.
+X
+X  Both lists are handled by an automated server.  The instructions for
+X  zsh-announce are the same as for zsh-list: just change zsh-list to
+X  zsh-announce everywhere in the following.
+X
+X  To join zsh-list, send email to
+X	Majordomo@sterling.com
+X  containing
+X	subscribe zsh-list <optional-address>
+X  where <optional-address> can be blank if you want to subscribe from
+X  your current email address.  Send the message `help' to the same
+X  address for help on the list server; `unsubscribe zsh-list' also
+X  works. (Don't send this to the list!) The list manager, Rick Ohnemus,
+X  can be reached at
+X	owner-zsh-list@sterling.com
+X  (or `rick' at the same adress).
+X
+X  The list (everything since May 1992) is archived in
+X	ftp.sterling.com:zsh/zsh-list/YY-MM
+X  where YY-MM are the year and month in digits.
+X
+X  Of course, you can also post zsh queries to the Usenet group
+X  comp.unix.shell; if all else fails, you could even e-mail me.
+X
+X
+X24) What's on the wish-list?
+X
+X  (The following will not be done before the release of 2.5.)
+X  Ksh/sh compatibility could be improved if required.  This would
+X    be a useful long term goal.
+X  Option for glob qualifiers to follow perl syntax.
+X  Option to quote !-history lexically via '' but not "".
+X  Binding of shell functions (or commands?) to key strokes --
+X    requires some way of accessing the editing buffer from functions
+X    and probably of executing zle functions as a command.
+X  trap '...' FOO should be eval'd rather than called as a function.
+X  `PATH=' should clear the PATH:  it inserts `.'; use `unset PATH' or
+X    `path=()' for the time being.  This is not really a bug as the .
+X    would be used internally in any case (cf. ksh).
+X  Users should be able to create their own foopath/FOOPATH array/path
+X    combinations.
+X  The introduction to zsh (intro.*) could do with an update to reflect
+X    extended completion (in particular) and other recent additions.
+X
+X
+XAcknowledgments:
+X
+XThanks to zsh-list, in particular Bart Schaefer, for suggestions
+Xregarding this document; thanks to Jim Mattson and more recently Bas de
+XBakker for their hard work as archivists, and to Peter Gray for
+Xmaintaining the mailing list, without which zsh might easily have died,
+Xand to the latest list maintainer, Rick Ohnemus.  The world is eternally
+Xin the debt of Paul Falstad for inventing zsh in the first place.
+END_OF_FILE
+  if test 39799 -ne `wc -c <'zsh-2.5.0/FAQ'`; then
+    echo shar: \"'zsh-2.5.0/FAQ'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/FAQ'
+fi
+if test -f 'zsh-2.5.0/help/bindkey' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/bindkey'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/bindkey'\" \(28346 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/bindkey' <<'END_OF_FILE'
+X       bindkey -mevd
+X       bindkey -r in-string ...
+X       bindkey [ -a ] in-string [ command ] ...
+X       bindkey -s [ -a ] in-string out-string ...
+X              The -e and -v options put the keymaps in emacs mode
+X              or vi mode respectively; they cannot be used simul-
+X              taneously. The -d option resets all bindings to the
+X              compiled-in  settings.  If not used with options -e
+X              or -v, the maps will be left in emacs mode,  or  in
+X              vi mode if the VISUAL or EDITOR variables exist and
+X              contain the string "vi".  Metafied  characters  are
+X              bound  to  self-insert  by  default.  The -m option
+X              loads the compiled-in bindings of these  characters
+X              for  the  mode determined by the preceding options,
+X              or the current mode if  used  alone.  Any  previous
+X              bindings done by the user will be preserved. If the
+X              -r option is given, remove any binding for each in-
+X              string.  If  the  -s  option is not specified, bind
+X              each in-string to a specified command. If  no  com-
+X              mand  is  specified, print the binding of in-string
+X              if it is bound, or return a nonzero exit code if it
+X              is  not  bound. If the -s option is specified, bind
+X              each in-string to each specified  out-string.  When
+X              in-string  is typed, out-string will be pushed back
+X              and treated as input to the line editor. This  pro-
+X              cess is recursive but, to avoid infinite loops, the
+X              shell will report an error if more than 20 consecu-
+X              tive replacements happen. If the -a option is spec-
+X              ified,  bind  the  in-strings  in  the  alternative
+X              keymap  instead  of the standard one.  The alterna-
+X              tive keymap is used in vi command mode.
+X
+X              It's possible for an in-string to be bound to some-
+X              thing  and  also be the beginning of a longer bound
+X              string. In this case the shell will wait a  certain
+X              time to see if more characters are typed and if not
+X              it  will  execute  the  binding.  This  timeout  is
+X              defined by the KEYTIMEOUT parameter; its default is
+X              0.4 sec. No timeout is done if the prefix string is
+X              not bound.
+X
+X              For either in-string or out-string, control charac-
+X              ters may be specified in the form ^X, and the back-
+X              slash may be used to introduce one of the following
+X              escape sequences:
+X                      \a     bell character
+X                      \n     linefeed (newline)
+X                      \b     backspace
+X                      \t     horizontal tab
+X                      \v     vertical tab
+X                      \f     form feed
+X                      \r     carriage return
+X                      \e, \E escape
+X                      \nnn   character code in octal
+X                      \M-xxx character or  escape  sequence  with
+X                             meta  bit set. The `-' after the `M'
+X                             is optional.
+X                      \C-X   control character.   The  `-'  after
+X                             the `C' is optional.
+X
+X              In all other cases, \ escapes the following charac-
+X              ter.  Delete is written as `^?'. Note  that  `\M^?'
+X              and `^\M?' are not the same.
+X
+X              Multi-character  in-strings cannot contain the null
+X              character ("^@" or "^ "). If they appear in a bind-
+X              key  command,  they  will be silently translated to
+X              "\M-^@". This restriction does not  apply  to  out-
+X              strings,  single-character in-strings and the first
+X              character of a multi-char in-string.
+X
+X   Movement
+X       vi-backward-blank-word (unbound) (B)
+X              Move backward one word, where a word is defined  as
+X              a series of non-blank characters.
+X
+X       backward-char (^B ESC-[D) ()
+X              Move backward one character.
+X
+X       vi-backward-char () (h)
+X              Move   backward  one  character,  without  changing
+X              lines.
+X
+X       backward-word (ESC-B ESC-b) (unbound)
+X              Move to the beginning of the previous word.
+X
+X       emacs-backward-word
+X              Move to the beginning of the previous word.
+X
+X       vi-backward-word (unbound) (b)
+X              Move to the beginning of  the  previous  word,  vi-
+X              style.
+X
+X       beginning-of-line (^A) (0)
+X              Move  to  the beginning of the line.  If already at
+X              the beginning of the line, move to the beginning of
+X              the previous line, if any.
+X
+X       vi-beginning-of-line
+X              Move to the beginning of the line, without changing
+X              lines.
+X
+X       end-of-line (^E)
+X              Move to the end of the line.  If already at the end
+X              of  the  line, move to the end of the next line, if
+X              any.
+X
+X       vi-end-of-line (unbound) ($)
+X              Move to the end of the line.
+X
+X       vi-forward-blank-word (unbound) (W)
+X              Move forward one word, where a word is defined as a
+X              series of non-blank characters.
+X
+X       vi-forward-blank-word-end (unbound) (E)
+X              Move  to the end of the current word, or, if at the
+X              end of the current word, to the  end  of  the  next
+X              word,  where  a word is defined as a series of non-
+X              blank characters.
+X
+X       forward-char (^F ESC-[C)
+X              Move forward one character.
+X
+X       vi-forward-char (unbound) (space l)
+X              Move forward one character.
+X
+X       vi-find-next-char (^X^F) (f)
+X              Read a character from the keyboard, and move to the
+X              next occurrence of it in the line.
+X
+X       vi-find-next-char-skip (unbound) (t)
+X              Read a character from the keyboard, and move to the
+X              position just before the next occurrence of  it  in
+X              the line.
+X
+X       vi-find-prev-char (unbound) (F)
+X              Read a character from the keyboard, and move to the
+X              previous occurrence of it in the line.
+X
+X       vi-find-prev-char-skip (unbound) (T)
+X              Read a character from the keyboard, and move to the
+X              position  just  after the previous occurrence of it
+X              in the line.
+X
+X       vi-first-non-blank (unbound) (^)
+X              Move to the first non-blank character in the  line.
+X
+X       vi-forward-word (unbound) (w)
+X              Move forward one word, vi-style.
+X
+X       forward-word (ESC-F ESC-f) (unbound)
+X              Move  to  the  beginning  of  the  next  word.  The
+X              editor's idea of a word is specified with the WORD-
+X              CHARS parameter.
+X
+X       emacs-forward-word
+X              Move to the end of the next word.
+X
+X       vi-forward-word-end (unbound) (e)
+X              Move to the end of the next word.
+X
+X       vi-goto-column (ESC-|) (|)
+X              Move  to  the column specified by the numeric argu-
+X              ment.
+X
+X       vi-goto-mark (unbound) (`)
+X              Move to the specified mark.
+X
+X       vi-goto-mark-line (unbound) (')
+X              Move to beginning of the line containing the speci-
+X              fied mark.
+X
+X       vi-repeat-find (unbound) (;)
+X              Repeat the last vi-find command.
+X
+X       vi-rev-repeat-find (unbound) (,)
+X              Repeat  the  last  vi-find  command in the opposite
+X              direction.
+X
+X   History
+X       beginning-of-buffer-or-history (ESC-<)
+X              Move to the beginning of the buffer, or if  already
+X              there, move to the first event in the history list.
+X
+X       beginning-of-line-hist
+X              Move to the beginning of the line.  If  already  at
+X              the  beginning  of the buffer, move to the previous
+X              history line.
+X
+X       beginning-of-history
+X              Move to the first event in the history list.
+X
+X       down-line-or-history (^N ESC-[B) (+ j)
+X              Move down a line in the buffer, or  if  already  at
+X              the bottom line, move to the next event in the his-
+X              tory list.
+X
+X       down-line-or-search
+X              Move down a line in the buffer, or  if  already  at
+X              the  bottom line, search forward in the history for
+X              a line beginning with the first word in the buffer.
+X
+X       down-history (unbound) (^N)
+X              Move to the next event in the history list.
+X
+X       history-beginning-search-backward (unbound)
+X              Search backward in the history for a line beginning
+X              with the current  line  up  to  the  cursor.   This
+X              leaves the cursor in its original position.
+X
+X       end-of-buffer-or-history (ESC->)
+X              Move to the end of the buffer, or if already there,
+X              move to the last event in the history list.
+X
+X       end-of-line-hist
+X              Move to the end of the line.  If already at the end
+X              of the buffer, move to the next history line.
+X
+X       end-of-history
+X              Move to the last event in the history list.
+X
+X       vi-fetch-history (unbound) (G)
+X              Fetch  the  history  line  specified by the numeric
+X              argument.
+X
+X       history-incremental-search-backward (^R ^Xr)
+X              Search  backward  incrementally  for  a   specified
+X              string.   The  string  may begin with `^' to anchor
+X              the  search  to  the  beginning  of  the  line.   A
+X              restricted set of editing functions is available in
+X              the mini-buffer. An interrupt signal, as defined by
+X              the stty setting,  will stop the search and go back
+X              to the original line. An undefined  key  will  have
+X              the same effect. The supported functions are: back-
+X              ward-delete-char,  quoted-insert,  accept-and-hold,
+X              accept-and-infer-next-history,    accept-line   and
+X              accept-line-and-down-history;   magic-space    just
+X              inserts  a  space.  Any  string that is bound to an
+X              out-string (via bindkey -s) will behave as if  out-
+X              string  were typed directly.  Typing the binding of
+X              history-incremental-search-backward  will  get  the
+X              next occurrence of the contents of the mini-buffer.
+X              Typing the binding  of  history-incremental-search-
+X              forward inverts the sense of the search. The direc-
+X              tion of the search is indicated in the mini-buffer.
+X              Any multi-character string that is not bound to one
+X              of the above functions will beep and interrupt  the
+X              search,  leaving the last found line in the buffer.
+X              Any single character that is not bound  to  one  of
+X              the above functions, or self-insert or self-insert-
+X              unmeta, will have the same effect but the  function
+X              will be executed.
+X
+X       history-incremental-search-forward (^Xs)
+X              Search   forward   incrementally  for  a  specified
+X              string.  The string may begin with  `^'  to  anchor
+X              the  search to the beginning of the line. The func-
+X              tions available in the mini-buffer are the same  as
+X              for history-incremental-search-backward.
+X
+X       history-search-backward (ESC-P ESC-p) (K)
+X              Search backward in the history for a line beginning
+X              with the first word in the buffer.
+X
+X       vi-history-search-backward (unbound) (/)
+X              Search backward in  the  history  for  a  specified
+X              string.   The  string  may begin with `^' to anchor
+X              the  search  to  the  beginning  of  the  line.   A
+X              restricted set of editing functions is available in
+X              the mini-buffer. An interrupt signal, as defined by
+X              the  stty setting,  will stop the search, as will a
+X              character  bound  to  vi-cmd-mode.  The   functions
+X              available  in  the  mini-buffer  are:  accept-line,
+X              backward-delete-char,  vi-backward-delete-char  and
+X              quoted-insert.  Any string that is bound to an out-
+X              string (via bindkey -s)  will  behave  as  if  out-
+X              string  were  typed  directly.  Any other character
+X              that is not bound to  self-insert  or  self-insert-
+X              unmeta will beep and be ignored. If the function is
+X              called from vi command mode,  the  bindings  of  vi
+X              insert mode will be used.
+X
+X       history-search-forward (ESC-N ESC-n) (J)
+X              Search  forward in the history for a line beginning
+X              with the first word in the buffer.
+X
+X       vi-history-search-forward (unbound) (?)
+X              Search forward  in  the  history  for  a  specified
+X              string.   The  string  may begin with `^' to anchor
+X              the search to the beginning of the line. The  func-
+X              tions  available in the mini-buffer are the same as
+X              for vi-history-search-backward.
+X
+X       infer-next-history (^X^N)
+X              Search in the history list for a line matching  the
+X              current one and fetch the event following it.
+X
+X       insert-last-word (ESC-_ ESC-.)
+X              Insert  the  last  word  from  the previous history
+X              event at the cursor position.
+X
+X       vi-repeat-search (unbound) (n)
+X              Repeat the last vi history search.
+X
+X       vi-rev-repeat-search (unbound) (N)
+X              Repeat the last vi history search, but in  reverse.
+X
+X       toggle-literal-history (ESC-R ESC-r)
+X              Toggle  between  literal  and lexical history.  The
+X              default  is  lexical  history  unless  the  HISTLIT
+X              option is set.
+X
+X       up-line-or-history (^P ESC-[A) (- k)
+X              Move  up a line in the buffer, or if already at the
+X              top line, move to the previous event in the history
+X              list.
+X
+X       up-line-or-search
+X              Move  up a line in the buffer, or if already at the
+X              top line, search backward in the history for a line
+X              beginning with the first word in the buffer.
+X
+X       up-history (unbound) (^P)
+X              Move to the previous event in the history list.
+X
+X       history-beginning-search-forward (unbound)
+X              Search  forward in the history for a line beginning
+X              with the current  line  up  to  the  cursor.   This
+X              leaves the cursor in its original position.
+X
+X   Modifying Text
+X       vi-add-eol (unbound) (A)
+X              Move  to the end of the line and enter insert mode.
+X
+X       vi-add-next (unbound) (a)
+X              Move forward one character and enter insert mode.
+X
+X       backward-delete-char (^H ^?) (^?)
+X              Delete the character behind the cursor.
+X
+X       vi-backward-delete-char (unbound) (X)
+X              Delete the character  behind  the  cursor,  without
+X              changing lines.
+X
+X       backward-delete-word
+X              Delete the word behind the cursor.
+X
+X       backward-kill-line
+X              Kill  from  the beginning of the line to the cursor
+X              position.
+X
+X       backward-kill-word (^W ESC-^H ESC-^?)
+X              Kill the word behind the cursor.
+X
+X       vi-backward-kill-word (unbound) (^W)
+X              Kill the word behind the cursor.
+X
+X       capitalize-word (ESC-C ESC-c)
+X              Capitalize the current word and move past it.
+X
+X       vi-change (unbound) (c)
+X              Read a movement command from the keyboard, and kill
+X              from  the  cursor  position  to the endpoint of the
+X              movement.  Then enter insert mode.  If the  command
+X              is vi-change, kill the current line.
+X
+X       vi-change-eol (unbound) (C)
+X              Kill  to the end of the line and enter insert mode.
+X
+X       vi-change-whole-line (unbound) (S s)
+X              Kill the current line and enter insert mode.
+X
+X       copy-region-as-kill (ESC-W ESC-w)
+X              Copy the area from the cursor to the  mark  to  the
+X              kill buffer.
+X
+X       copy-prev-word (ESC-^_)
+X              Duplicate the word behind the cursor.
+X
+X       vi-delete (unbound) (d)
+X              Read a movement command from the keyboard, and kill
+X              from the cursor position to  the  endpoint  of  the
+X              movement.   If  the  command is vi-delete, kill the
+X              current line.
+X
+X       delete-char (unbound) (x)
+X              Delete the character under the cursor.
+X
+X       vi-delete-char (unbound) (x)
+X              Delete the character under the cursor.
+X
+X       delete-word (ESC-D ESC-d)
+X              Delete the current word.
+X
+X       down-case-word (ESC-L ESC-l)
+X              Convert the current word to all lowercase and  move
+X              past it.
+X
+X       kill-word
+X              Kill the current word.
+X
+X       gosmacs-transpose-chars
+X              Exchange the two characters behind the cursor.
+X
+X       vi-indent (unbound) (>)
+X              Indent a number of lines.
+X
+X       vi-insert (unbound) (i)
+X              Enter insert mode.
+X
+X       vi-insert-bol (unbound) (I)
+X              Move  to the beginning of the line and enter insert
+X              mode.
+X
+X       vi-join (^X^J)
+X              Join the current line with the next one.
+X
+X       kill-line (^K) (D)
+X              Kill from the cursor to the end of the line.
+X
+X       vi-kill-line
+X              Kill from the cursor to the beginning of the  line.
+X
+X       kill-region
+X              Kill from the cursor to the mark.
+X
+X       kill-buffer (^X^K) (^U)
+X              Kill the entire buffer.
+X
+X       kill-whole-line (^U) (unbound)
+X              Kill the current line.
+X
+X       vi-match-bracket (^X^B) (%)
+X              Move  to  the  bracket character (one of {}, (), or
+X              []) that matches the one under the cursor.
+X
+X       vi-open-line-above (unbound) (O)
+X              Open a line above the cursor and enter insert mode.
+X
+X       vi-open-line-below (unbound) (o)
+X              Open a line below the cursor and enter insert mode.
+X
+X       vi-oper-swap-case
+X              Read a movement command from the keyboard, and swap
+X              the case of all characters from the cursor position
+X              to the endpoint of the movement.  If  the  movement
+X              command  is vi-oper-swap-case, swap the case of all
+X              characters on the current line.
+X
+X       overwrite-mode (^X^O)
+X              Toggle between overwrite mode and insert mode.
+X
+X       vi-put-after (unbound) (p)
+X              Insert the contents of the kill  buffer  after  the
+X              cursor.
+X
+X       quoted-insert (^V)
+X              Insert  the  next  character  typed into the buffer
+X              literally.
+X
+X       quote-line (ESC-')
+X              Quote the current line; that is, put a '  character
+X              at  the  beginning  and  the end, and convert all '
+X              characters to '\''.
+X
+X       quote-region (ESC-")
+X              Quote the region from the cursor to the mark.
+X
+X       vi-replace (unbound) (R)
+X              Enter overwrite mode.
+X
+X       vi-repeat-change (unbound) (.)
+X              Repeat the last vi mode text modification.
+X
+X       vi-replace-chars (unbound) (r)
+X              Replace the character under the cursor with a char-
+X              acter read from the keyboard.
+X
+X       self-insert (printable characters)
+X              Put  a  character in the buffer at the cursor posi-
+X              tion.
+X
+X       self-insert-unmeta (ESC-^I ESC-^J ESC-^M)
+X              Put a character in the buffer after  stripping  the
+X              meta bit and converting ^M to ^J.
+X
+X       vi-substitute (unbound) (s)
+X              Substitute the next character(s).
+X
+X       vi-swap-case (unbound) (~)
+X              Swap the case of the character under the cursor and
+X              move past it.
+X
+X       transpose-chars (^T)
+X              Exchange the two characters to the left of the cur-
+X              sor  if at end of line, else exchange the character
+X              under the cursor with the character to the left.
+X
+X       transpose-words (ESC-T ESC-t)
+X              Exchange the current word with the one before it.
+X
+X       vi-unindent (unbound) (<)
+X              Unindent a number of lines.
+X
+X       up-case-word (ESC-U ESC-u)
+X              Convert the current word to all caps and move  past
+X              it.
+X
+X       yank (^Y) (P)
+X              Insert  the contents of the kill buffer at the cur-
+X              sor position.
+X
+X       yank-pop (ESC-y) (unbound)
+X              Remove the text just yanked, rotate the  kill-ring,
+X              and yank the new top.  Only works following yank or
+X              yank-pop.
+X
+X       vi-yank (unbound) (y)
+X              Read a movement command from the keyboard, and copy
+X              the region from the cursor position to the endpoint
+X              of the movement into the kill buffer.  If the  com-
+X              mand is vi-yank, copy the current line.
+X
+X       vi-yank-eol (unbound) (Y)
+X              Copy the region from the cursor position to the end
+X              of the line into the kill buffer.
+X
+X   Arguments
+X       digit-argument (ESC-0..ESC-9) (0-9)
+X              Start a new numeric argument, or add to the current
+X              one.
+X
+X       neg-argument (ESC-- unbound)
+X              Changes the sign of the following argument.
+X
+X       universal-argument
+X              Multiply the argument of the next command by 4.
+X
+X   Completion
+X       accept-and-menu-complete
+X              In a menu completion, insert the current completion
+X              into the buffer, and advance to the  next  possible
+X              completion.
+X
+X       complete-word (unbound) (\)
+X              Attempt completion on the current word.
+X
+X       delete-char-or-list (^D)
+X              Delete the character under the cursor.  If the cur-
+X              sor is at the end of the line, list  possible  com-
+X              pletions for the current word.
+X
+X       execute-named-cmd (ESC-x)
+X              Read the name of a editor command and execute it. A
+X              restricted set of editing functions is available in
+X              the mini-buffer. An interrupt signal, as defined by
+X              the stty setting,  will  abort  the  function.  The
+X              allowed  functions  are:  backward-delete-char, vi-
+X              backward-delete-char, kill-region (kills  the  last
+X              word),  backward-kill-word,  vi-backward-kill-word,
+X              kill-whole-line,  vi-kill-line,  backward-kill-line
+X              and  accept-line.  The space and tab characters, if
+X              not bound to one of these functions, will  complete
+X              the name and then list the possibilities.
+X
+X       execute-last-named-cmd (ESC-z)
+X              Redo the last function executed with execute-named-
+X              cmd.
+X
+X       expand-cmd-path
+X              Expand the current command to its full pathname.
+X
+X       expand-or-complete (TAB) (TAB ^X)
+X              Attempt shell expansion on the  current  word.   If
+X              that fails, attempt completion.
+X
+X       expand-or-complete-prefix (unbound)
+X              Attempt  shell  expansion  on the current word upto
+X              cursor.
+X
+X       expand-history (ESC-space ESC-!)
+X              Perform history expansion on the edit buffer.
+X
+X       expand-word (^X*)
+X              Attempt shell expansion on the current word.
+X
+X       list-choices (ESC-^D) (^D =)
+X              List possible completions for the current word.
+X
+X       list-expand (^Xg ^XG) (^G)
+X              List the expansion of the current word.
+X
+X       magic-space
+X              Perform history expansion and insert a  space  into
+X              the buffer.  This is intended to be bound to space.
+X
+X       menu-complete
+X              Like complete-word, except that menu completion  is
+X              used.  See the MENU_COMPLETE option below.
+X
+X       menu-expand-or-complete
+X              Like  expand-or-complete,  except that menu comple-
+X              tion is used.
+X
+X       reverse-menu-complete
+X              See the MENU_COMPLETE option below.
+X
+X   Miscellaneous
+X       accept-and-hold (ESC-A ESC-a)
+X              Push the contents of the buffer on the buffer stack
+X              and execute it.
+X
+X       accept-and-infer-next-history
+X              Execute  the  contents  of the buffer.  Then search
+X              the history list for a line  matching  the  current
+X              one  and  push  the event following onto the buffer
+X              stack.
+X
+X       accept-line (^J ^M)
+X              Execute the contents of the buffer.
+X
+X       accept-line-and-down-history (^O)
+X              Execute the current line, and push the next history
+X              event on the the buffer stack.
+X
+X       vi-cmd-mode (^X^V) (^[)
+X              Enter  command  mode;  that  is,  use the alternate
+X              keymap.  Yes, this is bound  by  default  in  emacs
+X              mode.
+X
+X       vi-caps-lock-panic (unbound) (H K)
+X              Hang  until  any lowercase key is pressed.  This is
+X              for vi users without the mental  capacity  to  keep
+X              track of their caps lock key (like the author).
+X
+X       clear-screen (^L ESC-^L)
+X              Clear the screen and redraw the prompt.
+X
+X       exchange-point-and-mark (^X^X)
+X              Exchange  the  cursor position with the position of
+X              the mark.
+X
+X       get-line (ESC-G ESC-g)
+X              Pop the top line off the buffer stack and insert it
+X              at the cursor position.
+X
+X       pound-insert (unbound) (#)
+X              If  there is no # character at the beginning of the
+X              current line, add one.  If there is one, remove it.
+X              In  either  case,  accept  the  current  line.  The
+X              INTERACTIVE_COMMENTS option must be set for this to
+X              have any usefulness.
+X
+X       push-input
+X              Push  the  entire  current multiline construct onto
+X              the buffer stack and return to the top-level  (PS1)
+X              prompt.   If the current parser construct is only a
+X              single line, this is exactly like push-line.   Next
+X              time  the  editor  starts up or is popped with get-
+X              line, the construct will be popped off the  top  of
+X              the  buffer  stack  and  loaded  into  the  editing
+X              buffer.
+X
+X       push-line (^Q ESC-Q ESC-q)
+X              Push the current buffer onto the buffer  stack  and
+X              clear  the buffer.  Next time the editor starts up,
+X              the buffer will be popped off the top of the buffer
+X              stack and loaded into the editing buffer.
+X
+X       push-line-or-edit
+X              At  the top-level (PS1) prompt, equivalent to push-
+X              line.  At a secondary (PS2) prompt, move the entire
+X              current multiline construct into the editor buffer.
+X              The latter is equivalent to push-input followed  by
+X              get-line.
+X
+X       redisplay (unbound) (^R)
+X              Redisplays the edit buffer.
+X
+X       send-break (^G)
+X              Abort  the  current  editor  function, eg. execute-
+X              named-command, or the editor itself, eg. if you are
+X              in  vared.  Otherwise abort the parsing of the cur-
+X              rent line.
+X
+X       run-help (ESC-H ESC-h)
+X              Push the buffer onto the buffer stack, and  execute
+X              the  command  "run-help cmd", where cmd is the cur-
+X              rent command.  run-help is normally aliased to man.
+X
+X       vi-set-buffer (unbound) (")
+X              Specify  a  buffer to be used in the following com-
+X              mand.
+X
+X       vi-set-mark (unbound) (m)
+X              Set the specified mark at the cursor position.
+X
+X       set-mark-command (^@)
+X              Set the mark at the cursor position.
+X
+X       spell-word (ESC-$ ESC-S ESC-s)
+X              Attempt spelling correction on the current word.
+X
+X       undefined-key
+X              Beep.
+X
+X       undo (^_ ^Xu ^X^U) (u)
+X              Incrementally undo the last text modification.
+X
+X       which-command (ESC-?)
+X              Push the buffer onto the buffer stack, and  execute
+X              the  command  "which-command cmd", where cmd is the
+X              current command.  which-command is normally aliased
+X              to whence.
+END_OF_FILE
+  if test 28346 -ne `wc -c <'zsh-2.5.0/help/bindkey'`; then
+    echo shar: \"'zsh-2.5.0/help/bindkey'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/bindkey'
+fi
+if test -f 'zsh-2.5.0/src/zle_hist.c' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/zle_hist.c'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/zle_hist.c'\" \(14671 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/zle_hist.c' <<'END_OF_FILE'
+X/*
+X *
+X * zle_hist.c - history editing
+X *
+X * This file is part of zsh, the Z shell.
+X *
+X * This software is Copyright 1992 by Paul Falstad
+X *
+X * Permission is hereby granted to copy, reproduce, redistribute or otherwise
+X * use this software as long as: there is no monetary profit gained
+X * specifically from the use or reproduction of this software, it is not
+X * sold, rented, traded or otherwise marketed, and this copyright notice is
+X * included prominently in any copy made.
+X *
+X * The author make no claims as to the fitness or correctness of this software
+X * for any use whatsoever, and it is provided as is. Any use of this software
+X * is at the user's own risk.
+X *
+X */
+X
+X#define ZLE
+X#include "zsh.h"
+X
+Xvoid toggleliteralhistory()
+X{				/**/
+X    char *s;
+X
+X    if (histline == curhist) {
+X	zsfree(curhistline);
+X	curhistline = ztrdup(UTOSCP(line));
+X    }
+X    lithist ^= 1;
+X    if (!(s = qgetevent(histline)))
+X	feep();
+X    else
+X	sethistline(STOUCP(s));
+X}
+X
+Xvoid uphistory()
+X{				/**/
+X    char *s;
+X
+X    if (mult < 0) {
+X	mult = -mult;
+X	downhistory();
+X	return;
+X    }
+X    if (histline == curhist) {
+X	zsfree(curhistline);
+X	curhistline = ztrdup(UTOSCP(line));
+X    }
+X    histline -= mult;
+X    if (!(s = qgetevent(histline))) {
+X	if (unset(NOHISTBEEP))
+X	    feep();
+X	histline += mult;
+X    } else
+X	sethistline(STOUCP(s));
+X}
+X
+Xvoid uplineorhistory()
+X{				/**/
+X    int ocs = cs;
+X
+X    if (mult < 0) {
+X	mult = -mult;
+X	downlineorhistory();
+X	return;
+X    }
+X    if ((lastcmd & ZLE_LINEMOVE) != ZLE_LINEMOVE)
+X	lastcol = cs - findbol();
+X    cs = findbol();
+X    while (mult) {
+X	if (!cs)
+X	    break;
+X	cs--;
+X	cs = findbol();
+X	mult--;
+X    }
+X    if (mult) {
+X	cs = ocs;
+X	if (virangeflag) {
+X	    feep();
+X	    return;
+X	}
+X	uphistory();
+X    } else {
+X	int x = findeol();
+X
+X	if ((cs += lastcol) > x)
+X	    cs = x;
+X    }
+X}
+X
+Xvoid uplineorsearch()
+X{				/**/
+X    int ocs = cs;
+X
+X    if (mult < 0) {
+X	mult = -mult;
+X	downlineorsearch();
+X	return;
+X    }
+X    if ((lastcmd & ZLE_LINEMOVE) != ZLE_LINEMOVE)
+X	lastcol = cs - findbol();
+X    cs = findbol();
+X    while (mult) {
+X	if (!cs)
+X	    break;
+X	cs--;
+X	cs = findbol();
+X	mult--;
+X    }
+X    if (mult) {
+X	cs = ocs;
+X	if (virangeflag) {
+X	    feep();
+X	    return;
+X	}
+X	historysearchbackward();
+X    } else {
+X	int x = findeol();
+X
+X	if ((cs += lastcol) > x)
+X	    cs = x;
+X    }
+X}
+X
+Xvoid downlineorhistory()
+X{				/**/
+X    int ocs = cs;
+X
+X    if (mult < 0) {
+X	mult = -mult;
+X	uplineorhistory();
+X	return;
+X    }
+X    if ((lastcmd & ZLE_LINEMOVE) != ZLE_LINEMOVE)
+X	lastcol = cs - findbol();
+X    while (mult) {
+X	int x = findeol();
+X
+X	if (x == ll)
+X	    break;
+X	cs = x + 1;
+X	mult--;
+X    }
+X    if (mult) {
+X	cs = ocs;
+X	if (virangeflag) {
+X	    feep();
+X	    return;
+X	}
+X	downhistory();
+X    } else {
+X	int x = findeol();
+X
+X	if ((cs += lastcol) > x)
+X	    cs = x;
+X    }
+X}
+X
+Xvoid downlineorsearch()
+X{				/**/
+X    int ocs = cs;
+X
+X    if (mult < 0) {
+X	mult = -mult;
+X	uplineorsearch();
+X	return;
+X    }
+X    if ((lastcmd & ZLE_LINEMOVE) != ZLE_LINEMOVE)
+X	lastcol = cs - findbol();
+X    while (mult) {
+X	int x = findeol();
+X
+X	if (x == ll)
+X	    break;
+X	cs = x + 1;
+X	mult--;
+X    }
+X    if (mult) {
+X	cs = ocs;
+X	if (virangeflag) {
+X	    feep();
+X	    return;
+X	}
+X	historysearchforward();
+X    } else {
+X	int x = findeol();
+X
+X	if ((cs += lastcol) > x)
+X	    cs = x;
+X    }
+X}
+X
+Xvoid acceptlineanddownhistory()
+X{				/**/
+X    char *s, *t;
+X
+X    if (!(s = qgetevent(histline + 1))) {
+X	feep();
+X	return;
+X    }
+X    pushnode(bufstack, t = ztrdup(s));
+X    for (; *t; t++)
+X	if (*t == HISTSPACE)
+X	    *t = ' ';
+X    done = 1;
+X    stackhist = histline + 1;
+X}
+X
+Xvoid downhistory()
+X{				/**/
+X    char *s;
+X
+X    if (mult < 0) {
+X	mult = -mult;
+X	uphistory();
+X	return;
+X    }
+X    histline += mult;
+X    if (!(s = qgetevent(histline))) {
+X	if (unset(NOHISTBEEP))
+X	    feep();
+X	histline -= mult;
+X	return;
+X    }
+X    sethistline(STOUCP(s));
+X}
+X
+Xstatic int histpos;
+X
+Xvoid historysearchbackward()
+X{				/**/
+X    int t0, ohistline = histline;
+X    char *s;
+X
+X    if (histline == curhist) {
+X	zsfree(curhistline);
+X	curhistline = ztrdup(UTOSCP(line));
+X    }
+X    if (lastcmd & ZLE_HISTSEARCH)
+X	t0 = histpos;
+X    else
+X	for (t0 = 0; line[t0] && !iblank(line[t0]); t0++);
+X    histpos = t0;
+X    for (;;) {
+X	histline--;
+X	if (!(s = qgetevent(histline))) {
+X	    feep();
+X	    histline = ohistline;
+X	    return;
+X	}
+X	if (!hstrncmp(s, UTOSCP(line), t0) && hstrcmp(s, UTOSCP(line)))
+X	    break;
+X    }
+X    sethistline(STOUCP(s));
+X}
+X
+Xvoid historysearchforward()
+X{				/**/
+X    int t0, ohistline = histline;
+X    char *s;
+X
+X    if (histline == curhist) {
+X	zsfree(curhistline);
+X	curhistline = ztrdup(UTOSCP(line));
+X    }
+X    if (lastcmd & ZLE_HISTSEARCH)
+X	t0 = histpos;
+X    else
+X	for (t0 = 0; line[t0] && !iblank(line[t0]); t0++);
+X    histpos = t0;
+X    for (;;) {
+X	histline++;
+X	if (!(s = qgetevent(histline))) {
+X	    feep();
+X	    histline = ohistline;
+X	    return;
+X	}
+X	if (!hstrncmp(s, UTOSCP(line), t0) && hstrcmp(s, UTOSCP(line)))
+X	    break;
+X    }
+X    sethistline(STOUCP(s));
+X}
+X
+Xvoid beginningofbufferorhistory()
+X{				/**/
+X    if (findbol())
+X	cs = 0;
+X    else
+X	beginningofhistory();
+X}
+X
+Xvoid beginningofhistory()
+X{				/**/
+X    char *s;
+X
+X    if (histline == curhist) {
+X	zsfree(curhistline);
+X	curhistline = ztrdup(UTOSCP(line));
+X    }
+X    if (!(s = qgetevent(firsthist()))) {
+X	if (unset(NOHISTBEEP))
+X	    feep();
+X	return;
+X    }
+X    histline = firsthist();
+X    sethistline(STOUCP(s));
+X}
+X
+Xvoid endofbufferorhistory()
+X{				/**/
+X    if (findeol() != ll)
+X	cs = ll;
+X    else
+X	endofhistory();
+X}
+X
+Xvoid endofhistory()
+X{				/**/
+X    if (histline == curhist) {
+X	if (unset(NOHISTBEEP))
+X	    feep();
+X    } else {
+X	histline = curhist;
+X	sethistline(STOUCP(curhistline));
+X    }
+X}
+X
+Xvoid insertlastword()
+X{				/**/
+X    char *s, *t;
+X    int len, z = lithist;
+X
+X/* multiple calls will now search back through the history, pem */
+X    static char *lastinsert;
+X    static int lasthist, lastpos;
+X    int evhist = curhist - 1;
+X
+X    if (lastinsert) {
+X	int lastlen = strlen(lastinsert);
+X	int pos = cs;
+X
+X	if (lastpos <= pos &&
+X	    lastlen == pos - lastpos &&
+X	    strncmp(lastinsert, (char *)&line[lastpos], lastlen) == 0) {
+X	    evhist = --lasthist;
+X	    cs = lastpos;
+X	    foredel(pos - cs);
+X	}
+X	zsfree(lastinsert);
+X	lastinsert = NULL;
+X    }
+X    lithist = 0;
+X    if (!(s = qgetevent(evhist), lithist = z, s)) {
+X	feep();
+X	return;
+X    }
+X    for (t = s + strlen(s); t > s; t--)
+X	if (*t == HISTSPACE)
+X	    break;
+X    if (t != s)
+X	t++;
+X    lasthist = evhist;
+X    lastpos = cs;
+X    lastinsert = ztrdup(t);
+X    spaceinline(len = strlen(t));
+X    strncpy((char *)line + cs, t, len);
+X    cs += len;
+X}
+X
+Xchar *qgetevent(ev)		/**/
+Xint ev;
+X{
+X    if (ev > curhist)
+X	return NULL;
+X    return ((ev == curhist) ? curhistline : quietgetevent(ev));
+X}
+X
+Xvoid pushline()
+X{				/**/
+X    if (mult < 0)
+X	return;
+X    pushnode(bufstack, ztrdup(UTOSCP(line)));
+X    while (--mult)
+X	pushnode(bufstack, ztrdup(""));
+X    stackcs = cs;
+X    *line = '\0';
+X    ll = cs = 0;
+X}
+X
+Xvoid pushpopinput()
+X{				/**/
+X    int ics;
+X    char *iline;
+X    Histent curhistent = gethistent(curhist);
+X
+X    if (mult < 0)
+X	return;
+X    if (*(curhistent->lit)) {
+X	ics = strlen(curhistent->lit);
+X	iline = (char *)zalloc(strlen((char *)line) + ics + 1);
+X	strcpy(iline, curhistent->lit);
+X	strcat(iline, (char *)line);
+X	free(line);
+X	line = (unsigned char *)iline;
+X	ll += ics;
+X	cs += ics;
+X	*(curhistent->lit) = '\0';
+X    }
+X    pushline();
+X    if (!isfirstln) {
+X	*(hptr = chline) = '\0';
+X	errflag = done = 1;
+X    }
+X}
+X
+Xvoid pushinput()
+X{				/**/
+X    if (mult < 0)
+X	return;
+X    if (!isfirstln)
+X	mult++;
+X    pushpopinput();
+X}
+X
+Xvoid getline()
+X{				/**/
+X    char *s = (char *)getnode(bufstack);
+X
+X    if (!s)
+X	feep();
+X    else {
+X	int cc;
+X
+X	cc = strlen(s);
+X	spaceinline(cc);
+X	strncpy((char *)line + cs, s, cc);
+X	cs += cc;
+X	zsfree(s);
+X    }
+X}
+X
+Xvoid historyincrementalsearchbackward()
+X{				/**/
+X    doisearch(-1);
+X}
+X
+Xvoid historyincrementalsearchforward()
+X{				/**/
+X    doisearch(1);
+X}
+X
+Xextern int ungetok;
+X
+Xvoid doisearch(dir)		/**/
+Xint dir;
+X{
+X    char *s, *oldl;
+X    char ibuf[256], *sbuf = ibuf + 14;
+X    int sbptr = 0, cmd, ohl = histline, ocs = cs;
+X    int nomatch, chequiv = 0;
+X
+X    strcpy(ibuf, (dir == -1) ? "bck-i-search: " : "fwd-i-search: ");
+X    statusline = ibuf;
+X    oldl = ztrdup(UTOSCP(line));
+X    if (histline == curhist) {
+X	zsfree(curhistline);
+X	curhistline = ztrdup(UTOSCP(line));
+X    }
+X    for (;;) {
+X	nomatch = 0;
+X	if (sbptr > 1 || (sbptr == 1 && sbuf[0] != '^')) {
+X	    int ohistline = histline;
+X
+X	    for (;;) {
+X		char *t;
+X
+X		if (!(s = qgetevent(histline))) {
+X		    feep();
+X		    nomatch = 1;
+X		    histline = ohistline;
+X		    break;
+X		}
+X		if ((sbuf[0] == '^') ?
+X		    (t = (hstrncmp(s, sbuf + 1, sbptr - 1)) ? NULL : s) :
+X		    (t = hstrnstr(s, sbuf, sbptr)))
+X		    if (!(chequiv && !hstrcmp(UTOSCP(line), s))) {
+X			sethistline(STOUCP(s));
+X			cs = t - s + sbptr - (sbuf[0] == '^');
+X			break;
+X		    }
+X		histline += dir;
+X	    }
+X	    chequiv = 0;
+X	}
+X	refresh();
+X	if ((cmd = getkeycmd()) < 0 || cmd == z_sendbreak) {
+X	    setline(oldl);
+X	    cs = ocs;
+X	    histline = ohl;
+X	    break;
+X	}
+X	switch (cmd) {
+X	case z_backwarddeletechar:
+X	    if (sbptr)
+X		sbuf[--sbptr] = '\0';
+X	    else
+X		feep();
+X	    histline = ohl;
+X	    continue;
+X	case z_acceptandhold:
+X	    acceptandhold();
+X	    goto brk;
+X	case z_acceptandinfernexthistory:
+X	    acceptandinfernexthistory();
+X	    goto brk;
+X	case z_acceptlineanddownhistory:
+X	    acceptlineanddownhistory();
+X	    goto brk;
+X	case z_acceptline:
+X	    acceptline();
+X	    goto brk;
+X	case z_historyincrementalsearchbackward:
+X	    ohl = (histline += (dir = -1));
+X	    chequiv = 1;
+X	    memcpy(ibuf, "bck", 3);
+X	    refresh();
+X	    continue;
+X	case z_historyincrementalsearchforward:
+X	    ohl = (histline += (dir = 1));
+X	    chequiv = 1;
+X	    memcpy(ibuf, "fwd", 3);
+X	    refresh();
+X	    continue;
+X	case z_sendstring:
+X	    sendstring();
+X	    continue;
+X	case z_quotedinsert:
+X	    if ((c = getkey(0)) == EOF)
+X		goto brk;
+X	    else
+X		cmd = z_selfinsert;
+X	default:
+X	    if (cmd == z_magicspace)
+X		c = ' ';
+X	    else if (cmd != z_selfinsert && cmd != z_selfinsertunmeta) {
+X		if (ungetok)
+X		    ungetkey(c);
+X		else
+X		    feep();
+X		goto brk;
+X	    }
+X	    if (!nomatch && sbptr != 39) {
+X		sbuf[sbptr++] = c;
+X		sbuf[sbptr] = '\0';
+X	    }
+X	}
+X    }
+X  brk:
+X    free(oldl);
+X    statusline = NULL;
+X}
+X
+Xvoid acceptandinfernexthistory()
+X{				/**/
+X    int t0;
+X    char *s, *t;
+X
+X    done = 1;
+X    for (t0 = histline - 2;; t0--) {
+X	if (!(s = qgetevent(t0)))
+X	    return;
+X	if (!hstrncmp(s, UTOSCP(line), ll))
+X	    break;
+X    }
+X    if (!(s = qgetevent(t0 + 1)))
+X	return;
+X    pushnode(bufstack, t = ztrdup(s));
+X    for (; *t; t++)
+X	if (*t == HISTSPACE)
+X	    *t = ' ';
+X    stackhist = t0 + 1;
+X}
+X
+Xvoid infernexthistory()
+X{				/**/
+X    int t0;
+X    char *s, *t;
+X
+X    if (!(t = qgetevent(histline - 1))) {
+X	feep();
+X	return;
+X    }
+X    for (t0 = histline - 2;; t0--) {
+X	if (!(s = qgetevent(t0))) {
+X	    feep();
+X	    return;
+X	}
+X	if (!strcmp(s, t))
+X	    break;
+X    }
+X    if (!(s = qgetevent(t0 + 1))) {
+X	feep();
+X	return;
+X    }
+X    histline = t0 + 1;
+X    sethistline(STOUCP(s));
+X}
+X
+Xvoid vifetchhistory()
+X{				/**/
+X    char *s;
+X
+X    if (mult < 0)
+X	return;
+X    if (histline == curhist) {
+X	if (!(lastcmd & ZLE_ARG)) {
+X	    cs = ll;
+X	    cs = findbol();
+X	    return;
+X	}
+X	zsfree(curhistline);
+X	curhistline = ztrdup(UTOSCP(line));
+X    }
+X    if (!(lastcmd & ZLE_ARG))
+X	mult = curhist;
+X    if (!(s = qgetevent(mult)))
+X	feep();
+X    else {
+X	histline = mult;
+X	sethistline(STOUCP(s));
+X    }
+X}
+X
+Xextern int viins_cur_bindtab[];
+X
+Xint getvisrchstr()
+X{				/**/
+X    static char sbuf[80] = "/";
+X    int sptr = 1, cmd, ret = 0;
+X    int *obindtab = NULL;
+X
+X    if (visrchstr) {
+X	zsfree(visrchstr);
+X	visrchstr = NULL;
+X    }
+X    statusline = sbuf;
+X    sbuf[1] = '\0';
+X    if (bindtab == altbindtab) {
+X	obindtab = bindtab;
+X	bindtab = viins_cur_bindtab;
+X    }
+X    while (sptr) {
+X	refresh();
+X	if ((cmd = getkeycmd()) < 0 || cmd == z_sendbreak) {
+X	    ret = 0;
+X	    break;
+X	} else if (cmd == z_acceptline || cmd == z_vicmdmode) {
+X	    visrchstr = ztrdup(sbuf + 1);
+X	    ret = 1;
+X	    break;
+X	} else if (cmd == z_backwarddeletechar ||
+X		   cmd == z_vibackwarddeletechar) {
+X	    sbuf[--sptr] = '\0';
+X	    continue;
+X	} else if (cmd == z_sendstring) {
+X	    sendstring();
+X	    continue;
+X	} else if (cmd == z_quotedinsert) {
+X	    if ((c = getkey(0)) == EOF) {
+X		feep();
+X		continue;
+X	    }
+X	} else if (cmd != z_selfinsert && cmd != z_selfinsertunmeta) {
+X	    feep();
+X	    continue;
+X	}
+X	if (sptr != 79) {
+X	    sbuf[sptr++] = c;
+X	    sbuf[sptr] = '\0';
+X	}
+X    }
+X    statusline = NULL;
+X    if (obindtab)
+X	bindtab = obindtab;
+X    return ret;
+X}
+X
+Xvoid vihistorysearchforward()
+X{				/**/
+X    visrchsense = 1;
+X    if (getvisrchstr())
+X	virepeatsearch();
+X}
+X
+Xvoid vihistorysearchbackward()
+X{				/**/
+X    visrchsense = -1;
+X    if (getvisrchstr())
+X	virepeatsearch();
+X}
+X
+Xvoid virepeatsearch()
+X{				/**/
+X    int ohistline = histline, t0;
+X    char *s;
+X
+X    if (!visrchstr) {
+X	feep();
+X	return;
+X    }
+X    t0 = strlen(visrchstr);
+X    if (histline == curhist) {
+X	zsfree(curhistline);
+X	curhistline = ztrdup(UTOSCP(line));
+X    }
+X    for (;;) {
+X	histline += visrchsense;
+X	if (!(s = qgetevent(histline))) {
+X	    feep();
+X	    histline = ohistline;
+X	    return;
+X	}
+X	if (!hstrcmp(UTOSCP(line), s))
+X	    continue;
+X	if (*visrchstr == '^') {
+X	    if (!hstrncmp(s, visrchstr + 1, t0 - 1))
+X		break;
+X	} else if (hstrnstr(s, visrchstr, t0))
+X	    break;
+X    }
+X    sethistline(STOUCP(s));
+X}
+X
+Xvoid virevrepeatsearch()
+X{				/**/
+X    visrchsense = -visrchsense;
+X    virepeatsearch();
+X    visrchsense = -visrchsense;
+X}
+X
+X/* Extra function added by A.R. Iano-Fletcher.	*/
+X/*The extern variable "cs" is the position of the cursor. */
+X/* history-beginning-search-backward */
+X
+Xvoid historybeginningsearchbackward()
+X{				/**/
+X    int cpos = cs;		/* save cursor position */
+X    int ohistline = histline;
+X    char *s;
+X
+X    if (histline == curhist) {
+X	zsfree(curhistline);
+X	curhistline = ztrdup((char *)line);
+X    }
+X    for (;;) {
+X	histline--;
+X	if (!(s = qgetevent(histline))) {
+X	    feep();
+X	    histline = ohistline;
+X	    return;
+X	}
+X	if (!hstrncmp(s, (char *)line, cs) && hstrcmp(s, (char *)line))
+X	    break;
+X    }
+X
+X    sethistline((unsigned char *)s);	/* update command line.		*/
+X    cs = cpos;			/* reset cursor position.	*/
+X}
+X
+X/* Extra function added by A.R. Iano-Fletcher.	*/
+X
+X/* history-beginning-search-forward */
+Xvoid historybeginningsearchforward()
+X{				/**/
+X    int cpos = cs;		/* save cursor position */
+X    int ohistline = histline;
+X    char *s;
+X
+X    if (histline == curhist) {
+X	zsfree(curhistline);
+X	curhistline = ztrdup((char *)line);
+X    }
+X    for (;;) {
+X	histline++;
+X	if (!(s = qgetevent(histline))) {
+X	    feep();
+X	    histline = ohistline;
+X	    return;
+X	}
+X	if (!hstrncmp(s, (char *)line, cs) && hstrcmp(s, (char *)line))
+X	    break;
+X    }
+X
+X    sethistline((unsigned char *)s);	/* update command line.		*/
+X    cs = cpos;			/* reset cursor position.	*/
+X}
+END_OF_FILE
+  if test 14671 -ne `wc -c <'zsh-2.5.0/src/zle_hist.c'`; then
+    echo shar: \"'zsh-2.5.0/src/zle_hist.c'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/zle_hist.c'
+fi
+echo shar: End of archive 13 \(of 18\).
+cp /dev/null ark13isdone
+MISSING=""
+for I in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 ; do
+    if test ! -f ark${I}isdone ; then
+	MISSING="${MISSING} ${I}"
+    fi
+done
+if test "${MISSING}" = "" ; then
+    echo You have unpacked all 18 archives.
+    rm -f ark[1-9]isdone ark[1-9][0-9]isdone
+else
+    echo You still must unpack the following archives:
+    echo "        " ${MISSING}
+fi
+exit 0
+exit 0 # Just in case...

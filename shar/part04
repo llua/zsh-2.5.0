@@ -1,0 +1,2561 @@
+Path: news.csc.fi!news.eunet.fi!EU.net!uunet!sparky!not-for-mail
+From: zsh-list@sterling.com (Bas de Bakker)
+Newsgroups: comp.sources.misc
+Subject: v43i093:  zsh - The Z shell, version 2.5.0, Part04/18
+Followup-To: comp.sources.d
+Date: 13 Jul 1994 23:02:22 -0500
+Organization: Sterling Software
+Lines: 2546
+Sender: kent@sparky.sterling.com
+Approved: kent@sparky.sterling.com
+Message-ID: <302dce$ss0@sparky.sterling.com>
+References: <csm-v43i089=zsh.230017@sparky.sterling.com>
+NNTP-Posting-Host: sparky.sterling.com
+X-Md4-Signature: d076e437bd7ffd648460e18118e55c8a
+
+Submitted-by: zsh-list@sterling.com (Bas de Bakker)
+Posting-number: Volume 43, Issue 93
+Archive-name: zsh/part04
+Environment: UNIX
+Supersedes: zsh: Volume 35, Issue 51-72
+
+#! /bin/sh
+# This is a shell archive.  Remove anything before this line, then feed it
+# into a shell via "sh file" or similar.  To overwrite existing files,
+# type "sh file -c".
+# Contents:  zsh-2.5.0/doc/zsh.texi.C zsh-2.5.0/src/config/bz.check
+#   zsh-2.5.0/src/config/bz.makeprobe
+# Wrapped by kent@sparky on Tue Jul 12 16:47:17 1994
+PATH=/bin:/usr/bin:/usr/ucb:/usr/local/bin:/usr/lbin:$PATH ; export PATH
+echo If this archive is complete, you will see the following message:
+echo '          "shar: End of archive 4 (of 18)."'
+if test -f 'zsh-2.5.0/doc/zsh.texi.C' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/doc/zsh.texi.C'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/doc/zsh.texi.C'\" \(69910 characters\)
+  sed "s/^X//" >'zsh-2.5.0/doc/zsh.texi.C' <<'END_OF_FILE'
+X@cindex links, symbolic
+X@cindex symbolic links
+X@pindex CHASE_LINKS
+X@item CHASE_LINKS (-w)
+XResolve symbolic links to their true values.
+X
+X@cindex aliases, completion of
+X@pindex COMPLETE_ALIASES
+X@item COMPLETE_ALIASES
+XIf set, aliases on the command line are not internally substituted
+Xbefore completion is attempted.
+X
+X@pindex COMPLETE_IN_WORD
+X@item COMPLETE_IN_WORD
+XIf unset, the cursor is moved to the end of the word if completion is
+Xstarted.  Otherwise it stays where it is and completion is done from
+Xboth ends.
+X
+X@cindex correction, spelling
+X@cindex spelling correction
+X@pindex CORRECT
+X@item CORRECT (-0)
+XTry to correct the spelling of commands.
+X
+X@pindex CORRECT_ALL
+X@item CORRECT_ALL (-O)
+XTry to correct the spelling of all arguments in a line.
+X
+X@cindex csh, history style
+X@pindex CSH_JUNKIE_HISTORY
+X@item CSH_JUNKIE_HISTORY
+XA history reference without an event specifier will always refer to the
+Xprevious command.
+X
+X@cindex csh, loop style
+X@cindex loop style, csh
+X@pindex CSH_JUNKIE_LOOPS
+X@item CSH_JUNKIE_LOOPS
+XAllow loop bodies to take the form @samp{@var{list}; end} instead of
+X@samp{do @var{list}; done}.@refill
+X
+X@pindex CSH_JUNKIE_PAREN
+X@item CSH_JUNKIE_PAREN
+XAllow @code{for}, @code{if} and @code{while} loops where the argument
+Xlist is given in parentheses.  Otherwise, the parentheses will be
+Xtreated as specifying a subshell.@refill
+X
+X@cindex csh, quoting style
+X@cindex quoting style, csh
+X@pindex CSH_JUNKIE_QUOTES
+X@item CSH_JUNKIE_QUOTES
+XComplain if a quoted expression runs off the end of a line; prevent
+Xquoted expressions from containing unescaped newlines.
+X
+X@pindex GLOB_SUBST
+X@item GLOB_SUBST
+XTreat any characters resulting from parameter substitution as being
+Xeligible for file expansion and filename generation, and any characters
+Xresulting from command substitution as being eligible for filename
+Xgeneration.@refill
+X
+X@cindex csh, null globbing style
+X@cindex null globbing, csh style
+X@cindex globbing, null, csh style
+X@pindex CSH_NULL_GLOB
+X@item CSH_NULL_GLOB
+XIf a pattern for filename generation has no matches, delete the pattern
+Xfrom the argument list; do not report an error unless all the patterns
+Xin a command have no matches.  Overrides @code{NULL_GLOB}.@refill
+X
+X@cindex exit status, trapping
+X@pindex ERR_EXIT
+X@item ERR_EXIT (-e)
+XIf a command has a non-zero exit status, execute the @code{ZERR} trap, if
+Xset, and exit.@refill
+X
+X@cindex globbing, extended
+X@pindex EXTENDED_GLOB
+X@item EXTENDED_GLOB
+XTreat the @code{#} and @code{^} characters as part of patterns for
+Xfilename generation, etc.  An initial unquoted @code{~} always produces
+Xnamed directory expansion (@pxref{Filename Expansion}).@refill
+X
+X@cindex history, timestamping
+X@pindex EXTENDED_HISTORY
+X@item EXTENDED_HISTORY
+XSave beginning and ending timestamps to the history file.  The format of
+Xthese timestamps is @code{:@var{<beginning time>}:@var{<ending
+Xtime>}:@var{<command>}}.@refill
+X
+X@pindex GLOB_COMPLETE
+X@item GLOB_COMPLETE
+XWhen the current word has a glob pattern, do not insert all the words
+Xresulting from the expansion but cycle through them like
+X@code{MENU_COMPLETE}.  If no matches are found, a @code{*} is added to
+Xthe end of the word, or inserted at the cursor if
+X@code{COMPLETE_IN_WORD} is set, and completion is attempted again.
+XUsing patterns works not only for files but for all completions, such as
+Xoptions, user names, etc.@refill
+X
+X@cindex globbing, of . files
+X@pindex GLOB_DOTS
+X@item GLOB_DOTS (-4)
+XDo not require a leading @code{.} in a filename to be matched
+Xexplicitly.@refill
+X
+X@cindex hashing, of commands
+X@cindex command hashing
+X@pindex HASH_CMDS
+X@item HASH_CMDS
+XPlace the location of each command in the hash table the first time it
+Xis executed.  If this option is unset, no path hashing will be done at
+Xall.@refill
+X
+X@cindex hashing, of directories
+X@cindex directories, hashing
+X@pindex HASH_DIRS
+X@item HASH_DIRS
+XWhenever a command is executed, hash the directory containing it, as
+Xwell as all directories that occur earlier in the path.  Has no effect
+Xif @code{HASH_CMDS} is unset.@refill
+X
+X@pindex HASH_LIST_ALL
+X@item HASH_LIST_ALL
+XWhenever a command completion is attempted, make sure the entire command
+Xpath is hashed first.  This makes the first completion slower.
+X
+X@cindex history, ignoring duplicates
+X@pindex HIST_IGNORE_DUPS
+X@item HIST_IGNORE_DUPS (-h)
+XDo not enter command lines into the history list if they are duplicates
+Xof the previous event.
+X
+X@cindex history, ignoring spaces
+X@pindex HIST_IGNORE_SPACE
+X@item HIST_IGNORE_SPACE (-g)
+XDo not enter command lines into the history list if they begin with a
+Xblank.
+X
+X@cindex history, storing as literal
+X@pindex HIST_LIT
+X@item HIST_LIT (-j)
+XUse literal (unparsed) versions of the history lines in the editor.
+X
+X@pindex HIST_NO_STORE
+X@item HIST_NO_STORE
+XRemove the @code{history} (@code{fc -l}) command from the history
+Xwhen invoked.@refill
+X
+X@cindex history, verifying substitution
+X@pindex HIST_VERIFY
+X@item HIST_VERIFY
+XWhenever the user enters a line with history substitution, don't execute
+Xthe line directly; instead, perform history substitution and reload the
+Xline into the editing buffer.
+X
+X@cindex brace expansion, disabling
+X@cindex expansion, brace, disabling
+X@cindex disabling brace expansion
+X@pindex IGNORE_BRACES
+X@item IGNORE_BRACES (-I)
+XDo not perform brace expansion.
+X
+X@cindex EOF, ignoring
+X@pindex IGNORE_EOF
+X@item IGNORE_EOF (-7)
+XDo not exit on end-of-file.  Require the use of @code{exit} or
+X@code{logout} instead.@refill
+X
+X@pindex INTERACTIVE
+X@item INTERACTIVE (-i)
+XThis is an interactive shell.
+X
+X@cindex comments, in interactive shells
+X@pindex INTERACTIVE_COMMENTS
+X@item INTERACTIVE_COMMENTS (-k)
+XAllow comments even in interactive shells.
+X
+X@cindex ksh, option printing style
+X@cindex option printing, ksh style
+X@pindex KSH_OPTION_PRINT
+X@item KSH_OPTION_PRINT
+XAlters the way options settings are printed.
+X
+X@cindex completions, ambiguous
+X@cindex ambiguous completions
+X@pindex LIST_AMBIGUOUS
+X@item LIST_AMBIGUOUS
+XIf this option is set completions are shown only if the completions
+Xdon't have an unambiguous prefix or suffix that could be inserted in the
+Xcommand line.
+X
+X@cindex files, marking type of
+X@cindex marking file types
+X@pindex LIST_TYPES
+X@item LIST_TYPES (-X)
+XWhen listing files that are possible completions, show the type of each
+Xfile with a trailing identifying mark.
+X
+X@pindex LOGIN
+X@item LOGIN (-l)
+XThis is a login shell.
+X
+X@cindex jobs, list format
+X@cindex list format, of jobs
+X@pindex LONG_LIST_JOBS
+X@item LONG_LIST_JOBS (-R)
+XList jobs in the long format by default.
+X
+X@pindex MAGIC_EQUAL_SUBST
+X@item MAGIC_EQUAL_SUBST
+XAll unquoted arguments of the form
+X@code{@var{identifier}=@var{expression}} have file expansion performed
+Xon @var{expression} as if it were a parameter assignment, although the
+Xargument is not otherwise treated specially.@refill
+X
+X@cindex mail, warning of arrival
+X@pindex MAIL_WARNING
+X@item MAIL_WARNING (-U)
+XPrint a warning message if a mail file has been accessed since the shell
+Xlast checked.
+X
+X@cindex directories, marking
+X@cindex marking directories
+X@pindex MARK_DIRS
+X@item MARK_DIRS (-8)
+XAppend a trailing @code{/} to all directory names resulting from filename
+Xgeneration (globbing).@refill
+X
+X@cindex completion, menu
+X@pindex MENU_COMPLETE
+X@item MENU_COMPLETE (-Y)
+XOn an ambiguous completion, instead of listing possibilities or beeping,
+Xinsert the first match immediately.  Then when completion is requested
+Xagain, remove the first match and insert the second match, etc.  When
+Xthere are no more matches, go back to the first one again.
+X@code{reverse-menu-complete} may be used to loop through the list in the
+Xother direction.  This option overrides @code{AUTO_MENU}.@refill
+X
+X@cindex job control, allowing
+X@pindex MONITOR
+X@item MONITOR (-m)
+XAllow job control.  Set by default in interactive shells.
+X
+X@cindex globbing, malformed pattern
+X@pindex NO_BAD_PATTERN
+X@item NO_BAD_PATTERN (-2)
+XIf a pattern for filename generation is badly formed, leave it unchanged
+Xin the argument list instead of printing an error.
+X
+X@cindex history, disabling substitution
+X@cindex disabling history substitution
+X@pindex NO_BANG_HIST
+X@item NO_BANG_HIST (-K)
+XDo not perform textual history substitution.  Do not treat the @code{!}
+Xcharacter specially.@refill
+X
+X@cindex beep, disabling
+X@cindex disabling the beep
+X@pindex NO_BEEP
+X@item NO_BEEP (-B)
+XDo not beep.
+X
+X@cindex file clobbering, preventing
+X@cindex clobbering, of files
+X@pindex NO_CLOBBER
+X@item NO_CLOBBER (-1)
+XPrevents @code{>} redirection from truncating existing files.  @code{>!}
+Xmay be used to truncate a file instead.  Also prevents @code{>>} from
+Xcreating files.  @code{>>!} may be used instead.@refill
+X
+X@cindex filename substitution, =
+X@pindex NO_EQUALS
+X@item NO_EQUALS
+XDon't perform @code{=} filename substitution.
+X
+X@cindex command execution, preventing
+X@pindex NO_EXEC
+X@item NO_EXEC (-n)
+XRead commands and check them for syntax errors, but do not execute them.
+X
+X@cindex flow control
+X@pindex NO_FLOW_CONTROL
+X@item NO_FLOW_CONTROL
+XDisable output flow control via start/stop characters (usually assigned
+Xto @kbd{^S}/@kbd{^Q}) in the shell's editor.@refill
+X
+X@cindex globbing, disabling
+X@cindex disabling globbing
+X@pindex NO_GLOB
+X@item NO_GLOB (-F)
+XDisable filename generation.
+X
+X@cindex history, beeping
+X@cindex beep, history
+X@pindex NO_HIST_BEEP
+X@item NO_HIST_BEEP
+XDon't beep when an attempt is made to access a history entry which isn't
+Xthere.
+X
+X@cindex jobs, nohup
+X@pindex NO_HUP
+X@item NO_HUP
+XDon't send the @code{HUP} signal to running jobs when the shell exits.
+X
+X@cindex completion, beep on ambiguous
+X@cindex beep, ambiguous completion
+X@pindex NO_LIST_BEEP
+X@item NO_LIST_BEEP
+XDon't beep on an ambiguous completion.
+X
+X@cindex globbing, no matches
+X@pindex NO_NOMATCH
+X@item NO_NOMATCH (-3)
+XIf a pattern for filename generation has no matches, leave it unchanged
+Xin the argument list instead of printing an error.  This also applies
+Xto file expansion of an initial @code{~} or @code{=}.@refill
+X
+X@cindex prompt, without CR
+X@pindex NO_PROMPT_CR
+X@item NO_PROMPT_CR (-V)
+XDon't print a carriage return just before printing a prompt in the line
+Xeditor.
+X
+X@cindex startup files, sourcing
+X@pindex NO_RCS
+X@item NO_RCS (-f)
+XSource only the @file{/etc/zshenv} file.
+XDo not source the @file{.zshenv}, @file{/etc/zprofile}, @file{.zprofile},
+X@file{/etc/zshrc}, @file{.zshrc}, @file{/etc/zlogin}, @file{.zlogin}, or 
+X@file{.zlogout} files.@refill
+X
+X@pindex NO_SHORT_LOOPS
+X@item NO_SHORT_LOOPS
+XDisallow the short forms of @code{for}, @code{select}, @code{if}, and
+X@code{function} constructs.@refill
+X
+X@cindex background jobs, notification
+X@cindex notification of background jobs
+X@pindex NOTIFY
+X@item NOTIFY (-5)
+XReport the status of background jobs immediately, rather than waiting
+Xuntil just before printing a prompt.
+X
+X@cindex parameters, error on substituting unset
+X@cindex unset parameters, error on substituting
+X@pindex NO_UNSET
+X@item NO_UNSET (-u)
+XTreat unset parameters as an error when substituting.
+X
+X@cindex globbing, no matches
+X@pindex NULL_GLOB
+X@item NULL_GLOB (-G)
+XIf a pattern for filename generation has no matches, delete the pattern
+Xfrom the argument list instead of reporting an error.  Overrides
+X@code{NO_NOMATCH}.@refill
+X
+X@cindex sorting, numerically
+X@pindex NUMERIC_GLOBSORT
+X@item NUMERIC_GLOBSORT
+XIf numeric filenames are matched by a filename generation pattern, sort
+Xthe filenames numerically rather than lexicographically.
+X
+X@cindex editor, overstrike mode
+X@cindex overstrike mode, of editor
+X@pindex OVERSTRIKE
+X@item OVERSTRIKE
+XStart up the line editor in overstrike mode.
+X
+X@cindex path search, extended
+X@pindex PATH_DIRS
+X@item PATH_DIRS (-Q)
+XPerform a path search even on command names with slashes in them.  Thus
+Xif @*@samp{/usr/local/bin} is in the user's path, and he types
+X@samp{X11/xinit}, the command @samp{/usr/local/bin/X11/xinit} will be
+Xexecuted (assuming it exists).  This applies to the @code{.} builtin as
+Xwell as to command execution.  Commands explicitly beginning with
+X@samp{./} or @samp{../} are not subject to path search.@refill
+X
+X@cindex exit status, printing
+X@pindex PRINT_EXIT_VALUE
+X@item PRINT_EXIT_VALUE (-C)
+XPrint the exit value of programs with non-zero exit status.
+X
+X@pindex PROMPT_SUBST
+X@item PROMPT_SUBST
+XExpressions like @code{$@{@dots{}@}}, @code{$(@dots{})}, and @code{$[@dots{}]}
+Xin prompts will be expanded.@refill
+X
+X@cindex directory stack, ignoring dups
+X@pindex PUSHD_IGNORE_DUPS
+X@item PUSHD_IGNORE_DUPS
+XDon't push multiple copies of the same directory onto the directory
+Xstack.
+X
+X@cindex popd, controlling syntax
+X@pindex PUSHD_MINUS
+X@item PUSHD_MINUS
+X@xref{Shell Builtin Commands}, for the @code{popd} command.
+X
+X@cindex directory stack, silencing
+X@pindex PUSHD_SILENT
+X@item PUSHD_SILENT (-E)
+XDo not print the directory stack after @code{pushd} or @code{popd}.
+X
+X@cindex pushd, to home
+X@pindex PUSHD_TO_HOME
+X@item PUSHD_TO_HOME (-D)
+XHave @code{pushd} with no arguments act like @code{pushd $HOME}.
+X
+X@pindex RC_EXPAND_PARAM
+X@item RC_EXPAND_PARAM (-P)
+X@xref{Parameter Expansion}.
+X
+X@cindex rc, quoting style
+X@cindex quoting style, rc
+X@pindex RC_QUOTES
+X@item RC_QUOTES
+X@ifinfo
+XAllow the character sequence @code{@'@'} to signify a single quote within
+X@end ifinfo
+X@iftex
+XAllow the character sequence @code{''} to signify a single quote within
+X@end iftex
+Xsingly quoted strings.@refill
+X
+X@cindex completion, exact matches
+X@pindex REC_EXACT
+X@item REC_EXACT (-S)
+XIn completion, recognize exact matches even if they are ambiguous.
+X
+X@cindex rm *, querying before
+X@cindex querying before rm *
+X@pindex RM_STAR_SILENT
+X@item RM_STAR_SILENT (-H)
+XDo not query the user before executing @code{rm *} or @code{rm path/*}.
+X
+X@pindex SHIN_STDIN
+X@item SHIN_STDIN (-s)
+XRead commands from the standard input.
+X
+X@cindex sh, word splitting style
+X@cindex word splitting, sh style
+X@pindex SH_WORD_SPLIT
+X@item SH_WORD_SPLIT (-y)
+X@xref{Parameter Expansion}.
+X
+X@cindex editor, single line mode
+X@pindex SINGLE_LINE_ZLE
+X@item SINGLE_LINE_ZLE (-M)
+XUse single-line command line editing instead of multi-line.
+X
+X@cindex sun keyboard, annoying
+X@cindex annoying keyboard, sun
+X@pindex SUN_KEYBOARD_HACK
+X@item SUN_KEYBOARD_HACK (-L)
+XIf a line ends with a backquote, and there are an odd number of
+Xbackquotes on the line, ignore the trailing backquote.  This is useful
+Xon some keyboards where the return key is too small, and the backquote
+Xkey lies annoyingly close to it.
+X
+X@cindex tracing, of input lines
+X@pindex VERBOSE
+X@item VERBOSE (-v)
+XPrint shell input lines as they are read.
+X
+X@cindex tracing, of commands
+X@pindex XTRACE
+X@item XTRACE (-x)
+XPrint commands and their arguments as they are executed.
+X
+X@cindex editor, disabling
+X@cindex disabling the editor
+X@pindex ZLE
+X@item ZLE (-Z)
+XUse the zsh line editor.
+X@end table
+X
+X@node Shell Builtin Commands, Invocation, Options, Top
+X@chapter Shell Builtin Commands
+X@cindex builtin commands
+X
+X@table @code
+X@findex .
+X@item . @var{file} [ @var{arg} @dots{} ]
+XRead and execute commands from @var{file} in the current shell
+Xenvironment.  If @var{file} does not contain a slash, or if
+X@code{PATH_DIRS} is set, the shell looks in the components of
+X@code{path} to find the directory containing @var{file}.  Files in the
+Xcurrent directory are not read unless @samp{.} appears somewhere in
+X@code{path}.  If any arguments @var{arg} are given, they become the
+Xpositional parameters; the old positional parameters are restored when
+Xthe @var{file} is done executing.  The exit status is the exit status of
+Xthe last command executed.@refill
+X
+X@cindex parameters, expanding
+X@cindex expanding parameters
+X@item : [ @var{arg} @dots{} ]
+XThis command only expands parameters.  A zero exit code is returned.
+X
+X@cindex alias
+X@findex alias
+X@item alias [ -grm ] [ @var{name}[=@var{value}] ] @dots{}
+XWith no arguments, print the list of aliases in the form
+X@code{@var{name}=@var{value}} on the standard output.  For each
+X@var{name} with a corresponding @var{value}, define an alias with that
+Xvalue.  A trailing space in @var{value} causes the next word to be
+Xchecked for alias substitution.  If the @code{-g} flag is given, define
+Xa global alias; global aliases are expanded even if they do not occur in
+Xcommand position.  For each @var{name} with no @var{value}, print the
+Xvalue of @var{name}, if any.  If only the @code{-g} or the @code{-r}
+Xflag is given only global or regular aliases are listed.  If the
+X@code{-m} flag is given the arguments are taken as patterns (they should
+Xbe quoted to preserve them from being interpreted as glob patterns) and
+Xthe aliases matching these patterns are printed.  The exit status is
+Xnonzero if a @var{name} (with no @var{value}) is given for which no
+Xalias has been defined.@refill
+X
+X@cindex functions, autoloading
+X@cindex autoloading functions
+X@findex autoload
+X@item autoload [ @var{name} @dots{} ]
+XFor each of the @var{name}s (which are names of functions), create a
+Xfunction marked undefined.  The @code{fpath} variable will be searched
+Xto find the actual function definition when the function is first
+Xreferenced.@refill
+X
+X@findex bg
+X@item bg [ @var{job} @dots{} ]
+X@itemx @var{job} @dots{} &
+XPut each specified @var{job} in the background, or the current job if
+Xnone is specified.@refill
+X
+X@cindex rebinding the keys
+X@cindex keys, rebinding
+X@findex bindkey
+X@item bindkey -mevd
+X@itemx bindkey -r @var{in-string} @dots{}
+X@itemx bindkey [ -a ] @var{in-string} [ @var{command} ] @dots{}
+X@itemx bindkey -s [ -a ] @var{in-string} @var{out-string} @dots{}
+XThe @code{-e} and @code{-v} options put the keymaps in emacs mode and vi
+Xmode respectively; they cannot be used simultaneously.  The @code{-d}
+Xoption resets all bindings to the compiled-in settings.  If not used
+Xwith options @code{-e} or @code{-v}, the maps will be left in emacs
+Xmode, or in vi mode if the @code{VISUAL} or @code{EDITOR} variables
+Xcontain the string @samp{vi}.  Metafied characters are bound to
+Xself-insert by default.  The @code{-m} option loads the compiled-in
+Xbindings of these characters for the mode determined by the previous
+Xoptions, or the current mode if used alone.  Any previous binding done
+Xby the user will be preserved.  If the @code{-r} option is given, remove
+Xany binding for each @var{in-string}.  If the @code{-s} option is not
+Xspecified, bind each @var{in-string} to a specified @var{command}.  If
+Xno @var{command} is specified, print the binding of @var{in-string} if
+Xit is bound, or return a nonzero exit code if it is not bound.  If the
+X@code{-s} option is specified, bind each @var{in-string} to each
+Xspecified @var{out-string}.  When @var{in-string} is typed,
+X@var{out-string} will be pushed back and treated as input to the line
+Xeditor.  The process is recursive, but to avoid infinite loops the shell
+Xwill report an error if more than 20 consecutive replacements happen.
+XIf the @code{-a} option is specified, bind the @var{in-string}s in the
+Xalternative keymap instead of the standard one.  The alternative keymap
+Xis used in vi command mode.@refill
+X
+X@noindent
+XIt's possible for an @var{in-string} to be bound to something and also
+Xbe the beginning of a longer bound string.  In this case the shell will
+Xwait a certain time to see if more characters are typed, otherwise it
+Xwill execute the shorter binding.  This timeout is defined by the
+X@code{KEYTIMEOUT} parameter; the default is 0.4 seconds.  No timeout is
+Xdone if the prefix string is not bound.@refill
+X
+X@noindent
+XFor either @var{in-string} or @var{out-string}, control characters may
+Xbe specified in the form @code{^X}, and the backslash may be used to
+Xintroduce one of the following escape sequences:@refill
+X
+X@table @code
+X@item \a
+XBell character
+X@item \n
+XLinefeed (newline)
+X@item \b
+XBackspace
+X@item \t
+XHorizontal tab
+X@item \v
+XVertical tab
+X@item \f
+XForm feed
+X@item \r
+XCarriage return
+X@item \e
+X@itemx \E
+XEscape
+X@item \@var{nnn}
+XCharacter code in octal
+X@item \x@var{nn}
+XCharacter code in hexadecimal
+X@item \M-@var{xxx}
+XCharacter or escape sequence with meta bit set.  The @code{-} after the
+X@code{M} is optional.@refill
+X@item \C-X
+XControl character.  The @code{-} after the @code{M} is optional.
+X@end table
+X
+XIn all other cases, @code{\} escapes the following character.  Delete is
+Xwritten as @code{^?}.  Note that @code{\M^?} and @code{^\M?} are not the
+Xsame.@refill
+X
+X@noindent
+XMulti-character @var{in-strings} cannot contain the null character
+X(@code{^@@} or @code{^ }).  If they appear in a bindkey command, they
+Xwill be silently translated to @code{\M-^@@}.  This restriction does not
+Xapply to @var{out-strings}, single-character @var{in-strings} and the
+Xfirst character of a multi-char @var{in-string}.@refill
+X
+X@cindex loops, exitting
+X@cindex exitting loops
+X@findex break
+X@item break [ @var{n} ]
+XExit from an enclosing @code{for}, @code{while}, @code{until},
+X@code{select}, or @code{repeat} loop.  If @var{n} is specified, then
+Xbreak @var{n} levels instead of just one.@refill
+X
+X@findex builtin
+X@item builtin @var{name} [ @var{args} ] @dots{}
+XExecutes the builtin @var{name}, with the given @var{args}.
+X
+X@findex bye
+X@item bye
+XSame as @code{exit}.
+X
+X@cindex directories, changing
+X@findex cd
+X@item cd [ @var{arg} ]
+X@itemx cd @var{old} @var{new}
+X@itemx cd [+-]n
+XChange the current directory.  In the first form, change the current
+Xdirectory to @var{arg}, or to the value of @code{HOME} if @var{arg} is
+Xnot specified.  If @var{arg} is @code{-}, change to the value of
+X@code{OLDPWD}, the previous directory.  If a directory named @var{arg}
+Xis not found in the current directory and @var{arg} does not begin with
+Xa slash, search each component of the shell parameter @code{cdpath}.  If
+Xthe option @code{CDABLEVARS} is set, and a parameter named @var{arg}
+Xexists whose value begins with a slash, treat its value as the
+Xdirectory.@refill
+X
+X@noindent
+XThe second form of @code{cd} substitutes the string @var{new} for the
+Xstring @var{old} in the name of the current directory, and tries to
+Xchange to this new directory.@refill
+X
+X@noindent
+XThe third form of @code{cd} is equivalent to @code{popd}.
+X
+X@findex chdir
+X@item chdir
+XSame as @code{cd}.
+X
+X@cindex completion, controlling
+X@findex compctl
+X@item compctl [ -cfqovbCDAIFpEjBaRGuderzNOZn ] [ -k @var{name} ] [ -X @var{explanation} ]
+X@itemx [ -K @var{function} ] [ -P @var{prefix} ] [ -S @var{suffix} ] [ -g @var{globstring} ]
+X@itemx [ -s @var{substring} ] [ -H @var{num pattern} ] [ -l @var{cmd} ] [ @var{arg} @dots{} ]
+X@itemx compctl @var{flags} + @var{flags} + @dots{}
+X@itemx compctl @var{flags} -x @var{pattern} @var{flags} - @dots{} -- @var{arg} @dots{}
+XControl the editor's completion behavior when one of @var{arg} is the
+Xcurrent command.  (Note that aliases are expanded before this is
+Xdetermined, unless the @code{COMPLETE_ALIASES} option is set.)  With the
+X@code{-D} flag, control default completion
+Xbehavior for commands not assigned any special behavior; with
+X@code{-C}, control completion when there is no current command.  The
+Xremaining options specify the type of command arguments to look for
+Xduring completion.  If completion is attempted for a command with a
+Xpathname containing slashes and no completion is found the search is
+Xretried with the last pathname component.@refill
+X
+X@table @code
+X@item -c
+XExpect command names.
+X
+X@item -f
+XExpect filenames and filesystem paths.
+X
+X@item -o
+XExpect option names.
+X
+X@item -v
+XExpect variable names.
+X
+X@item -b
+XExpect key binding names.
+X
+X@item -A
+XExpect array names.
+X
+X@item -I
+XExpect integer variable names.
+X
+X@item -F
+XExpect function names.
+X
+X@item -p
+XExpect parameter names.
+X
+X@item -E
+XExpect environment variable names.
+X
+X@item -j
+XExpect job names (the first word of the job leader's command line, useful
+Xwith the @code{kill} builtin).@refill
+X
+X@item -r
+XExpect names of running jobs.
+X
+X@item -z
+XExpect names of suspended jobs.
+X
+X@item -B
+XExpect names of builtin commands.
+X
+X@item -a
+XExpect alias names.
+X
+X@item -R
+XExpect names of regular aliases.
+X
+X@item -G
+XExpect names of global aliases.
+X
+X@item -u
+XExpect user names.
+X
+X@item -d
+XExpect names of disabled commands.
+X
+X@item -e
+XExpect names of executable (and enabled) commands.
+X
+X@item -N
+XExpect names of scalar parameters.
+X
+X@item -n
+XExpect named directories.
+X
+X@item -O
+XExpect names of readonly variables.
+X
+X@item -Z
+XExpect names of shell special parameters.
+X
+X@item -q
+XIf given together with a suffix (see the @code{-S} flag below) it makes
+Xthis suffix be removed if the next character typed is a blank or does
+Xnot insert anything (this is the same rule as used for the
+X@code{AUTO_REMOVE_SLASH} option).@refill
+X
+X@item -k @var{name}
+XExpect names taken from the elements of @code{$name} (which should be an
+Xarray).  Alternatively,
+Xthe argument @var{name} itself may be a set of space- or comma-separated
+Xvalues in parentheses, in which any delimiter may be escaped with a
+Xbackslash.  Example: @samp{compctl -k "(cputime filesize datasize
+Xstacksize coredumpsize resident descriptors)" limit}.@refill
+X
+X@item -K @var{function}
+XCall the given function to get the completions.  The function gets two
+Xarguments: the prefix and the suffix of the word on which completion is
+Xtried.  The function should set the variable @code{reply} to an array
+Xcontaining the completions (one completion per element); note that
+X@code{reply} should not be made local.  From such a function the command
+Xline can be accessed with the @code{-c} and @code{-l} flags to the
+X@code{read} builtin.  Example: @samp{function whoson @{ reply=(`users`);
+X@}; compctl -K whoson talk} completes only logged-on users after
+X@samp{talk}.  Note that @code{whoson} must return an array so that just
+X@samp{reply=`users`} is incorrect.@refill
+X
+X@item -X @var{explanation}
+XPrint the explanation string before the list of completions.  A @code{%n}
+Xin this string is replaced by the number of matches.@refill
+X
+X@item -P @var{prefix}
+XThe @var{prefix} is inserted just before the completed string; any
+Xinitial part already typed will be completed and the whole @var{prefix}
+Xignored for completion purposes.  Example: @samp{compctl -j -P "%"
+Xkill}.@refill
+X
+X@item -S @var{suffix}
+XAfter a unique completion is found the @var{suffix} is inserted after
+Xthe completed string.@refill
+X
+X@item -g @var{globstring}
+XThe @var{globstring} is expanded using filename globbing; it should be
+Xquoted to protect it from immediate expansion.  The resulting filenames
+Xare taken as the possible completions.  Use @code{*(/)} instead of
+X@code{*/} for directories.  The @code{fignore} special parameter is not
+Xused.  More than one of these pattern may be given separated by blanks.
+XNote that brace expansion is @emph{not} part of globbing.@refill
+X
+X@item -s @var{substring}
+XThe @var{substring} is split into words and these words are than
+Xexpanded using all shell expansion mechanisms.  The resulting words are
+Xtaken as possible completions.  The @code{fignore} special parameter is
+X@emph{not} used.  Note that @code{-g} is faster for filenames.@refill
+X
+X@item -H @var{num pattern}
+XThe possible completions are taken from the last @var{num} history
+Xlines.  Only words matching @var{pattern} are taken.  If @var{num} is
+Xzero or negative the whole history is searched and if @var{pattern} is
+Xthe empty string (or @code{*}, of course) all words are taken.@refill
+X
+X@item -l @var{cmd}
+XThis option cannot be combined with any other option.  If it is given it
+Xrestricts the range of command line words that are considered to be
+Xarguments.  By default this range contains all arguments without the
+Xcommand string.  If combined with extended completion (see below) and one of
+X@code{p[@dots{}]}, @code{r[@dots{}]}, or @code{R[@dots{}]} the range is
+Xrestricted to the arguments between the ones that are specified in the
+Xbrackets.  After the range of arguments is determined completion is done
+Xin it as if they were arguments to the @var{cmd} given with this option.
+XIf this string is empty the first word in the range is taken as the
+Xcommand name for which to complete.  In this case, if the cursor is in
+X@ifinfo
+Xthe first word, command names are completed.  Example: @samp{compctl -x
+X'r[-exec,;]' -l @'@' -- find} completes the arguments between @code{-exec}
+X@end ifinfo
+X@iftex
+Xthe first word, command names are completed.  Example: @samp{compctl -x
+X'r[-exec,;]' -l '' -- find} completes the arguments between @code{-exec}
+X@end iftex
+Xand the following @code{;} (or the end of the command line if there is
+Xno such string) as if they were specifying a command on their
+Xown.@refill
+X
+X@item -U
+XUse the whole list of possible completions, whether or not they actually
+Xmatch the word on the command line.  The word typed so far will be
+Xdeleted.  This is most useful with a function (@code{-K} option), which
+Xcan examine the word via the @code{read} builtin's @code{-c} and
+X@code{-l} flags and use its own criterion to decide what matches.@refill
+X@end table
+X
+X@noindent
+XThe second form specifies alternative options.  First completion is
+Xtried with the options before the first @code{+}.  If this produces no
+Xmatches completion is tried with the flags after the @code{+} and so on.
+XIf there are no flags after the last @code{+} this means that default
+Xcompletion is tried if no matches were found.@refill
+X
+X@noindent
+XThe third form specifies extended completion for the commands given as
+X@var{arg}.  Each @var{pattern} is examined in turn; when a match is
+Xfound, the corresponding @var{flags}, as described above for the
+Xordinary case, are used to generate possible completions.  If no
+X@var{pattern} matches, the @var{flags} given before the @code{-x} are
+Xused.  Note that each pattern should be supplied as a single argument
+Xand should be quoted to prevent expansion of metacharacters by the
+Xshell.  A @var{pattern} is built of sub-patterns separated by commas; it
+Xmatches if at least one of these sub-patterns matches (they are or'ed).
+XThese sub-patterns are in turn composed of other sub-patterns separated
+Xby white space which match if all of the sub-patterns match (they are
+Xand'ed).  An element of the sub-patterns is of the form
+X@code{c[@dots{}][@dots{}]}, where the pairs of brackets may be repeated as
+Xoften as necessary, and matches if any of the sets of brackets match (an
+Xor).  These elements may be any of the following:@refill
+X
+X@table @code
+X@item s[@var{string}] @dots{}
+XThe pattern matches if the current word on the command line starts with
+Xone of the strings given in brackets.  The @var{string} is not removed
+Xand is not part of the completion.@refill
+X
+X@item S[@var{string}] @dots{}
+XLike @code{s[@var{string}]} but the @var{string} is part of the
+Xcompletion.@refill
+X
+X@item p[@var{from},@var{to}] @dots{}
+XThe pattern matches if the number of the current word is between one of
+Xthe @var{from} and @var{to} pairs.  The comma and @var{to} are optional;
+X@var{to} defaults to the same value as @var{from}.  The numbers may be
+Xnegative: @var{-n} refers to the @var{n}'th last word on the
+Xline.@refill
+X
+X@item c[@var{offset},@var{string}] @dots{}
+XThe pattern matches if one of the @var{string}s matches the word offset
+Xby @var{offset} from the current word position.@refill
+X
+X@item C[@var{offset},@var{pattern}] @dots{}
+XLike @code{c} but uses pattern matching instead.
+X
+X@item w[@var{index},@var{string}] @dots{}
+XThe pattern matches if the word in position @var{index} is equal to the
+Xcorresponding @var{string}.  Note that the word count is made after
+Xalias expansion.@refill
+X
+X@item W[@var{index},@var{pattern}] @dots{}
+XLike @code{w} but uses pattern matching instead.
+X
+X@item n[@var{index},@var{string}] @dots{}
+XMatches if the current word contains @var{string}.  Anything up to the
+X@var{index}'th ocurrence of this string will not be considered part of
+Xthe completion, but the rest will.@refill
+X
+X@item N[@var{index},@var{string}] @dots{}
+XLike @code{n[@var{index},@var{string}]} but the string will be taken as
+Xa character class (anything up to the @var{index}'th ocurrence of any of
+Xthe characters in @var{string} will not be considered part of the
+Xcompletion).@refill
+X
+X@item m[@var{min},@var{max}] @dots{}
+XMatches if the total number of words lies between @var{min} and
+X@var{max} (inclusive).@refill
+X
+X@item r[@var{str1},@var{str2}]@dots{}
+XMatches if the cursor is after a word with prefix @var{str1}.  If there
+Xis also a word with prefix @var{str2} on the command line it matches
+Xonly if the cursor is before this word.@refill
+X
+X@item R[@var{str1},@var{str2}]@dots{}
+XLike @code{r} but uses pattern matching instead.
+X@end table
+X
+X@noindent
+XExample:
+X@noindent
+X@samp{compctl -u -x 's[+] c[-1,-f],s[-f+]' -g '~/Mail/*(:t)' -
+X's[-f],c[-1,-f]' -f -- mail}
+X@noindent
+XComplete users by default.  After a @code{-f} with an optional space,
+Xcomplete file names; if a @code{+} follows the @code{-f}, whether or not
+Xthere is a space in between, complete with the non-directory part of
+Xfiles in the directory @samp{~/Mail}.@refill
+X
+X@cindex loops, continuing
+X@cindex continuing loops
+X@findex continue
+X@item continue [ @var{num} ]
+XResume the next iteration of the enclosing @code{for}, @code{while},
+X@code{until}, @code{select}, or @code{repeat} loop.  If @var{n} is
+Xspecified, break out of @var{n}-1 loops and resume at the @var{n}'th
+Xenclosing loop.@refill
+X
+X@findex declare
+X@item declare [ @var{arg} @dots{} ]
+XSame as @code{typeset}.
+X
+X@cindex directory stack, printing
+X@findex dirs
+X@item dirs [ -v ] [ @var{arg} @dots{} ]
+XWith no arguments, print the contents of the directory stack.  If the
+X@code{-v} option is given, number the directories in the stack when
+Xprinting.  Directories are added to this stack with the @code{pushd}
+Xcommand, and removed with the @code{cd} or @code{popd} commands.  If
+Xarguments are specified, load them onto the directory stack, replacing
+Xanything that was there, and push the current directory onto the
+Xstack.@refill
+X
+X@cindex disabling commands
+X@cindex commands, disabling
+X@findex disable
+X@item disable [ -m ] @var{arg} @dots{}
+XDisable the builtin @var{arg} temporarily.  This allows you to use an
+Xexternal command with the same name as a shell builtin.  Without
+Xarguments all disabled builtins are printed; with the @code{-m} flag the
+Xarguments are taken as patterns (which should be quoted to preserve them
+Xfrom being taken as glob patterns) and all builtins matching these
+Xpatterns are disabled.  Actually the same as @code{unhash}.  Builtins
+Xcan be enabled with the @code{enable} command.@refill
+X
+X@findex disown
+X@item disown @var{job} @dots{}
+XRemove the specified jobs from the job table; the shell will no longer
+Xreport their status, and will not complain if you try to exit an
+Xinteractive shell with them running or stopped.
+X
+X@findex echo
+X@item echo [ -n ] [ @var{arg} @dots{} ]
+XWrite each @var{arg} on the standard output, with a space separating
+Xeach one.  If the @code{-n} flag is not present, print a newline at the
+Xend.  @code{echo} recognizes the following escape sequences:@refill
+X
+X@table @code
+X@item \a
+XBell
+X@item \b
+XBackspace
+X@item \c
+XDon't print an ending newline
+X@item \e
+XEscape
+X@item \f
+XForm feed
+X@item \n
+XNewline
+X@item \r
+XCarriage return
+X@item \t
+XHorizontal tab
+X@item \v
+XVertical tab
+X@item \\
+XBackslash
+X@item \0NNN
+XCharacter code in octal, with a maximum of three digits after the zero.
+XA non-octal digit terminates the number.
+X@item \xNN
+XCharacter code in hexadecimal, with a maximum of two digits after the
+X@code{x}.  A non-hexadecimal digit terminates the number.@refill
+X@end table
+X
+X@cindex termcap string, printing
+X@findex echotc
+X@item echotc @var{cap} [ @var{arg} @dots{} ]
+XOutput the termcap string corresponding to the capability @var{cap},
+Xwith optional arguments.@refill
+X
+X@findex enable
+X@item enable [ -m ] @var{arg} @dots{}
+XEnable the specified builtin commands, presumably disabled earlier with
+X@code{disable}.  Without arguments the enabled builtins are printed;
+Xwith the @code{-m} flag the arguments are taken as patterns (and hence
+Xshould be quoted), and all builtins matching these patterns are
+Xenabled.@refill
+X
+X@cindex evaluating arguments as commands
+X@findex eval
+X@item eval [ @var{arg} @dots{} ]
+XRead the arguments as input to the shell and execute the resulting
+Xcommand(s) in the current shell process.
+X
+X@pindex IGNORE_EOF, use of
+X@findex exit
+X@item exit [ @var{n} ]
+XExit the shell with the exit code specified by @var{n}; if none is
+Xspecified, use the exit code from the last command executed.  An
+X@code{EOF} condition will also cause the shell to exit, unless the
+X@code{IGNORE_EOF} option is set.@refill
+X
+X@findex export
+X@item export [ @var{name}[=@var{value}] @dots{} ]
+XThe specified @var{name}s are marked for automatic export to the
+Xenvironment of subsequently executed commands.@refill
+X
+X@findex false
+X@item false
+XDo nothing and return an exit code of 1.
+X
+X@cindex history, editting
+X@cindex editting the history
+X@findex fc
+X@item fc [ -e @var{ename} ] [ -nlrdDfEm ] [ @var{old}=@var{new} @dots{} ] [ @var{first} [ @var{last} ]]
+X@itemx fc -ARWI [ @var{filename} ]
+XSelect a range of commands from @var{first} to @var{last} from the
+Xhistory list.  The arguments @var{first} and @var{last} may be specified
+Xas a number or as a string.  A negative number is used as an offset to
+Xthe current history event number.  A string specifies the most recent
+Xevent beginning with the given string.  All substitutions
+X@var{old}=@var{new}, if any, are then performed on the commands.  If the
+X@code{-l} flag is given, the resulting commands are listed on standard
+Xoutput.  If the @code{-m} flag is also given the first argument is taken
+Xas a pattern (which should be quoted), and only the history events
+Xmatching this pattern will be shown.  Otherwise the editor program
+X@var{ename} is invoked on a file containing these history events.  If
+X@var{ename} is not given, the value of the parameter @code{FCEDIT} is
+Xused.  If @var{ename} is @code{-}, no editor is invoked.  When editing
+Xis complete, the edited command(s) is executed.  If @var{first} is not
+Xspecified, it will be set to -1 (the most recent event), or to -16 if
+Xthe @code{-l} flag is given.  If @var{last} is not specified, it will be
+Xset to @var{first}, or to -1 if the @code{-l} flag is given.  The flag
+X@code{-r} reverses the order of the commands and the flag @code{-n}
+Xsuppresses command numbers when listing.  Also when listing, @code{-d}
+Xprints timestamps for each command, @code{-f} prints full time and date
+Xstamps, and @code{-D} prints elapsed times.  Adding the @code{-E} flag
+Xcauses the dates to be printed in the European format
+X(@var{dd.mm.yyyy}).@refill
+X
+X@cindex history, file
+X@cindex file, history
+X@noindent
+X@code{fc -R} reads the history from the given file, @code{fc -W} writes
+Xthe history out to the given file, and @code{fc -A} appends the history
+Xto the given file.  @code{fc -AI} (@code{-WI}) appends (writes) only
+Xthose events that are new since the last incremental append (write) to
+Xthe history file.  In any case the file will have no more than
+X@code{SAVEHIST} entries.@refill
+X
+X@findex fg
+X@item fg [ @var{job} @dots{} ]
+X@itemx @var{job} @dots{}
+XBring the specified @var{job}s to the foreground.  If no @var{job} is
+Xspecified, use the current job.@refill
+X
+X@findex functions
+X@item functions [ +-tum ] [ @var{name} @dots{} ]
+XEquivalent to @code{typeset -f}.
+X
+X@cindex line, reading
+X@cindex reading a line
+X@findex getln
+X@item getln @var{name} @dots{}
+XRead the top value from the buffer stack and put it in the shell
+Xparameter @var{name}.  Equivalent to @code{read -zr}.  The flags
+X@code{-c}, @code{-l}, @code{-A}, @code{-e}, @code{-E}, and @code{-n} are
+Xalso supported.@refill
+X
+X@cindex options, processing
+X@findex getopts
+X@item getopts @var{optstring} @var{name} [ @var{arg} @dots{} ]
+XChecks @var{arg} for legal options.  If @var{arg} is omitted, use the
+Xpositional parameters.  A valid option argument begins with a @code{+}
+Xor a @code{-}.  An argument not beginning with a @code{+} or a @code{-},
+Xor the argument @code{--}, ends the options.  @var{optstring} contains
+Xthe letters that @code{getopts} recognizes.  If a letter is followed by
+Xa @code{:}, that option is expected to have an argument.  The options
+Xcan be separated from the argument by blanks.@refill
+X
+X@vindex OPTIND, use of
+X@vindex OPTARG, use of
+X@noindent
+XEach time it is invoked, @code{getopts} places the option letter it
+Xfinds in the shell parameter @var{name}, prepended with a @code{+} when
+X@var{arg} begins with a @code{+}.  The index of the next @var{arg} is
+Xstored in @code{OPTIND}.  The option argument, if any, is stored in
+X@code{OPTARG}.@refill
+X
+X@noindent
+XA leading @code{:} in @var{optstring} causes @code{getopts} to store the
+Xletter of the invalid option in @code{OPTARG}, and to set @var{name} to
+X@code{?} for an unknown option and to @code{:} when a required option is
+Xmissing.  Otherwise, @code{getopts} prints an error message.  The exit
+Xstatus is nonzero when there are no more options.@refill
+X
+X@findex hash
+X@item hash @var{name} @var{path}
+XPuts @var{name} in the command hash table, associating it with the
+Xpathname @var{path}.  Whenever @var{name} is used as a command argument,
+Xthe shell will try to execute the file given by @var{path}.@refill
+X
+X@findex history
+X@item history [ -nrdDfEm ] [ @var{first} [ @var{last} ]]
+XSame as @code{fc -l}.
+X
+X@findex integer
+X@item integer [ +-lrtux ] [ @var{name}[=@var{value}] ]
+XSame as @code{typeset -i}, except that options irrelevant to integers
+Xare not permitted.@refill
+X
+X@findex jobs
+X@item jobs [ -lprs ] [ @var{job} @dots{} ]
+XLists information about each given job, or all jobs if @var{job} is
+Xomitted.  The @code{-l} flag lists process ids, and the @code{-p} flag
+Xlists process groups.  If the @code{-r} flag is given only running jobs
+Xwill be listed; if the @code{-s} flag is given only stopped jobs are
+Xshown.@refill
+X
+X@cindex jobs, killing
+X@cindex killing jobs
+X@findex kill
+X@item kill [ -@var{sig} ] @var{job} @dots{}
+X@itemx kill -l
+XSends either @code{SIGTERM} or the specified signal to the given jobs or
+Xprocesses.  Signals are given by number or by names (with the prefix
+X@code{SIG} removed).  If the signal being sent is not @code{KILL} or
+X@code{CONT}, then the job will be sent a @code{CONT} signal if it is
+Xstopped.  The argument @var{job} can be the process id of a job not in
+Xthe job list.  In the second form, @code{kill -l}, the signal names are
+Xlisted.@refill
+X
+X@findex let
+X@item let @var{arg} @dots{}
+XEvaluate each @var{arg} as an arithmetic expression.
+X@c
+X@c Why does the next line cause Info-validate to say "invalid reference"?
+X@c
+X@xref{Arithmetic Evaluation}, for a description of arithmetic
+Xexpressions.  The exit status is 0 if the value of the last expression
+Xis nonzero, and 1 otherwise.@refill
+X
+X@cindex resource limits
+X@cindex limits, resource
+X@findex limit
+X@item limit [ -h ] [ @var{resource} [ @var{limit} ]] @dots{}
+X@itemx limit -s
+XLimit the resource consumption of children of the current shell.  If
+X@var{limit} is not specified, print the current limit placed on
+X@var{resource}; otherwise set the limit to the specified value.  If the
+X@code{-h} flag is given, use hard limits instead of soft limits.  If no
+X@var{resource} is given, print all limits.  See also @code{ulimit}.
+X@var{resource} is one of:@refill
+X
+X@table @code
+X@item cputime
+XMaximum CPU seconds per process.
+X@item filesize
+XLargest single file allowed.
+X@item datasize
+XMaximum data size (including stack) for each process.
+X@item stacksize
+XMaximum stack size for each process.
+X@item coredumpsize
+XMaximum size of a core dump.
+X@item resident
+X@itemx memoryuse
+XMaximum resident set size.
+X@item memorylocked
+XMaximum amount of memory locked in RAM.
+X@item descriptors
+XMaximum value for a file descriptor.
+X@item openfiles
+XMaximum number of open files.
+X@item vmemorysize
+XMaximum amount of virtual memory.
+X@end table
+X
+XWhich of these resource limits are available depends on the system.
+X@var{limit} is a number, with an optional scaling factor, as
+Xfollows:@refill
+X
+X@table @code
+X@item @var{n}h
+XHours.
+X@item @var{n}k
+XKilobytes.  This is the default for all but cputime.
+X@item @var{n}m
+XMegabytes or minutes.
+X@item @var{mm}:@var{ss}
+XMinutes and seconds.
+X@end table
+X
+X@findex local
+X@item local [ +-LRZilrtu [@var{n}]] [ @var{name}[=@var{value}] ]
+XSame as @code{typeset}, except that the options @code{-x} and @code{-f}
+Xare not permitted.@refill
+X
+X@cindex users, watching
+X@cindex watching users
+X@vindex watch, use of
+X@findex log
+X@item log
+XList all users currently logged in who are affected by the current
+Xsetting of the @code{watch} parameter.@refill
+X
+X@findex logout
+X@item logout
+XExit the shell, if this is a login shell.
+X
+X@pindex PUSHD_MINUS, use of
+X@findex popd
+X@item popd [ +-@var{n} ]
+XRemoves entries from the directory stack.  With no arguments, removes
+Xthe top directory from the stack, and performs a @code{cd} to the new
+Xtop directory.  With an argument of the form @code{+@var{n}}, remove the
+X@var{n}'th entry counting from the left of the list shown by the
+X@code{dirs} command, starting with zero, and change to that directory.
+XWith an argument of the form @code{-@var{n}}, remove the @var{n}'th entry
+Xcounting from the right.  If the @code{PUSHD_MINUS} option is set, the
+Xmeanings of @code{+} and @code{-} in this context are swapped.@refill
+X
+X@findex print
+X@item print [ -RnrslzpNDPoOic ] [ -u@var{n} ] [ @var{arg} @dots{} ]
+XWith no flags or with flag @code{-}, the arguments are printed on the
+Xstandard output as described by @code{echo}, with the following
+Xdifferences: the escape sequence @code{\M-x} metafies the character
+X@code{x} (sets the highest bit), @code{\C-x} produces a control
+Xcharacter (@code{\C-@@} and @code{\C-?} give the characters NULL and
+Xdelete) and @code{\E} is a synonym for @code{\e}.  Finally, if not in an
+Xescape sequence, @code{\} escapes the following character and is not
+Xprinted.@refill
+X
+X@table @code
+X@item -R
+X@itemx -r
+XIgnore the escape conventions of @code{echo}.  The @code{-R} option
+Xwill print all subsequent arguments and options.@refill
+X@item -s
+XPlace the results in the history list instead of on the standard
+Xoutput.@refill
+X@item -n
+XDo not add a newline to the output.
+X@item -l
+XPrint the arguments separated by newlines instead of spaces.
+X@item -N
+XPrint the arguments separated and terminated by nulls.
+X@item -o
+XPrint the arguments sorted in ascending order.
+X@item -O
+XPrint the arguments sorted in descending order.
+X@item -i
+XIf given together with @code{-o} or @code{-O}, makes the sort be
+Xcase-insensitive.@refill
+X@item -c
+XPrint the arguments in columns.
+X@item -u@var{n}
+XPrint the arguments to file descriptor @var{n}.
+X@item -p
+XPrint the arguments to the input of the coprocess.
+X@item -z
+XPush the arguments onto the editing buffer stack, separated by spaces;
+Xno escape sequences are recognized.@refill
+X@item -D
+XTreat the arguments as directory names, replacing prefixes with @code{~}
+Xexpressions, as appropriate.@refill
+X@item -P
+XRecognize the same escape sequences as in the @code{PROMPT}
+Xparameter.@refill
+X@end table
+X
+X@findex pushd
+X@pindex PUSHD_TO_HOME, use of
+X@pindex CDABLEVARS, use of
+X@pindex PUSHD_SILENT, use of
+X@item pushd [ @var{arg} ]
+X@itemx pushd @var{old} @var{new}
+X@itemx pushd +-@var{n}
+XChange the current directory, and push the old current directory onto
+Xthe directory stack.  In the first form, change the current directory to
+X@var{arg}.  If @var{arg} is not specified, change to the second
+Xdirectory on the stack (that is, exchange the top two entries), or
+Xchange to the value of @code{HOME} if the @code{PUSHD_TO_HOME} option is
+Xset or if there is only one entry on the stack.  If @var{arg} is
+X@code{-}, change to the value of @code{OLDPWD}, the previous directory.
+XIf a directory named @var{arg} is not found in the current directory and
+X@var{arg} does not contain a slash, search each component of the shell
+Xparameter @code{cdpath}.  If the option @code{CDABLEVARS} is set, and a
+Xparameter named @var{arg} exists whose value begins with a slash, treat
+Xits value as the directory.  If the option @code{PUSHD_SILENT} is not
+Xset, the directory stack will be printed after a @code{pushd} is
+Xperformed.@refill
+X
+X@noindent
+XThe second form of @code{pushd} substitutes the string @var{new} for the
+Xstring @var{old} in the name of the current directory, and tries to
+Xchange to this new directory.@refill
+X
+X@noindent
+XThe third form of @code{pushd} is equivalent to @code{popd}.
+X
+X@findex pushln
+X@item pushln
+XEquivalent to @code{print -nZ}.
+X
+X@findex pwd
+X@item pwd
+XEquivalent to @code{print -R $PWD}.
+X
+X@findex r
+X@item r
+XEquivalent to @code{fc -e -}.
+X
+X@vindex IFS
+X@findex read
+X@item read [ -rzpqAclneE ] [ -k [@var{num}] ] [ -u@var{n} ] [ @var{name}?@var{prompt} ] [ @var{name} @dots{} ] 
+XRead one line and break it into fields using the characters in
+X@code{IFS} as separators.  In raw mode, @code{-r}, a @code{\} at the end
+Xof a line does not signify line continuation.  With the @code{-q} flag
+Xread only one character and set @var{name} to @samp{y} if this character
+Xwas @samp{y} or @samp{Y}, and to @samp{n} otherwise.  With this flag set
+Xthe return value is zero only if the character was @samp{y} or @samp{Y}.
+XIf the @code{-k}
+Xflag is given read only one (or @var{num}) characters.  If the @code{-z}
+Xflag is given, read from the editor buffer stack.  The first field is
+Xassigned to the first @var{name}, the second field to the second
+X@var{name}, etc, with leftover fields assigned to the last @var{name}.
+XIf the @code{-e} or the @code{-E} flag is given, the words read are
+Xprinted after the whole line is read.  If the @code{-e} flag is given,
+Xthe words are not assigned to the parameters.  If the @code{-A} flag is
+Xgiven, the first @var{name} is taken as the name of an array and all
+Xwords are assigned to it.  If @var{name} is omitted then @code{REPLY} is
+Xused for scalars and @code{reply} for arrays.  The @code{-c} and
+X@code{-l} flags are allowed only if called inside a function used for
+Xcompletion (specified with the @code{-K} flag to @code{compctl}).  If
+Xthe @code{-c} flag is given, the words of the current command are read.
+XIf the @code{-l} flag is given, the whole line is assigned as a scalar.
+XTogether with the @code{-n} flag these options give the number of the
+Xword the cursor is on and the index of the character the cursor is on
+Xrespectively.  If @code{-u@var{n}} is specified, then input is read from
+Xfile descriptor @var{n}; if @code{-p} is specified, then input is read
+Xfrom the coprocess.  If the first argument contains a @code{?}, the remainder
+Xof this word is used as a @var{prompt} on standard error when the shell
+Xis interactive.  The exit status is 0 unless an end-of-file is
+Xencountered.@refill
+X
+X@cindex parameters, marking readonly
+X@findex readonly
+X@item readonly [ @var{name}[=@var{value}]] @dots{}
+XThe given @var{names} are marked readonly; these names cannot be changed
+Xby subsequent assignment.@refill
+X
+X@findex rehash
+X@item rehash [ -f ]
+XThrow out the command hash table and start over.  If the @code{-f}
+Xoption is given, rescan the command path immediately, instead of
+Xrebuilding the hash table incrementally.@refill
+X
+X@cindex functions, returning from
+X@findex return
+X@item return [ @var{n} ]
+XCauses a shell function or @code{.} script to return to the invoking
+Xscript with the return status specified by @var{n}.  If @var{n} is
+Xomitted then the return status is that of the last command
+Xexecuted.@refill
+X
+X@noindent
+XIf @code{return} was executed from a trap, whether set by the
+X@code{trap} builtin or by defining a @code{TRAP@var{xxx}} function, the
+Xeffect is different for zero and non-zero return status.  With zero
+Xstatus (or after an implicit return at the end of the trap), the shell
+Xwill return to whatever it was previously processing; with a non-zero
+Xstatus, the shell will behave as interrupted except that the return
+Xstatus of the trap is retained.  Note that the signal which caused the
+Xtrap is passed as the first argument, so the statement @samp{return
+X$[128+$1]} will return the same status as if the signal had not been
+Xtrapped.@refill
+X
+X@cindex timed execution
+X@cindex execution, timed
+X@findex sched
+X@item sched [+]@var{hh}:@var{mm} @var{command} @dots{}
+X@itemx sched [ -@var{item} ]
+XMake an entry in the scheduled list of commands to execute.  The time
+Xmay be specified in either absolute or relative time.  With no
+Xarguments, prints the list of scheduled commands.  With the argument
+X@code{-@var{item}}, removes the given item from the list.@refill
+X
+X@cindex parameters, positional
+X@cindex parameters, array
+X@cindex array parameter, declaring
+X@findex set
+X@item set [ +-@var{options} ] [ +-o @var{option name} ] @dots{} [ -A [@var{name}] ] [ @var{arg} ] @dots{} 
+XSet the options for the shell and/or set the positional parameters, or
+Xdeclare an array.  @xref{Options}, for the meaning of the flags.  Flags
+Xmay be specified by name using the @code{-o} option.  If the @code{-A}
+Xflag is given, @var{name} is set to an array containing the given
+X@var{arg}s; if no @var{name} is specified, all arrays are printed.
+XOtherwise the positional parameters are set.  If no arguments are given,
+Xthen the names and values of all parameters are printed on the standard
+Xoutput.  If the only argument is @code{+}, the names of all parameters
+Xare printed.@refill
+X
+X@cindex options, setting
+X@findex setopt
+X@item setopt [ -m ] [ +-@var{options} ] [ @var{name} @dots{} ]
+XSet the options for the shell.  All options specified either with flags
+Xor by name are set.  If no arguments are supplied, the names of all
+Xoptions currently set are printed.  In option names, case is
+Xinsignificant, and all underscore characters are ignored.  If the
+X@code{-m} flag is given the arguments are taken as patterns (which
+Xshould be quoted to preserve them from being interpreted as glob
+Xpatterns), and all options with matching names are set.@refill
+X
+X@cindex parameters, positional
+X@findex shift
+X@item shift [ @var{n} ] [ @var{name} @dots{} ]
+XThe positional parameters from @code{$@var{n}+1} @dots{} are renamed
+X@code{$1}, where @var{n} is an arithmetic expression that defaults to 1.
+XIf any @var{name}s are given then the arrays with these names are
+Xshifted, instead of the positional parameters.@refill
+X
+X@findex source
+X@item source
+XSame as @samp{.}, except that the current directory is always searched
+Xand is always searched first, before directories in @code{path}.@refill
+X
+X@cindex shell, suspending
+X@findex suspend
+X@item suspend [ -f ]
+XSuspend the execution of the shell (send it a @code{SIGTSTP}) until it
+Xreceives a @code{SIGCONT}.  If the @code{-f} option is not given,
+Xcomplain if this is a login shell.@refill
+X
+X@findex test
+X@item test @var{arg} @dots{}
+X@itemx [ @var{arg} @dots{} ]
+XLike the system version of @code{test}.  Added for compatibility; use
+Xconditional expressions instead.@refill
+X
+X@cindex shell, timing
+X@cindex timing the shell
+X@findex times
+X@item times
+XPrint the accumulated user and system times for the shell and for
+Xprocesses run from the shell.
+X
+X@cindex signals, trapping
+X@cindex trapping signals
+X@findex trap
+X@item trap [ @var{arg} ] [ @var{sig} ] @dots{}
+X@var{arg} is a command to be read and executed when the shell receives
+X@var{sig}.  Each @var{sig} can be given as a number or as the name of a
+Xsignal.  Inside the command, @code{$1} refers to the number of the
+Xsignal that caused the trap.
+XIf @var{arg} is @code{-}, then all traps @var{sig} are reset to
+Xtheir default values.  If @var{arg} is the null string, then this signal
+Xis ignored by the shell and by the commands it invokes.  If @var{sig} is
+X@code{ZERR} then @var{arg} will be executed after each command with a
+Xnonzero exit status.  If @var{sig} is @code{DEBUG} then @var{arg} will
+Xbe executed after each command. If @var{sig} is @code{0} or @code{EXIT}
+Xand the @code{trap} statement is executed inside the body of a function,
+Xthen the command @var{arg} is executed after the function completes.  If
+X@var{sig} is @code{0} or @code{EXIT} and the @code{trap} statement is
+Xnot executed inside the body of a function, then the command @var{arg}
+Xis executed when the shell terminates.  The @code{trap} command with no
+Xarguments prints a list of commands associated with each signal.@refill
+X
+X@findex true
+X@item true
+XDo nothing and return an exit code of 0.
+X
+X@cindex tty, freezing
+X@findex ttyctl
+X@item ttyctl [ -fu ]
+XThe @code{-f} option freezes the tty, and @code{-u} unfreezes it.  When
+Xthe tty is frozen, no changes made to the tty settings by external
+Xprograms will be honored by the shell, except for changes in the size of
+Xthe screen; the shell will simply reset the
+Xsettings to their previous values as soon as each command exits.  Thus,
+X@code{stty} and similar programs have no effect when the tty is
+Xfrozen.  Without options it reports whether the terminal is frozen or
+Xnot.@refill
+X
+X@findex type
+X@item type
+XSame as @code{whence -v}.
+X
+X@cindex parameters, setting
+X@findex typeset
+X@item typeset [ +-LRZfilrtuxm [@var{n}]] [ @var{name}[=@var{value}]] @dots{}
+XSet attributes and values for shell parameters.  When invoked inside a
+Xfunction, a new parameter is created which will be unset when the
+Xfunction completes.  The new parameter will not be exported unless
+X@code{ALL_EXPORT} is set, in which case the parameter will be exported
+Xprovided no parameter of that name already exists.  The following
+Xattributes are valid:@refill
+X
+X@table @code
+X@item -L
+XLeft justify and remove leading blanks from @var{value}.  If @var{n} is
+Xnonzero, it defines the width of the field; otherwise it is determined
+Xby the width of the value of the first assignment.  When the parameter
+Xis printed, it is filled on the right with blanks or truncated if
+Xnecessary to fit the field.  Leading zeros are removed if the @code{-Z}
+Xflag is also given.@refill
+X
+X@item -R
+XRight justify and fill with leading blanks.  If @var{n} is nonzero it
+Xdefines the width of the field; otherwise it is determined by the width
+Xof the value of the first assignment.  When the parameter is printed,
+Xthe field is left filled with blanks or truncated from the end.@refill
+X
+X@item -Z
+XRight justify and fill with leading zeros if the first non-blank
+Xcharacter is a digit and the @code{-L} flag has not been set.  If
+X@var{n} is nonzero it defines the width of the field; otherwise it is
+Xdetermined by the width of the value of the first assignment.@refill
+X
+X@item -f
+XThe names refer to functions rather than parameters.  No assignments can
+Xbe made, and the only other valid flags are @code{-t} and @code{-u}.
+XThe flag @code{-t} turns on execution tracing for this function.  The
+Xflag @code{-u} causes this function to be marked for autoloading.  The
+X@code{fpath} parameter will be searched to find the function definition
+Xwhen the function is first referenced.@refill
+X
+X@item -i
+XUse an internal integer representation.  If @var{n} is nonzero it
+Xdefines the output arithmetic base, otherwise it is determined by the
+Xfirst assignment.@refill
+X
+X@item -l
+XConvert to lower case.
+X
+X@item -r
+XThe given @var{name}s are marked readonly.
+X
+X@item -t
+XTags the named parameters.  Tags have no special meaning to the
+Xshell.@refill
+X
+X@item -u
+XConvert to upper case.
+X
+X@item -x
+XMark for automatic export to the environment of subsequently executed
+Xcommands.@refill
+X@end table
+X
+X@noindent
+XUsing @code{+} rather than @code{-} causes these flags to be turned off.
+XIf no arguments are given but flags are specified, a list of named
+Xparameters which have these flags set is printed.  Using @code{+}
+Xinstead of @code{-} keeps their values from being printed.  If no
+Xarguments or options are given, the names and attributes of all
+Xparameters are printed.  If just the @code{-m} flag is given the
+Xarguments are taken as patterns (which should be quoted), and all
+Xparameters or functions (with the @code{-f} flag) with matching names
+Xare printed.@refill
+X
+X@cindex resource limits
+X@cindex limits, resource
+X@findex ulimit
+X@item ulimit [ -Hacdflmnopstv ] [ @var{limit} ]
+XSet or display a resource limit.  When setting a limit it will apply to
+Xthe children of the shell but not to the shell itself.
+XThe value of limit can be a number in
+Xthe unit specified below or the value @samp{unlimited}.  If the @code{-H}
+Xflag is given use hard limits instead of soft limits.  See also
+X@code{limit}.@refill
+X
+X@table @code
+X@item -a
+XLists all of the current resource limits.
+X@item -c
+XMaximum size of core dumps, in 512-byte blocks.
+X@item -d
+XMaximum size of the data segment, in Kbytes.
+X@item -f
+XMaximum size of individual files written, in 512-byte blocks.
+X@item -l
+XMaximum size of locked-in memory, in Kbytes.
+X@item -m
+XMaximum size of physical memory, in Kbytes.
+X@item -n
+XMaximum number of file descriptors.
+X@item -o
+XMaximum number of open files.
+X@item -p
+XMaximum number of processes.
+X@item -s
+XMaximum size of stack, in Kbytes.
+X@item -t
+XMaximum number of CPU seconds.
+X@item -v
+XMaximum size of virtual memory, in Kbytes.
+X@end table
+X
+X@cindex umask
+X@findex umask
+X@item umask [ @var{mask} ]
+XThe umask is set to @var{mask}.  @var{mask} can be either an octal
+Xnumber or a symbolic value as described in @code{chmod(1)}.  If
+X@var{mask} is omitted, the current value is printed.  Note that in the
+Xsymbolic form the permissions you specify are those which are to be
+Xallowed (not denied) to the users specified).@refill
+X
+X@cindex aliases, removing
+X@findex unalias
+X@item unalias [ -m ] @var{name} @dots{}
+XThe alias definition, if any, for each @var{name} is removed.  With the
+X@code{-m} flag, the arguments are taken as patterns (which should be
+Xquoted), and all aliases with matching names are removed.@refill
+X
+X@cindex functions, removing
+X@findex unfunction
+X@item unfunction [ -m ] @var{name} @dots{}
+XThe function definition, if any, for each @var{name} is removed.  With
+Xthe @code{-m} flag, the arguments are taken as patterns (which should be
+Xquoted), and all function with matching names are removed.@refill
+X
+X@findex unhash
+X@item unhash [ -m ] @var{name} @dots{}
+XThe entry in the command hash table, if any, for each @var{name} is
+Xremoved.  With the @code{-m} flag, the arguments are taken as patterns
+X(which should be quoted), and all entries for commands with matching
+Xnames are removed.@refill
+X
+X@cindex limits, resource
+X@cindex resource limits
+X@findex unlimit
+X@item unlimit [ -h ] @var{resource} @dots{}
+XThe resource limit for each @var{resource} is set to the hard limit.  If
+Xthe @code{-h} flag is given and the shell is running as root, the hard
+Xresource limit for each @var{resource} is removed.@refill
+X
+X@cindex parameters, unsetting
+X@findex unset
+X@item unset [ -m ] @var{name} @dots{}
+XEach named parameter is unset.  With the @code{-m} flag, the arguments
+Xare taken as patterns (which should be quoted), and all parameters with
+Xmatching names are unset.@refill
+X
+X@cindex options, unsetting
+X@findex unsetopt
+X@item unsetopt [ -m ]  [ +-@var{options} ] [ @var{name} @dots{} ]
+XUnset the options for the shell.  All options specified either with
+Xflags or by name are unset.  With the @code{-m} flag, the arguments are
+Xtaken as patterns (which should be quoted), and all options with
+Xmatching names are unset.@refill
+X
+X@cindex parameters, editting
+X@cindex editting parameters
+X@findex vared
+X@item vared [ -c ] [ -p @var{prompt}] [ -r @var{rprompt} ] @var{name}
+XThe value of the parameter @var{name} is loaded into the edit buffer,
+Xand the line editor is invoked.  When the editor exits, @var{name} is
+Xset to the string value returned by the editor.  If the @code{-c} flag
+Xis given, the parameter is created if it doesn't already exist.  If the
+X@code{-p} flag is given, @var{prompt} will be taken as the prompt to
+Xdisplay at the left.  If the @code{-r} flag is given, @var{rprompt} will
+Xbe taken as the prompt to display at the right.@refill
+X
+X@cindex jobs, waiting for
+X@cindex waiting for jobs
+X@findex wait
+X@item wait [ @var{job} @dots{} ]
+XWait for the specified jobs or processes.  If @var{job} is not given
+Xthen all currently active child processes are waited for.  Each
+X@var{job} can be either a job specification or the process-id of a job
+Xin the job table.  The exit status from this command is that of the job
+Xwaited for.@refill
+X
+X@findex whence
+X@item whence [ -acpvm ] @var{name} @dots{}
+XFor each name, indicate how it would be interpreted if used as a command
+Xname.  The @code{-v} flag produces a more verbose report.  The @code{-p}
+Xflag does a path search for @var{name} even if it is a shell function,
+Xalias, or reserved word.  The @code{-c} flag prints the results in a
+Xcsh-like format.  The @code{-a} flag does a search for all occurences of
+X@var{name} throughout the command path.  With the @code{-m} flag, the
+Xarguments are taken as patterns (which should be quoted), and the
+Xinformation is displayed for each command matching one of these
+Xpatterns.@refill
+X
+X@findex which
+X@item which
+XSame as @code{whence -c}.
+X@end table
+X
+X@node Invocation, Wrapping Up, Shell Builtin Commands, Top
+X@chapter Invocation
+X@cindex invocation
+X
+X@noindent
+X@code{zsh [ +-@var{options} ] [ +-o @var{option} ] @dots{}  [ -c @var{string} ] [ @var{arg} @dots{} ]}
+X
+X@pindex NO_RCS, use of
+X@cindex files, startup
+X@cindex startup files
+X@noindent
+XCommands are first read from @file{/etc/zshenv}.  If the @code{-f} flag
+Xis given or if the @code{NO_RCS} option is set within
+X@file{/etc/zshenv}, all other initialization files are skipped.
+XOtherwise, commands are read from @file{$ZDOTDIR/.zshenv} (if
+X@code{ZDOTDIR} is unset, @code{HOME} is used instead).  If the first
+Xcharacter of argument zero passed to the shell is @code{-}, or if the
+X@code{-l} flag is present, then the shell is assumed to be a login
+Xshell, and commands are read from @file{/etc/zprofile} and then
+X@file{$ZDOTDIR/.zprofile}.  Then, if the shell is interactive and the
+X@code{NO_RCS} option is unset, commands are read from @file{/etc/zshrc}
+Xand then @file{$ZDOTDIR/.zshrc}.  Finally, if the shell is a login
+Xshell, @file{/etc/zlogin} and @file{$ZDOTDIR/.zlogin} are read.@refill
+X
+X@noindent
+XIf the @code{-s} flag is not present and an argument is given,
+Xthe first argument is taken to be the pathname of a script to execute.
+XThe remaining arguments are assigned to the positional parameters.  The
+Xfollowing flags are interpreted by the shell when invoked:@refill
+X
+X@cindex flags, shell
+X@cindex shell flags
+X@table @code
+X@item -c @var{string}
+XRead commands from @var{string}.
+X
+X@item -s
+XRead command from the standard input.
+X
+X@item -i
+XIf this flag is present or the shell input and output are attached to a
+Xterminal, this shell is interactive.
+X@end table
+X
+X@node Wrapping Up, Concept Index, Invocation, Top
+X@chapter Wrapping Up
+X
+X@section See Also
+X
+X@noindent
+Xsh(1), csh(1), tcsh(1), itcsh(1), rc(1), bash(1), ash(1), ksh(1),
+Xclam(1), strftime(3).
+X
+X@section Files
+X@cindex files used
+X
+X@noindent
+X$ZDOTDIR/.zshenv@*
+X@noindent
+X$ZDOTDIR/.zprofile@*
+X@noindent
+X$ZDOTDIR/.zshrc@*
+X@noindent
+X$ZDOTDIR/.zlogin@*
+X@noindent
+X$ZDOTDIR/.zlogout@*
+X@noindent
+X/tmp/zsh*@*
+X@noindent
+X/etc/zshenv@*
+X@noindent
+X/etc/zprofile@*
+X@noindent
+X/etc/zshrc@*
+X@noindent
+X/etc/zlogin
+X
+X@section Author
+X
+X@noindent
+XPaul Falstad (pf@@z-code.com).  Programmable completion was implemented
+Xby Sven Wischnowsky (oberon@@cs.tu-berlin.de) and Peter Stephenson
+X(pws@@s-a.amtp.liv.ac.uk).@refill
+X
+X@section Availability
+X@cindex availability
+X
+X@noindent
+XThe latest official release of zsh is available via anonymous ftp from
+X@code{ftp.sterling.com}, in the directory @code{/zsh} and from
+X@code{carlo.phys.uva.nl}, in the directory @code{/pub/bas/zsh}.@refill
+X
+X@section Undocumented Features
+X@cindex undocumented features
+X
+X@noindent
+XKnown only to the recipients of the zsh mailing list,
+X@code{zsh-list@@sterling.com}.  If you run into problems, please
+Xsend your questions and patches to the mailing list.  To subscribe to
+Xzsh-list, send an email message with the body @samp{subscribe zsh-list}
+Xto @code{Majordomo@@sterling.com}.@refill
+X
+X
+X@node Concept Index, Variables Index, Wrapping Up, Top
+X@unnumbered Concept Index
+X
+X@printindex cp
+X
+X@node Variables Index, Options Index, Concept Index, Top
+X@unnumbered Variables Index
+X
+X@printindex vr
+X
+X@node Options Index, Functions Index, Variables Index, Top
+X@unnumbered Options Index
+X
+X@printindex pg
+X
+X@node Functions Index, Editor Functions Index, Options Index, Top
+X@unnumbered Functions Index
+X
+X@printindex fn
+X
+X@node Editor Functions Index, Keystroke Index, Functions Index, Top
+X@unnumbered Editor Functions Index
+X
+X@printindex tp
+X
+X@node Keystroke Index,  , Editor Functions Index, Top
+X@unnumbered Keystroke Index
+X
+X@printindex ky
+X
+X
+X@setchapternewpage odd
+X@contents
+X@bye
+X
+X@c v0.1, July 8th 1992.  Added documentation for Rick's
+X@c (pclink@@qld.tne.oz.au) four new glob qualifiers (a/m/c/L)
+X@c v0.2, August 11th 1992.  Added documentation for the new PSVAR
+X@c variable, the f E and I flags for the fc command, and the
+X@c appendhistory and extendedhistory options.  Also corrected a typo in
+X@c the description of the ${ := } modifier.  Now current to zsh2.3beta
+X@c (patch level 28).
+X@c v0.3, August 21 1992.  Unified to the zsh.1 (patchlevel 30) patches
+X@c supplied by Hans Albertsson.  This meant rewriting most of the extra
+X@c text I added in v0.1 and v0.2, in order to match Hans'.  Corrected
+X@c some more typos ("is has" in several places). 
+X@c       [ added to the archive sometime around here ]
+X@c v0.4, November 1 1992.  Added up-line-or-search to complement
+X@c down-line-or-search.  Moved information about availability and the
+X@c mailing list to the end of the file, to match zsh.1.  Should now be
+X@c current to patchlevel 65.
+X@c v0.5, February 5 1993.  Has been kept mostly up-do-date by denizens
+X@c of the mailing list.  Final clean-up to conform to the new release
+X@c of zsh version 2.3 (man page dated 1 February 1993), and to the new
+X@c Texinfo standards (but should remain compatible with old Texinfo).
+XEventually I want to rewrite to use the new features of Texinfo v2.0
+Xand above, but we'll have to wait for the rest of the world to catch
+Xup first.  <sigh>
+Xv0.6, June 20th 1993.  Now matches zsh.1 from zsh2.4 patchlevel 158.
+XAlso fixed a few typographical niceties (blank lines between items,
+Xadded some more refills, capitalized item descriptions).  Todo: more
+Xcross-referencing, more indexing of new features, and separate vi
+Xand emacs keystroke indices.
+Xv0.7, September 29th 1993.  Now matches zsh.1 from zsh2.4 patchlevel
+X162, as supplied with 2.4.264.  Also separated out multiple table
+Xentries, compressed secondary tables, and used the new @kbd construct
+Xwhere possible.
+Xv0.8, December 30th 1993.  Now matches zsh.1 as supplied with zsh
+X2.4.291.  Changed occurrences of @code{..} @var{..} into @code{..
+X@var{..}} to make info version cleaner, removed extraneous @code in
+X@item lines, escaped occurrences of '', other minor bugfixes.
+Xv0.9. June 20th 1994.  Final (I hope) revision before 2.5 is released.
+Xv1.0. June 20th 1994.  Add latest manpage additions and update zsh
+Xversion numbers throughout the document. (by Bas)
+END_OF_FILE
+  if test 69910 -ne `wc -c <'zsh-2.5.0/doc/zsh.texi.C'`; then
+    echo shar: \"'zsh-2.5.0/doc/zsh.texi.C'\" unpacked with wrong size!
+  elif test -f 'zsh-2.5.0/doc/zsh.texi.A' && test -f 'zsh-2.5.0/doc/zsh.texi.B'; then
+    echo shar: Combining  \"'zsh-2.5.0/doc/zsh.texi'\" \(190781 characters\)
+    cat 'zsh-2.5.0/doc/zsh.texi.A' 'zsh-2.5.0/doc/zsh.texi.B' 'zsh-2.5.0/doc/zsh.texi.C' > 'zsh-2.5.0/doc/zsh.texi'
+    if test 190781 -ne `wc -c <'zsh-2.5.0/doc/zsh.texi'`; then
+      echo shar: \"'zsh-2.5.0/doc/zsh.texi'\" combined with wrong size!
+    else
+      rm zsh-2.5.0/doc/zsh.texi.A zsh-2.5.0/doc/zsh.texi.B zsh-2.5.0/doc/zsh.texi.C
+    fi
+  fi
+  # end of 'zsh-2.5.0/doc/zsh.texi.C'
+fi
+if test -f 'zsh-2.5.0/src/config/bz.check' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/config/bz.check'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/config/bz.check'\" \(2182 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/config/bz.check' <<'END_OF_FILE'
+X. ./config/bz.doksh
+X
+Xif test -z "$B_auto" -a -z "$B_justmake"
+Xthen
+X  if test -z "$B_query"
+X  then
+X    cat <<foo | $PAGER
+X
+X	buildzsh will probe your system for all kinds of features that
+X	are useful to know when building zsh.  buildzsh will also
+X	suggest some site-dependent things like where to install
+X	the final zsh binary.
+X
+X	You can either:
+X
+X	* Let buildzsh do all the work for you.
+X
+X	  This method is suggested either for the first time
+X	  zsh-builders who _hope_ that zsh will build ok -- or
+X	  for the experienced builders who _know_ that zsh will build ok.
+X	  This method can be selected by "buildzsh auto", this text
+X	  will then not be shown.
+X		
+X	* Try to answer the questions about the features and
+X	  to define yourself the site-dependent things.
+X
+X	  This method requires both intimate knowledge about
+X	  your operating system and C compilation environment
+X	  (compiler, preprocessor, headers, libraries, linker)
+X	  and about your site-specific software installation
+X	  guidelines.  That is, most of the time you must be
+X	  a system administrator of sorts to use this option.
+X	  This method can be selected by "buildzsh query", this text
+X	  will then not be shown.
+X
+X	  Note that some questions of the installation kind
+X	  (optimize or not, where the install the final executable binary)
+X	  can be more conveniently answered beforehand at the buildzsh
+X	  command line.  Try "buildzsh help" to find out how.
+X	  
+X        At any point you can interrupt buildzsh by hitting the interrupt
+X	key (normally ^C [ctrl+c]) and if your shell supports job control,
+X	suspend buildzsh for a while (normally done with ^Z [ctrl+z]).
+X
+X	To summarize:					Answer:
+X
+X	* this is your first time buildzing zsh		n
+X	* you _know_ that building zsh will work	n
+X	* you want to tweak various definitions		y
+X
+X[proceed with $PAGER_quit]
+Xfoo
+X    F_define=
+X    F_using=yep
+X    G_verb1_=Will
+X    G_verb2_='want to answer'
+X    G_verb3a_='will ask'
+X    G_verb3b_=letting
+X    _savedB_query_=$B_query
+X    B_query=yep
+X    set false _ 1 'the questions' 'buildzsh have all the fun'
+X    . ./config/bz.ifdef
+X    test -n "$_yea" && B_query=yep || B_query=$_savedB_query_
+X  fi
+Xelse
+X  B_query=
+Xfi
+X
+X. ./config/bz.sanity
+END_OF_FILE
+  if test 2182 -ne `wc -c <'zsh-2.5.0/src/config/bz.check'`; then
+    echo shar: \"'zsh-2.5.0/src/config/bz.check'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/config/bz.check'
+fi
+if test -f 'zsh-2.5.0/src/config/bz.makeprobe' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/config/bz.makeprobe'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/config/bz.makeprobe'\" \(10865 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/config/bz.makeprobe' <<'END_OF_FILE'
+X# --- bz.makeprobe
+X
+X# --- make groks VPATH?
+X
+Xtest -z "$make_groks_VPATH_done" && . ./config/bz.makevpath
+X
+X# -- 
+X
+Xif test -z "$B_justmake"
+Xthen
+X
+Xcat <<foo
+X	probing for Makefile...
+X
+Xfoo
+X
+X# --- cc?
+X
+Xtest -z "$makecc_done" && . ./config/bz.makecc
+X
+X# --- CFLAGS
+X
+Xif test -z "$C_CFLAGS"
+Xthen
+X
+XCFLAGS_D="$CFLAGS_D $C_CFLAGS_D"
+X
+XCFLAGS_X="$CFLAGS_X $C_CFLAGS_X"
+X
+XCFLAGS_W="$CFLAGS_W $C_CFLAGS_W"
+X
+Xif test -n "$B_debug"
+Xthen
+X  CFLAGS_g="`echo $CFLAGS_g $C_CFLAGS_g | sed 's/^ +$//'`"
+X  test -z "$CFLAGS_g" && CFLAGS_g="$DEFAULT_C_CFLAGS_g"
+Xfi
+X
+Xif test -n "$B_zshdebug"
+Xthen
+X  CFLAGS_z="$CFLAGS_z $C_CFLAGS_z"
+X  test -z "$CFLAGS_z" && CFLAGS_z="$DEFAULT_C_CFLAGS_z"
+Xfi
+X
+XD_HP='-D_XOPEN_SOURCE -D_HPUX_SOURCE'
+X
+Xif test -n "$B_gcc" -o -n "$LINUX" -o -n "$NEXT"
+Xthen
+X  # NeXT 3.* has POSIX headers but no POSIX libs, sheesh
+X  # LINUX has no prototypes for non-ANSI stuff, sheesh
+X  if test -n "$LINUX" -o -n "$NEXT"
+X  then
+X    CFLAGS_W="$GCC_BASE0_W"	# no -ansi or -Wmissing-prototypes
+X  else
+X    CFLAGS_W="$GCC_BASE1_W"
+X  fi
+X  DEFAULT_C_CFLAGS_O=-O2
+X  test -n "$B_mediumgcc" && CFLAGS_W="$CFLAGS_W $GCC_MEDIUM_W"
+X  test -n "$B_strictgcc" && CFLAGS_W="$CFLAGS_W $GCC_STRICT_W"
+X  test -n "$NEXT" -o -n "$LINUX" && CFLAGS_X="$CFLAGS_X -pipe"
+X  test -z "$LINUX" -a -z "$NEXT" && CFLAGS_X="$CFLAGS_X -fpcc-struct-return"
+X  test Z"$host" = Z"i486"        && CFLAGS_M="$CFLAGS_M -m486"
+X  # if we have gcc, never mind that the native cc might be mips
+X  CC_MIPS_STYLE=
+Xelif test -n "$APOLLO"
+Xthen CFLAGS_W="$CFLAGS_W -A nansi"
+Xelif test -n "$HPUX"
+Xthen
+X  CFLAGS_D="$CFLAGS_D $D_HP -D_POSIX_SOURCE"
+X  if test -n "$C89"
+X  then CFLAGS_W="$CFLAGS_W +w1"
+X  else test Z"$HPUX" = Z"7.03" && CFLAGS_X="$CFLAGS_X -Wc,-Ns5000"
+X  fi
+X  C_LDFLAGS="$C_LDFLAGS -z"
+Xelif test -n "$AIX"
+Xthen test -n "$C89" && CFLAGS_D="$CFLAGS_D -D_ALL_SOURCE"
+Xelif test -n "$HPOSF"
+X# HPOSF must be tested before OSF1
+Xthen
+X  CFLAGS_D="$CFLAGS_D $D_HP -D_OSF_SOURCE"
+X  CFLAGS_W="$CFLAGS_W -q lang_level:ansi"
+Xelif test -n "$OSF1"			# NOTE: the -Olimit N 
+Xthen CFLAGS_W="$CFLAGS_W -std1"	# is done later on
+Xelif test -n "$NEWS"			# as it will be useful
+Xthen CFLAGS_W="$CFLAGS_W -std"	# only iff optimization
+Xelif test -n "$MIPS"			# will be used.
+Xthen
+X  CFLAGS_W="$CFLAGS_W -std1"
+X  CFLAGS_X="$CFLAGS_X -Wf,-XNd5000 -Wf,-XNl4096"
+Xelif test -n "$CONVEX"
+Xthen
+XCFLAGS_W="$CFLAGS_W -d arg_ptr_qual=w -d arg_ptr_ref=w -d bad_escape=w -d class_ignored=w -d const_not_init=w -d division_by_zero=w -d dollar_names=w -d escape_range_sequence=w -d float_suffix=w -d function_parameter=w -d hidden_arg=w -d hidden_extern=w -d hides_outer=w -d implicit_decl=w -d integer_overflow=w -d long_long_suffix=w -d no_arg_type=w -d no_external_declaration=w -d no_newline=w -d non_int_bit_field=w -d nothing_declared=w -d pp_argcount=w -d pp_argsended=w -d pp_badstr=w -d pp_badtp=w -d pp_badtp_cmdl=w -d pp_error_directive=w -d pp_extra=w -d pp_idexpected=w -d pp_line_range=w -d pp_macro_arg=w -d pp_macro_redefinition=w -d pp_macro_redefinition_cmdl=w -d pp_malformed_directive=w -d pp_old_dir=w -d pp_parse=w -d pp_undef=w -d pp_undef_cmdl=w -d pp_unrecognized_directive=w -d pp_unrecognized_pragma=w -d ptr_cvt_truncates=w -d qualified_cast=w -d record_fn_call=w -d record_fn_defn=w -d shift_too_large=w -d short_cvt_truncates=w -d strict_syntax=w -d unsigned_suffix"
+Xelif test -n "$SOLARIS"
+Xthen
+X# -Xa would be nicer but it is strictish ANSI, while zsh
+X# needs K&R, so -Xs (s=sun) it is
+X# If you dream of -D_POSIX_SOURCE, quit dreaming.
+X  DEFAULT_C_CFLAGS_O="$DEFAULT_C_CFLAGS_O -xO2"
+X  CFLAGS_W="$CFLAGS_W -v -Xs"
+Xelif test -n "$UNICOS"
+Xthen CFLAGS_W="$CFLAGS_W -h stdc"
+Xelif test -f ${headerdir}/ndir.h -a ! -f /usr/lib/libBSD.a
+Xthen CFLAGS_W="$CFLAGS_W -Aa"
+Xelif test -n "$IRIX"
+Xthen
+X  CFLAGS_W="$CFLAGS_W -prototypes -fullwarn"
+X  if test -n "$IRIX5"
+X  then CFLAGS_W="$CFLAGS_W -woff 799"
+X  else CFLAGS_W="$CFLAGS_W -woff 2,183,262,269,270,286,287,302,303,309"	# IRIX 4
+X  fi
+Xfi
+X
+X# optimization by default on
+XCFLAGS_O="`echo $CFLAGS_O $C_CFLAGS_O | sed 's/^ +$//'`"
+Xtest -z "$CFLAGS_O" && CFLAGS_O="$DEFAULT_C_CFLAGS_O"
+X
+Xif test -n "$B_noopt"
+Xthen
+X  CFLAGS_O=
+Xfi
+X
+Xfi
+X
+X# --- do -c and -o work simultaneously?
+X
+Xif test -z "$F_bld_eq_src"
+Xthen
+X
+Xcc_groks_c_o=
+Xcc_groks_c_o_done=
+X
+Xif test -z "$cc_groks_c_o_done"
+Xthen
+X
+Xfor co in $CC_GROK_c_o
+Xdo
+X if test -n "`eval echo '$'$co`"
+X then
+X   cc_groks_c_o=yep
+X   cc_groks_c_o_done=yep
+X   break
+X fi
+Xdone
+X
+Xfi
+X
+Xif test -z "$cc_groks_c_o_done"
+Xthen
+X
+Xfor co in $CC_LOSE_c_o
+Xdo
+X if test -n "`eval echo '$'$co`"
+X then
+X   cc_groks_c_o=
+X   cc_groks_c_o_done=yep
+X   break
+X fi
+Xdone
+X
+Xfi
+X
+Xif test -z "$cc_groks_c_o_done"
+Xthen
+X
+X# well, we must really test for it, then, mustn't we?
+X
+Xtmpc=/tmp/_tmp$$.c
+Xtmpo=/tmp/_tmp$$.o
+X
+Xtrap "rm -f $tmpc $tmpo;$TRAPN" $TRAPSIGS
+X
+Xecho 'int foo=42;' > $tmpc
+X# this C program *should* not elicit any other errors than just
+X# the complaint about simultaneous -c and -o
+Xtest -n "`($CC -c -o $tmpo $tmpc 2>&1)`" && cc_groks_c_o=
+X
+Xrm -f $tmpc $tmpo
+X
+Xcc_groks_c_o_done=yep
+X
+Xfi
+X
+Xif test -z "$cc_groks_c_o"
+Xthen
+X  if test -n "$F_bld_eq_src"
+X  then
+X    CC_JUST_C=yep
+X  else
+X    CC_LOSES_c_O=yep
+X  fi
+Xfi
+X
+XG_verb1_=Does
+XG_subj_=$CC
+XG_verb2_=understand
+Xset 'test -z "$cc_groks_c_o"' cc_groks_c_o 1 "-c and -o simultaneously"
+X. ./config/bz.ifdef
+X
+Xfi
+X
+X# --- do -g and -O work simultaneously?
+X
+Xif test -z "$B_noopt" -a -n "$B_debug" -a -n "$CFLAGS_O"
+Xthen
+X
+Xcc_groks_g_O=
+Xcc_groks_g_O_done=
+X
+Xif test -z "$cc_groks_g_O_done"
+Xthen
+X
+Xfor co in $CC_LOSE_g_O
+Xdo
+X if test -n "`eval echo '$'$co`"
+X then
+X   cc_groks_g_O=
+X   cc_groks_g_O_done=yep
+X   break
+X fi
+Xdone
+X
+Xfi
+X
+Xif test -z "$cc_groks_g_O_done"
+Xthen
+X
+Xfor co in $CC_GROK_g_O
+Xdo
+X set Z `echo $co|tr -d "'" |tr ":" " "`
+X if test -n "`eval echo '$'$1`"
+X then
+X   test -n "$3" && CFLAGS_g="$3"
+X   test -n "$4" && CFLAGS_O="$4"
+X   cc_groks_g_O=yep
+X   cc_groks_g_O_done=yep
+X   break
+X fi
+Xdone
+X
+Xfi
+X
+Xif test -z "$cc_groks_g_O_done"
+Xthen
+X
+X# well, we must really test for it, then, mustn't we?
+X
+Xtmpc=/tmp/_tmp$$.c
+Xtmpo=/tmp/_tmp$$.o
+X
+Xtrap "rm -f $tmpc $tmpo;$TRAPN" $TRAPSIGS
+X
+Xecho 'int foo=42;' > $tmpc
+X# this C program *should* not elicit any other errors than just
+X# the complaint about simultaneous -g and -O
+Xtest -z "`($CC $CFLAGS_g $CFLAGS_O -o $tmpo -c $tmpc 2>&1)`" && cc_groks_g_O=yep
+X
+Xrm -f $tmpc $tmpo
+X
+Xcc_groks_g_O_done=yep
+X
+Xfi
+X
+XG_verb1_=Does
+XG_subj_=$CC
+XG_verb2_=understand
+Xset 'test -n "$cc_groks_g_O"' cc_groks_g_O 1 "-g and -O simultaneously"
+X. ./config/bz.ifdef
+X
+Xfi
+X
+X# ---
+X
+Xif test -n "$CFLAGS_O" -a -n "$CFLAGS_g" -a -z "$cc_groks_g_O"
+Xthen
+X  echo "	($CC cannot simultaneously optimize (-O) and debug (-g),"
+X  if test -n "$B_debug"
+X  then
+X    echo "	turning off optimization...)"
+X    CFLAGS_O=
+X  elif test -z "$B_noopt"
+X  then
+X    echo "	turning off debug...)"
+X    CFLAGS_g=
+X  fi
+Xfi
+X
+X### Optimization complexity level
+X# for MIPS style compilers
+Xif test -n "$CFLAGS_O" -a -n "$CC_MIPS_STYLE" -a -z "`echo $CFLAGS_O|grep Olimit`"
+Xthen
+X  CFLAGS_O="$CFLAGS_O -Olimit 1000"
+Xfi
+X
+Xif test -n "$B_query"
+Xthen
+X
+Xset CFLAGS_O "$CFLAGS_O" "$CC optimizer flags (e.g. -O)"
+X. ./config/bz.define
+X
+Xset CFLAGS_g "$CFLAGS_g" "$CC debug flags (e.g. -g)"
+X. ./config/bz.define
+X
+Xset CFLAGS_X "$CFLAGS_X" "$CC additional flags (fancy -Defines, etc)"
+X. ./config/bz.define
+X
+Xfi
+X
+X# the final joining of various CFLAGS_
+X
+X# non-optimizing CFLAGS
+XCFLAGS_WO_O="`echo $CFLAGS_D $CFLAGS_W $CFLAGS_X $CFLAGS_g $CFLAGS_z $CFLAGS_M|sed 's/  */ /g'`"
+X
+XCFLAGS_W_O="`echo $CFLAGS_WO_O $CFLAGS_O|sed 's/  */ /g'`"
+X
+Xif test -z "$CFLAGS" -a -n "$C_CFLAGS"
+Xthen
+X  CFLAGS="$C_CFLAGS"
+Xelse
+X  CFLAGS="$CFLAGS_W_O"
+Xfi
+Xset CFLAGS "$CFLAGS" "$CC flags"
+X. ./config/bz.define
+X
+X# LD
+X
+XLD="$CC"
+X
+Xtest -z "$LD" -a -n "$C_LD" && LD="$C_LD"
+Xtest -z "$LD" && LD="$DEFAULT_C_LD"
+Xset LD "$LD" "linker"
+X. ./config/bz.define
+X
+X# LDFLAGS
+X
+XLDFLAGS="`echo $CFLAGS_X $CFLAGS_M $CFLAGS_O $CFLAGS_g|sed 's/  */ /g'`"
+X
+Xtest -n "$C_LDFLAGS" && LDFLAGS="$C_LDFLAGS"
+Xset LDFLAGS "$LDFLAGS" "link flags"
+X. ./config/bz.define
+X
+X# --- LIBS
+X
+Xif test -z "$LIBS"
+Xthen
+X
+X  if test -n "$IRIX"
+X  then
+X    if grep '^\+' /etc/passwd >/dev/null 2>&1
+X    then LIBS='-lcurses -lmalloc -lbsd -lsun'
+X    else LIBS='-lcurses -lmalloc -lbsd'
+X    fi
+X  elif test -n "$SOLARIS"
+X  then LIBS='-ltermcap -lnsl'
+X  elif test -n "$BBN"
+X  then LIBS='-ltermcap -lposix'
+X  elif test -n "$OSF1" -o -n "$TITAN" -o -n "$HPUX"
+X  then LIBS='-ltermcap'
+X  elif test -n "$SEQUENTPTX"
+X  then LIBS='-ltermlib -lX11 -lseq'
+X  elif test -f /usr/lib/libcposix.a
+X  then LIBS='-lcposix -ltermcap'
+X  elif test -f /usr/lib/libBSD.a
+X  then LIBS='-ltermcap -lBSD'
+X  elif test -f /usr/lib/libtermcap.a -o -f /usr/ucblib/libtermcap.a
+X  then
+X    if test -n "$AIX"
+X    then LIBS='-lcurses'	# -lbsd should not be needed
+X    else LIBS='-ltermcap'
+X    fi
+X  fi
+Xfi
+X
+Xtest -z "$LIBS" -a -n "$C_LIBS" && LIBS="$C_LIBS"
+Xtest -z "$LIBS" && LIBS="$DEFAULT_C_LIBS"
+Xset LIBS "$LIBS" "libraries to link with"
+X. ./config/bz.define
+X
+X# -- modules
+X
+Xecho '	Working out modules (*.{[hco],pro})...'
+X
+Xmodules="/tmp/modules$$"
+Xmodules_c="${modules}.c"
+Xmodules_h="${modules}.h"
+Xmodules_o="${modules}.o"
+Xmodules_p="${modules}.p"
+X
+Xtrap "rm -f $modules $modules_c $modules_h $modules_o $modules_p;$TRAPN" $TRAPSIGS
+X
+X(exec >$modules
+X# C source files and header files, one file per line,
+X# between "cat <<foo" and "foo"-lines
+Xcat <<foo
+Xbuiltin.c
+Xcond.c
+Xexec.c
+Xglob.c
+Xhist.c
+Xinit.c
+Xjobs.c
+Xlex.c
+Xloop.c
+Xmath.c
+Xmem.c
+Xparams.c
+Xparse.c
+Xsubst.c
+Xtable.c
+Xtext.c
+Xutils.c
+Xwatch.c
+Xzle_bindings.c
+Xzle_hist.c
+Xzle_main.c
+Xzle_misc.c
+Xzle_move.c
+Xzle_refresh.c
+Xzle_tricky.c
+Xzle_utils.c
+Xzle_vi.c
+Xzle_word.c
+Xfuncs.h
+Xzle.h
+Xzsh.h
+Xztype.h
+Xfoo
+X)
+X
+Xecho '	.c....'
+Xegrep '\.c$' $modules > $modules_c
+XSRC=`cat $modules_c|tr '\012' ' '`
+X
+X# as SRC but without .c 
+XBSRC=`cat $modules_c|sed 's/\.c$//'|tr '\012' ' '`
+X
+Xecho '	.h....'
+Xegrep '\.h$' $modules > $modules_h
+XHEADER=`cat $modules_h | tr '\012' ' '`
+X
+Xtest -n "$make_groks_VPATH" && c_blddir= || c_blddir="$C_BLDDIR"
+X
+Xecho '	.pro....'
+Xsed 's/\.c$/.pro/' < $modules_c | sed "s%^%$c_blddir%" > $modules_p
+XPROTO=`cat $modules_p | tr '\012' ' '`
+X
+Xecho '	.o....'
+Xsed 's/\.c$/.o/' < $modules_c | sed "s%^%$c_blddir%" > $modules_o
+XOBJS=`cat $modules_o | tr '\012' ' '`
+X
+Xrm -f $modules $modules_c $modules_h $modules_o $modules_p
+X
+X{
+X  echo
+X  echo "	probed for Makefile..."
+X  echo
+X} >&2
+X
+Xfi
+X
+X# -- find out how to build the .c.o rule
+X
+Xccit='$(CC) $(CFLAGS) -c $(DFLAGS)'
+Xccdotc='$<'
+Xccseparate=
+Xmakeprecd=
+Xmakefflag=
+Xccinc=
+X
+Xif test -z "$F_bld_eq_src"
+Xthen
+X  test -n "$C_SRCDIR" && ccinc=" -I$C_SRCDIR"
+X  if test -z "$B_makeatbld"
+X  then
+X     makefflag="-f $MAKEFILE"
+X     ccinc=" -I$C_BLDDIR"
+X  else
+X     makeprecmd="cd $C_BLDDIR && "
+X     ccseparate=yep
+X  fi
+X  if test -n "$make_groks_VPATH"
+X  then
+X     if test -z "$B_makeatbld"
+X     then
+X       ccit="$ccit$ccinc -o ${C_BLDDIR}\$@ "
+X     fi
+X  else
+X     if test -n "$B_makeatbld"
+X     then
+X       ccit="$ccit$ccinc"' -o `basename ${C_SRCDIR}\$@`'
+X     else
+X       ccseparate=yep
+X     fi
+X  fi
+Xfi
+X
+X# all set
+X
+Xmake_probe_done=yep
+X
+X###
+END_OF_FILE
+  if test 10865 -ne `wc -c <'zsh-2.5.0/src/config/bz.makeprobe'`; then
+    echo shar: \"'zsh-2.5.0/src/config/bz.makeprobe'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/config/bz.makeprobe'
+fi
+echo shar: End of archive 4 \(of 18\).
+cp /dev/null ark4isdone
+MISSING=""
+for I in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 ; do
+    if test ! -f ark${I}isdone ; then
+	MISSING="${MISSING} ${I}"
+    fi
+done
+if test "${MISSING}" = "" ; then
+    echo You have unpacked all 18 archives.
+    rm -f ark[1-9]isdone ark[1-9][0-9]isdone
+else
+    echo You still must unpack the following archives:
+    echo "        " ${MISSING}
+fi
+exit 0
+exit 0 # Just in case...

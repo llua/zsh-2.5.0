@@ -1,0 +1,844 @@
+Archive-Name: unix-faq/shell/zsh
+Last-Modified: 1994/6/27
+Submitted-By: pws@s-a.amtp.liv.ac.uk (Peter Stephenson)
+Version: $Id: zsh.FAQ,v 1.26 1994/06/27 13:42:21 pws Exp pws $
+Frequency: Monthly
+
+This document contains a list of frequently-asked (or otherwise
+significant) questions concerning the Z-shell, a command interpreter for
+many UNIX systems which is freely available to anyone with FTP access.
+Zsh is more powerful than every other common shell (sh, ksh, csh, tcsh
+and bash) put together.
+
+Information on zsh is now available via the World Wide Web at
+http://noaacdc.colorado.edu/~mdb/zsh/zsh_home.html including this FAQ and
+much else (thanks to Mark Borges for this).
+
+If you have never heard of `sh', `csh' or `ksh', then you are probably
+better off to start by reading a general introduction to UNIX rather
+than this document.
+
+Another useful source of information is the collection of FAQ articles
+posted frequently to the Usenet news groups comp.unix.questions,
+comp.unix.shells and comp.answers with answers to general questions
+about UNIX.  The fifth of the seven articles deals with shells,
+including zsh, with a brief description of differences.  (This article
+also talks about shell startup files which would otherwise rate a
+mention here.)
+
+If you just want to know how to get your hands on the latest version,
+skip to question 4); if you want to know what to do with insoluble
+problems, go to 22).
+
+To encourage you to read on, if you don't know about zsh but are
+familiar with other UNIX shells, here are some things that zsh is
+particularly good at.  No claim of exclusivity is made, especially as
+shells copy one another, though in the areas of command line editing and
+globbing zsh is well ahead of the competition.  I am not aware of a
+major feature in any other freely-available shell which zsh does not
+also have.
+  Command line editing:
+    programmable completion: incorporates the ability to use
+      the full power of zsh globbing (compctl -g),
+    multi-line commands editable as a single buffer (even files!),
+    variable editing (vared),
+    command buffer stack,
+    print text straight into the buffer for immediate editing (print -z),
+    execution of unbound commands,
+    menu completion,
+    variable, editing function and option name completion,
+    inline expansion of variables, history commands.
+  Globbing --- extremely powerful, including:
+    recursive globbing (cf. find),
+    file attribute qualifiers (size, type, etc. also cf. find),
+    full alternation and negation of patterns.
+  Handling of multiple redirections (simpler than tee).
+  Large number of options for tailoring.
+  Path expansion (=foo -> /usr/bin/foo).
+  Adaptable messages for spelling, watch, time as well as prompt
+    (now including conditional expressions).
+  Named directories.
+  Comprehensive integer arithmetic.
+  Manipulation of arrays (including reverse subscripting).
+  Spelling correction.
+
+Notation: Quotes `like this' are ordinary textual quotation
+marks.  Other uses of quotation marks are input to the shell.
+
+If you are reading this file with GNU Emacs 19 and have my
+cross-referencing package xref.el (available from
+suna.amtp.liv.ac.uk:/pub/pws), I can supply a suitable set of
+cross-references to make reading the file easier.
+
+Contents:
+1) What is it?
+2) On what machines will it run?
+3) What's the latest version?
+4) Where do I get it?
+5) How does zsh differ from sh, ksh, csh, tcsh, bash?
+6) Why do my csh aliases not work?  (Plus other alias pitfalls.)
+7) How do I turn off spelling correction for an individual command?
+8) How do I get the meta key to work on my xterm?
+9) Why does my terminal act funny in way x?
+10) Why does `$var' where var="foo bar" not do what I expect?
+11) My PATH, (MANPATH, ...) sometimes doesn't handle tildes.  What gives?
+12) How does base arithmetic work?
+13) How do I get a newline in my prompt?
+14) Why does `bindkey ^a command-name' or 'stty intr ^-' do something funny?
+15) Why can't I bind \C-s and \C-q any more?
+16) How do I execute command `foo' within function `foo'?
+17) Why can't I get zsh to work with SGI's `userenv'?
+18) Why do history substitutions with single bangs do something funny?
+19) Why does zsh kill off all my background jobs when I logout?
+20) I don't have root access: how do I make zsh my login shell?
+21) Shouldn't zsh be more/less like ksh/(t)csh?
+22) What bugs are currently known and unfixed?
+23) Where do I report bugs, get more info / who's working on zsh?
+24) What's on the wish-list?
+--- End of Contents ---
+
+
+1) What is it?
+
+  Zsh is a UNIX command interpreter (shell) which of the standard shells
+  most resembles the Korn shell (ksh), although it is not completely
+  compatible.  It includes enhancements of many types, notably in the
+  command-line editor, options for customising its behaviour, filename
+  globbing, features to make C-shell (csh) users feel more at home and
+  extra features drawn from tcsh (another `custom' shell).
+
+  It was written by Paul Falstad <pf@z-code.com> when a student at
+  Princeton; however, Paul doesn't maintain it any more and enquiries
+  should be sent to the mailing list (see question 22).  It is freely
+  available to anyone under unrestrictive conditions.
+
+  For more information, the files doc/intro.txt or doc/intro.troff
+  included with the source distribution are highly recommended.  A list
+  of features is given in FEATURES, also with the source.
+
+
+2) On what machines will it run?
+
+  Zsh was written for machines of the Berkeley UNIX family; most such
+  machines (and all the most popular) will run it without major surgery.
+  Modifications have been made so that it should work under SYSVR4-based
+  operating systems such as Solaris 2.x and OSF/1.  This best thing is
+  to suck it and see.  You may not have to change too much: if you do
+  change anything, arrange for the shell script `buildzsh' to set the
+  necessary #define's, etc., without human intervention.  Recent
+  additions include Convex, Unicos and Linux support; there is a project
+  to allow POSIX.1 compilation (but note that that zsh is not itself
+  particularly POSIX-compliant at the moment).  Success has been
+  obtained on older SYSVR3 systems, but you may need to modify the code.
+  
+  If you add support for a new machine, it would be appreciated if you
+  could alter buildzsh to configure zsh automatically and send the
+  required context diffs to the list (see question 22).
+
+
+3) What's the latest version?
+  
+  The latest production version is 2.3.1; at this time zsh was not
+  ported to as many systems, so (for example) for Solaris 2 you are more
+  or less constrained to use the beta version.
+
+  The current beta version is 2.4.  New patches occur frequently and are
+  added to the archive (next question).  At the time of writing the
+  latest patch level was 333.  Note that this `open' development system
+  does mean bugs are sometimes introduced into the most recent archived
+  version.  These are usually fixed quickly.  Note also that as the
+  shell changes, it may become incompatible with older versions; see the
+  end of question 21 for a partial list.
+
+  The next production version will be 2.5 (2.4 will not be released, so
+  as to minimise confusion over version numbers).  It is expected that
+  no new features will be added before the release.
+
+  ** STOP PRESS ** Release of 2.5 is imminent.  The archive now contains
+  a preliminary version 2.5.0a; apart from a few fixes, such as a known
+  bug when completing using complicated compctl expressions and
+  configuration changes for some machines, this will form the release.
+
+
+4) Where do I get it?
+
+  Bas de Bakker (bas@phys.uva.nl) is in charge of the archive and the
+  latest version is available for users east of the Atlantic from:
+	carlo.phys.uva.nl(145.18.218.21):/pub/bas/zsh/zsh-2.4beta.tar.gz
+  The latest full release is in zsh-2.3.1.tar.gz in the same directory.
+  Note that this is in gzip format: you will need GNU gzip from your
+  nearest GNU archive to unpack it.  There is also a version under RCS
+  control which may be more suitable for source hackers.
+
+  Rick Ohnemus has a reflector site in the USA:
+        ftp.sterling.com (192.124.9.3):/zsh
+
+  The 2.3.1 distribution is also available from ftp.uu.net and mirrors
+  in the directory pub/shells/zsh.
+
+
+5) How does zsh differ from sh, ksh, csh, tcsh, bash?
+
+  As has already been mentioned, zsh is most similar to ksh, while many
+  of the additions are to please csh users.
+
+  i) ksh:
+
+  Most features of ksh (and hence also of sh) are implemented in zsh;
+  problems can arise because the implementation is slightly different.
+  Note also that not all ksh's are the same either.  I have based this
+  on the 11/16/88f version of ksh.
+
+  Various options can be turned on which will increase ksh
+  compatibility, though decrease zsh's abilities: see the manual
+  entries for GLOB_SUBST, IGNORE_BRACES (though brace expansion occurs
+  in some versions of ksh), KSH_OPTION_PRINT, NO_BANG_HIST, NO_EQUALS,
+  NO_HUP, NO_RCS, NO_SHORT_LOOPS, PROMPT_SUBST, RM_STAR_SILENT,
+  SH_WORD_SPLIT (see question 10) and SINGLE_LINE_ZLE.  Note that you
+  can also disable any built-in commands which get in your way.  If
+  invoked as `ksh', the shell will try and set suitable options.
+
+  Here are some differences from ksh which might prove significant for
+  ksh programmers, some of which may be interpreted as bugs; there must
+  be more.  Note that this list is deliberately rather full and that
+  most of the items are fairly minor.  Those marked `*' perform in a
+  ksh-like manner if the shell is invoked with the name `ksh'.
+  
+  Syntax:
+  * Shell word splitting: see question 10).  (This is particularly
+      frequently asked about.)
+    Arrays are more csh-like than ksh-like:
+      subscripts start at 1, not 0; array[0] refers to array[1];
+      `$array' refers to the whole array, not $array[0];
+      braces are unnecessary: $a[1] == ${a[1]}, etc.
+    Coprocesses are established by `coproc'; `|&' behaves like csh.
+    Opening for both input and output via <> is not yet supported.
+  Command line substitutions, globbing etc.:
+  * The results of parameter substitutions are treated as plain text:
+      `foo="*"; print $foo' prints all files in ksh but * in zsh.
+      (The GLOB_SUBST option has just been added to fix this.)
+    The $((...)) version of numeric evaluation is not implemented; use $[...].
+    Treatment of backslashes within backquotes is subtly different.
+    $PSn do not do parameter substitution by default (use PROMPT_SUBST 
+      option).
+    Globbing does not allow ksh-style `pattern-lists'.  Equivalents:
+      -------------------------------------------------------------------
+             ksh             zsh          Meaning
+            -----           -----        ---------
+           !(foo)            ^foo        Anything but foo.
+                      or   foo1~foo2     Anything matching foo1 but foo2.
+      @(foo1|foo2|...)  (foo1|foo2|...)  One of foo1 or foo2 or ...
+           ?(foo)           (foo|)       Zero or one occurrences of foo.
+           *(foo)           (foo)#       Zero or more occurrences of foo.
+           +(foo)         foo(foo)#      One or more occurrences of foo.
+      -------------------------------------------------------------------
+      The last two (with `#') require the EXTENDED_GLOB option.
+    Unquoted assignments do file expansion after ':'s (intended for PATHs).
+    `integer' does not allow -i; integers in bases other than 10 do not
+      have "base#" prefixed to them when printed.
+  Command execution:
+  * There is no ENV variable (use /etc/zshrc, ~/.zshrc; note also ZDOTDIR).
+    The PATH is not searched for commands specified at invocation without -c.
+  Aliases and functions:
+    The order in which aliases and functions are defined is significant
+      (function definitions with () expand aliases -- see question 6).
+    Aliases and functions cannot be exported.
+    There are no tracked aliases: command hashing replaces these.
+    The use of aliases for key bindings is replaced by `bindkey'.
+  Traps and signals:
+    By default, background jobs are killed when you log out:  see 18).
+    Traps and options are not local to functions; traps are not reset
+      automatically when called; traps are called as functions themselves
+      (this is a bug for the `trap "..." NAL' form of trap setting).
+    TRAPERR has become TRAPZERR (this was forced by UNICOS which has SIGERR).
+  Editing:
+    The options emacs, gmacs, trackall, viraw are not supported.
+      Use bindkey to change the editing behaviour: `set -o {emacs,vi}' 
+      become `bindkey -{e,v}'; for gmacs, go to emacs mode and use
+      `bindkey \^t gosmacs-transpose-characters'.  `Trackall' is replaced
+      by `hashcmds'.
+    The `keyword' option does not exist and -k is instead interactivecomments.
+      (`keyword' will not be in the next ksh release either.)
+    Management of histories in multiple shells is different:
+      the history list is not saved and restored after each command.
+    \ does not escape editing chars (use ^V).
+    Not all ksh bindings are set (e.g. `<ESC>#'; try <ESC>q).
+  * # in an interactive shell is not treated as a comment by default.
+  Built-in commands:
+    Some built-ins (r, autoload, history, integer ...) were aliases in ksh.
+    There is no built-in command newgrp: use a shell function, e.g.
+      newgrp () { ((SHLVL--)) ; exec command newgrp $* }
+      (in 2.4 you can get away with `alias newgrp="exec newgrp"'
+    `jobs' has no `-n' flag.
+    `read' has no `-s' flag.
+    In `let "i = foo"', foo is evaluated as a number, not an expression
+      (although in `let "i = $foo"' it is treated as an expression).
+  Other idiosyncrasies:
+    `select' always redisplays the list of selections on each loop.
+
+  ii) csh:
+
+  Although certain features aim to ease the withdrawal symptoms of csh
+  (ab)users, the syntax is in general rather different and you should
+  certainly not try to run scripts without modification.  The c2z script
+  is provided with the source (in scripts/c2z) to help convert .cshrc
+  and .login files; see also the next question concerning aliases,
+  particularly those with arguments.
+
+  Csh-compatibility additions include:
+    Logout, rehash, source, (un)limit built-in commands.
+    *rc file for interactive shells.
+    Directory stacks.
+    Cshjunkie*, ignoreeof options.
+    The nonomatch option.
+    >&, |& etc. redirection.
+    foreach ... loops; alternative syntax for other loops.
+    Alternative syntax `if ( ... ) ...' (also `for', `which'; this now
+      requires the CSH_JUNKIE_PAREN option).
+    $PROMPT as well as $PS1, $status as well as $?, $#argv as well as $#, ....
+    Escape sequences via % for prompts.
+    Special array variables $PATH etc. are colon-separated, $path are arrays.
+    !-type history (which may be turned off via `setopt nobanghist').
+    Arrays have csh-like features (see i)).
+
+  iii) tcsh:
+
+  (The previous section applies too, of course.)  Certain features have
+  been borrowed from tcsh, including $watch, run-help, $savehist,
+  $histlit, periodic commands etc., extended prompts, sched and
+  which/where built-ins.  Programmable completion was inspired by, but
+  is entirely different to, tcsh's `complete'. (There is a perl script
+  called lete2ctl in the scripts directory of the source distribution to
+  convert `complete' to `compctl' statements.)  This list is not
+  definitive: some features have gone in the other direction.
+
+  If you're missing the editor function run-fg-editor, try something
+  with bindkey -s (which binds a string to a keystroke), e.g.
+	bindkey -s '^z' '\eqfg %$EDITOR:t\n'
+  which pushes the current line onto the stack and tries to bring a job
+  with the basename of your editor into the foreground.  Bindkey -s
+  allows limitless possibilities along these lines.
+
+  iv) bash:
+  
+  Zsh has almost all the features that bash has (and much more); in
+  addition it is about twice as fast, though this is less impressive
+  than it sounds.  With the new malloc by Sven Wischnowsky (only used if
+  you arranged for USE_ZSH_MALLOC to be defined in config.h when
+  compiling zsh), zsh uses about the same amount of heap memory as bash,
+  which was previously the biggest gripe.  The only feature I am aware
+  of that zsh doesn't have is setting a numerical value for ignoreeof
+  --- it's always 10 --- but of course I don't use bash :-).
+
+  However, zsh has no claims towards Posix compliancy and will not use
+  GNU readline (zle is more powerful).  In fact, bash is intended more
+  as an enhanced sh than a ksh work-alike; it doesn't handle [[ ... ]],
+  for example.
+
+
+6) Why do my csh aliases not work?  (Plus other alias pitfalls.)
+
+  First of all, check you are using the syntax
+	alias newcmd='list of commands'
+  and not
+	alias newcmd 'list of commands'
+  which won't work. (It tells you if `newcmd' and `list of commands' are
+  already defined as aliases.)
+
+  Otherwise, your aliases probably contain references to the command
+  line of the form `\!*', etc.  Zsh does not handle this behaviour as it
+  has shell functions which provide a way of solving this problem more
+  consistent with other forms of argument handling.  For example, the
+  csh alias
+	alias cd 'cd \!*; echo $cwd'
+  can be replaced by the zsh function,
+	cd() { builtin cd $*; echo $PWD; }
+  (the `builtin' tells zsh to use its own `cd', avoiding an infinite loop)
+  or, perhaps better,
+	cd() { builtin cd $*; print -D $PWD; }
+  (which converts your home directory to a ~).  In fact, this problem is
+  better solved by defining the special function chpwd() (see the manual).
+  Note also that the `;' at the end of the function is optional in zsh,
+  but not in ksh or sh (for sh's where it exists).
+
+  Here is Bart Schaefer's guide to converting csh aliases for zsh.
+
+    1.  If the csh alias references "parameters" (\!:1 \!* etc.),
+        then in zsh you need a function (referencing $1 $* etc.).
+        Otherwise, you can use a zsh alias.
+
+    2.  If you use a zsh function, you need to refer _at_least_ to
+        $* in the body (inside the { }).  Parameters don't magically
+        appear inside the { } the way they get appended to an alias.
+    
+    3.  If the csh alias references its own name (alias rm "rm -i"),
+        then in a zsh function you need the "command" keyword
+        (function rm() { command rm -i $* }), but in a zsh alias
+        you don't (alias rm="rm -i").
+
+    4.  If you have aliases that refer to each other (alias ls "ls -C";
+        alias lf "ls -F" ==> lf == ls -C -F) then you must either:
+        a.  convert all of them to zsh functions; or
+        b.  after converting, be sure your .zshrc defines all of your
+            aliases before it defines any of your functions.
+
+    Those first four are all you really need, but here are four more for
+    heavy csh alias junkies:
+
+    5.  Mapping from csh alias "parameter referencing" into zsh function
+        (assuming shwordsplit is NOT set in zsh):
+             csh                   zsh
+            =====               ==========
+            \!*                 $*              (or $argv)
+            \!^                 $1              (or $argv[1])
+            \!:1                $1
+            \!:2                $2              (or $argv[2], etc.)
+            \!$                 $*[$#]          (or $argv[$#], or $*[-1])
+            \!:1-4              $*[1,4]
+            \!:1-               $*[1,$#-1]      (or $*[1,-2])
+            \!^-                $*[1,$#-1]
+            \!*:q               "$@"            ($*:q doesn't work (yet))
+            \!*:x               $=*             ($*:x doesn't work (yet))
+
+    6.  Remember that it is NOT a syntax error in a zsh function to
+        refer to a position ($1, $2, etc.) greater than the number of
+        parameters. (E.g., in a csh alias, a reference to \!:5 will
+        cause an error if 4 or fewer arguments are given; in a zsh
+	function, $5 is the empty string if there are 4 or fewer
+	parameters.)
+
+    7.  To begin a zsh alias with a - (dash, hyphen) character, use
+        "alias --":
+                 csh                            zsh
+            ===============             ==================
+            alias - "fg %-"             alias -- -="fg %-"
+
+    8.  Stay away from "alias -g" in zsh until you REALLY know what
+        you're doing.
+
+  There is one other serious problem with aliases: consider
+        alias l='/bin/ls -F'
+        l() { /bin/ls -la $* | more }
+  `l' in the function definition is in command position and is expanded
+  as an alias, defining `/bin/ls' and `-F' as functions which call
+  `/bin/ls', which gets a bit recursive.  This can be avoided if you use
+  `function' to define a function, which doesn't expand aliases.  It is
+  possible to argue for extra warnings somewhere in this mess.  Luckily,
+  it is not possible to define `function' as an alias.
+
+
+7) How do I turn off spelling correction for an individual command?
+
+  You presumably have `setopt correctall' in an initialisation file, so
+  that zsh checks the spelling of each word in the command line.  You
+  probably do not want this behaviour for commands which do not operate
+  on existing files.
+  
+  The answer is to alias the offending command to itself with
+  `nocorrect' stuck on the front, e.g.
+       alias mkdir='nocorrect mkdir'
+
+
+8) How do I get the meta key to work on my xterm?
+
+  As stated in the manual, zsh needs to be told about the meta key by
+  using `bindkey -me' or `bindkey -mv' in your .zshrc or on the command
+  line.  You probably also need to tell the terminal driver to allow the
+  `meta' bit of the character through; `stty pass8' is the usual
+  incantation.  Sample .zshrc entry:
+	[[ $TERM = "xterm" ]] && stty pass8 && bindkey -me
+  or, on SYSVR4-ish systems without pass8,
+	[[ $TERM = "xterm" ]] && stty -parenb -istrip cs8 && bindkey -me
+  (disable parity detection, don't strip high bit, use 8-bit characters).
+  Make sure this comes *before* any bindkey entries in your .zshrc which
+  redefine keys normally defined in the emacs/vi keymap.
+
+
+9) Why does my terminal act funny in way x?
+
+  If you are using an OpenWindows cmdtool as your terminal, any
+  escape sequences (such as those produced by cursor keys) will be
+  swallowed up and never reach zsh.  Either use shelltool or avoid
+  commands with escape sequences.  You can also disable scrolling from
+  the cmdtool pane menu (which effectively turns it into a shelltool).
+  If you still want scrolling, try using an xterm with the scrollbar
+  activated.
+
+  If that's not the problem, and you are using stty to change some tty
+  settings, make sure you haven't asked zsh to freeze the tty settings:
+  type
+	ttyctl -u
+  before any stty commands you use.
+
+  On the other hand, if you aren't using stty and have problems you may
+  need the opposite:  `ttyctl -f' freezes the terminal to protect it
+  from hiccups introduced by other programmes (kermit has been known to
+  do this).
+
+  If _that's_ not the problem, and you are having difficulties with
+  external commands (not part of zsh), and you think some terminal
+  setting is wrong (e.g. ^V is getting interpreted as `literal next
+  character' when you don't want it to be), try
+	ttyctl -u
+	STTY='lnext "^-"' commandname
+  (in this example), or just export STTY for all commands to see.  Note
+  that zsh doesn't reset the terminal completely afterwards: just the
+  modes it uses itself and a number of special processing characters
+  (see the stty(1) manual page).
+
+  After the release of version 2.5, there is likely to be an overhaul
+  which allows the terminal modes used by the shell to be modified
+  separately from those seen by external programmes.  This is partially
+  implemented already:  in 2.5, the shell will be less susceptible to
+  mode changes inherited from programmes.
+
+
+10) Why does `$var' where var="foo bar" not do what I expect?
+
+  In most Bourne-shell derivatives, multi-word variables such as
+	var="foo bar"
+  are split into words when passed to a command or used in a `for foo in
+  $var' loop.  By default, zsh does not have that behaviour: the
+  variable remains intact.  (This is not a bug!  See below.)  An option
+  (shwordsplit) exists to provide compatibility.
+  
+  For example, defining the function args to show the number of its
+  arguments:
+	args() { echo $#; }
+  and with our definition of vble,
+	args $vble
+  produces the output `1'.  After
+	setopt shwordsplit
+  the same function produces the output `2', as with sh and ksh.
+  
+  Unless you need strict sh/ksh compatibility, you should ask yourself
+  whether you really want this behaviour, as it can produce unexpected
+  effects for variables with entirely innocuous embedded spaces.  The
+  natural way to produce word-splitting behaviour in zsh is via arrays.
+  For example,
+	set -A array one two three twenty
+  (or
+        array=(one two three twenty)
+  if you prefer), followed by
+	args $array
+  produces the output `4', regardless of the setting of shwordsplit.
+  Arrays are also much more versatile than single strings.
+
+  Note also the "$@" method of word splitting is always available in zsh
+  functions and scripts (though strictly this does array splitting, not
+  word splitting), also the substitution ${=foo} to toggle word
+  splitting on variable `foo'.
+
+  Shwordsplit is set when zsh is invoked with the name `ksh'.
+
+
+11) My PATH, (MANPATH, ...) sometimes doesn't handle tildes.  What gives?
+
+  The code has recently been overhauled, so take a look at the latest
+  version of 2.4beta.  This guarantees that no ~user expansion (or
+  =command expansion, which takes place at the same time) will happen if
+  the tilde is quoted, and also rationalises PATH-type variables by
+  expanding all unquoted assignments as if they are colon-separated
+  lists (so you may need to add or subtract a few extra quotes, but the
+  results are more predictable).  In addition typeset, etc., now should
+  behave like ordinary assignments in this respect; previously tildes in
+  typeset assignments were unquotable.
+
+
+12) How does base arithmetic work?
+
+  The ksh syntax is now understood, i.e.
+        let 'foo = 16#ff'
+  or equivalently
+        (( foo = 16#ff ))
+  or even
+        foo=$[16#ff]
+  (note that `foo=$((16#ff))' is not yet supported).
+  The original syntax was
+	(( foo = [16]ff ))
+  --- this was based on a misunderstanding of the ksh manual page.  It
+  still works but its use is deprecated.
+  Then
+	echo $foo
+  gives the answer `255'.  It is possible to declare variables explicitly
+  to be integers, via
+	typeset -i foo
+  which has a different effect: namely the base used in the first
+  assignment (hexadecimal in the example) is subsequently used whenever
+  `foo' is displayed (although the internal representation is unchanged).
+  To ensure foo is always displayed in decimal, declare it as
+	typeset -i 10 foo
+  which requests base 10 for output.  You can change the output base of an
+  existing variable in this fashion.  Using the `$[ ... ]' method will
+  always display in decimal.
+
+
+13) How do I get a newline in my prompt?
+
+  You can place a literal newline in quotes, i.e.
+	PROMPT="Hi Joe,
+	what now?%# "
+  If you have the bad taste to set the option cshjunkiequotes, which
+  inhibits such behaviour, you will have to bracket this with 
+  `unsetopt cshjunkiequotes' and `setopt cshjunkiequotes', or put it in
+  your .zshrc before the option is set.
+  
+  Arguably the prompt code should handle `print'-like escapes.  Feel
+  free to write this :-).
+
+
+14) Why does `bindkey ^a command-name' or 'stty intr ^-' do something funny?
+
+  You probably have the extendedglob option set in which case ^ and #
+  are metacharacters.  ^a matches any file except one called a, so the
+  line is interpreted as bindkey followed by a list of files.  Quote the
+  ^ with a backslash or put quotation marks around ^a.
+
+
+15) Why can't I bind \C-s and \C-q any more?
+
+  The control-s and control-q keys now do flow control by default,
+  unless you have turned this off with `stty -ixon' or redefined the
+  keys which control it with `stty start' or `stty stop'.  (This is
+  done by the system, not zsh; the shell simply respects these
+  settings.)  In other words, \C-s stops all output to the terminal,
+  while \C-q resumes it.
+
+  There is an option NO_FLOW_CONTROL to stop zsh from allowing flow
+  control and hence restoring the use of the keys: put `setopt
+  noflowcontrol' in .zshrc.
+
+
+16) How do I execute command `foo' within function `foo'?
+
+  The command `command foo' does just that.  You don't need this with
+  aliases, but you do with functions.  Note that error messages like
+        zsh: job table full or recursion limit exceeded
+  are a good sign that you tried calling `foo' in function `foo' without
+  using `command'.
+
+
+17) Why can't I get zsh to work with SGI's `userenv'?
+
+  It seems the Silicon Graphics `userenv' command interacts weirdly with
+  the line editor (zsh is not unique in this respect).  Add this line to
+  the top of your .zshenv file:
+        if [[ "${ENVONLY:-0}" -eq 1 ]]; then unsetopt zle; fi
+  --- which will turn the line editor off if it sees a `userenv' coming.
+  Don't turn zle back on with setopt until [[ $ENVONLY -ne 1 ]].
+
+
+18) Why do history substitutions with single bangs do something funny?
+
+  If you have a command like "echo !-2:$ !$", the first history
+  substitution then sets a default to which later history substitutions
+  with single unqualified bangs refer, so that !$ becomes equivalent to
+  !-2:$.  The option CSH_JUNKIE_HISTORY makes all single bangs refer
+  to the last command.
+
+
+19) Why does zsh kill off all my background jobs when I logout?
+
+  Simple answer: you haven't asked it not to.  Zsh (unlike [t]csh) gives
+  you the option of having background jobs killed or not: the `nohup'
+  option exists if you don't want them killed.  Note that you can always
+  run programs with `nohup' in front of the pipeline whether or not the
+  option is set, which will prevent that job from being killed on
+  logout.  (Nohup is actually an external command.)
+
+  The `disown' builtin is very useful in this respect: if zsh informs
+  you that you have background jobs when you try to logout, you can
+  `disown' all the ones you don't want killed when you exit.  This is
+  also a good way of making jobs you don't need the shell to know about
+  (such as commands which create new windows) invisible to the shell.
+
+
+20) I don't have root access: how do I make zsh my login shell?
+
+  Unfortunately, on many machines you can't use `chsh' to change your
+  shell unless the name of the shell is contained in /etc/shells, so if
+  you have your own copy of zsh you need some sleight-of-hand to use it
+  when you log on.  (Simply typing `zsh' is not really a solution since
+  you still have your original login shell waiting for when you exit.)
+  
+  The basic idea is to use `exec <zsh-path>' to replace the current
+  shell with zsh.  Often you can do this in a login file such as
+  .profile (if your shell is sh or ksh) or .login (if it's csh).  Make
+  sure you have some way of altering the file (e.g. via FTP) before you
+  try this as `exec' is often rather unforgiving.
+
+  If you have zsh in a subdirectory `bin' of your home directory,
+  put this in .profile:
+	[ -f $HOME/bin/zsh ] && exec $HOME/bin/zsh -l
+  or if your login shell is csh or tcsh, put this in .login:
+	if ( -f ~/bin/zsh ) exec ~/bin/zsh -l
+  (in each case the -l tells zsh it is a login shell).  
+
+  It's not a good idea to put this (even without the -l) into .cshrc, at
+  least without some tests on what the csh is supposed to be doing, as
+  that will cause _every_ instance of csh to turn into a zsh and will
+  cause csh scripts (yes, unfortunately some people write these) which
+  do not call `csh -f' to fail.  If you want to tell xterm to run zsh,
+  change the SHELL environment variable to the full path of zsh at the
+  same time as you exec zsh.  If you have to exec zsh from your .cshrc,
+  a minimum safety check is `if ($?prompt) exec zsh'.
+
+  If you like your login shell to appear in the process list as '-zsh',
+  you can link zsh to -zsh (e.g. by `ln -s ~/bin/zsh ~/bin/-zsh') and
+  change the exec to `exec -zsh'.  (Make sure -zsh is in your path.)
+  This has the same effect as the `-l' option.
+
+  Footnote: if you DO have root access, make sure zsh goes in
+  /etc/shells on all appropriate machines, including NIS clients, or you
+  may have problems with FTP to that machine.
+
+
+21) Shouldn't zsh be more/less like ksh/(t)csh?
+
+  People often ask why zsh has all these `unnecessary' csh-like features,
+  or alternatively why zsh doesn't understand more csh syntax.  This is
+  far from a definitive answer and the debate will no doubt continue.
+
+  Paul's object in writing zsh was to produce a ksh-like shell which
+  would have features familiar to csh users.  For a long time, csh was
+  the preferred interactive shell and there is a strong resistance to
+  changing to something unfamiliar, hence the additional syntax and
+  CSH_JUNKIE options.  This argument still holds.  On the other hand,
+  the arguments for having what is close to a plug-in replacement for ksh
+  are, if anything, even more powerful:  the deficiencies of csh as a
+  programming language are well known (look in any Usenet FAQ archive, e.g.
+    rtfm.mit.edu:pub/usenet-by-group/news.answers/unix-faq/shell/csh-whynot
+  if you are in any doubt) and zsh is able to run many standard scripts
+  such as /etc/rc.
+  
+  Of course, this makes zsh rather large and quite messy so that it
+  seems to appeal mainly to hackers.  The only answer, perhaps not
+  entirely satisfactory, is that you have to ignore the bits you don't
+  want.
+
+
+22) What bugs are currently known and unfixed?
+
+  Here are some of the more well-known ones, very roughly in decreasing
+  order of significance.  Many of these can also be counted against
+  differences from ksh in question 5); note that this applies to the
+  latest beta version and that simple bugs are often fixed quite
+  quickly.  There is a file BUGS in the source distribution with more
+  detail.
+
+  Pipelines ending in a while/until/for loop are uninterruptible.
+  Certain built-ins won't allow the `VAR=value command ...' assignment;
+    the ones that do don't unset VAR after use (may not really be a bug).
+    (N.B.: `exec foo=bar command' is a workaround for exec.)
+  The `histlit' option adds newlines to lines in the history
+    (and is broken in several other ways, e.g. !:x word selection;
+    it may be removed).
+  `time' is ignored with builtins and can't be used with {...} or (...);
+    in shells with no job control the command name is blank.
+  `set -x' (`setopt xtrace') doesn't show as much as it should.
+  The line number of errors inside control structures is always given
+    as the end of the structure (i.e. at `fi', `done', etc.).
+  $_ returns the last unexpanded word from the previous line (not command).
+  The :q modifier doesn't split words and -q and -x don't work for variables.
+  In vi mode, `u' can go past the original modification point.
+  Autocd won't use globbed filenames.
+  The singlelinezle option has problems with prompts containing escapes.
+  `wait' on its own is not interruptible;  interrupting `wait %...'
+    kills the job; wait does not set the correct status.
+  Builtins at the end of a pipeline lose their status to previous commands.
+
+  Note that a few recent changes introduce incompatibilities (these
+  are not bugs):
+  An option CSH_JUNKIE_PAREN has proved necessary for the syntax `if (
+    <condition> ) <code>' and for similar for and while (but not
+    foreach) commands.  This is because it is valid Bourne/Korn shell
+    syntax to have a subshell command immediately after if, and the
+    default syntax should be compliant with that.
+  Assignment of `...` and $(...) to variables in the form `foo=$(...)'
+    is now always scalar; previously the command output was split and
+    array assignment performed if more than one word resulted.  You
+    can still generate an array vie `foo=($(...))', which was always
+    the safe way of doing it.  Again, this is for Bourne/Korn compliance.
+  The -h option to compctl has been removed (use `-k hosts' for the
+    same effect); automatic handling of hosts after '@' has been removed
+    (use e.g. `compctl -u -x "n[-1,@]" -k hosts -- finger').
+  Handling of backslashes in `echo' and `print' has changed.
+  umask's behaviour with respect to symbolic operators has reversed
+    (and is now ksh-compatible).
+  The option CSH_JUNKIE_TILDE has been upgraded to GLOB_SUBST: instead
+    of just ~'s and ='s, all characters become eligible for file
+    expansion and globbing when the option is set.  (The option was
+    not present in 2.3 at all.)
+
+  There is at least one common bug which is not due to zsh.  If you have
+  abnormal behaviour with file descriptor 4, it's because your password
+  database is being read from the Network Information System and
+  getpwent() left this fd open.
+
+
+23) Where do I report bugs, get more info / who's working on zsh?
+
+  The shell is being maintained by various (entirely self-appointed)
+  subscribers to the mailing list,
+	zsh-list@sterling.com so any suggestions, complaints,
+  questions and matters for discussion should be sent there.  If you
+  want someone to mail you directly, say so.  Most patches to zsh appear
+  there first.
+  
+  A lower-volume list,
+	zsh-announce@sterling.com
+  exists for announcements of new features and proposed changes
+  requiring some decisions.
+
+  Both lists are handled by an automated server.  The instructions for
+  zsh-announce are the same as for zsh-list: just change zsh-list to
+  zsh-announce everywhere in the following.
+
+  To join zsh-list, send email to
+	Majordomo@sterling.com
+  containing
+	subscribe zsh-list <optional-address>
+  where <optional-address> can be blank if you want to subscribe from
+  your current email address.  Send the message `help' to the same
+  address for help on the list server; `unsubscribe zsh-list' also
+  works. (Don't send this to the list!) The list manager, Rick Ohnemus,
+  can be reached at
+	owner-zsh-list@sterling.com
+  (or `rick' at the same adress).
+
+  The list (everything since May 1992) is archived in
+	ftp.sterling.com:zsh/zsh-list/YY-MM
+  where YY-MM are the year and month in digits.
+
+  Of course, you can also post zsh queries to the Usenet group
+  comp.unix.shell; if all else fails, you could even e-mail me.
+
+
+24) What's on the wish-list?
+
+  (The following will not be done before the release of 2.5.)
+  Ksh/sh compatibility could be improved if required.  This would
+    be a useful long term goal.
+  Option for glob qualifiers to follow perl syntax.
+  Option to quote !-history lexically via '' but not "".
+  Binding of shell functions (or commands?) to key strokes --
+    requires some way of accessing the editing buffer from functions
+    and probably of executing zle functions as a command.
+  trap '...' FOO should be eval'd rather than called as a function.
+  `PATH=' should clear the PATH:  it inserts `.'; use `unset PATH' or
+    `path=()' for the time being.  This is not really a bug as the .
+    would be used internally in any case (cf. ksh).
+  Users should be able to create their own foopath/FOOPATH array/path
+    combinations.
+  The introduction to zsh (intro.*) could do with an update to reflect
+    extended completion (in particular) and other recent additions.
+
+
+Acknowledgments:
+
+Thanks to zsh-list, in particular Bart Schaefer, for suggestions
+regarding this document; thanks to Jim Mattson and more recently Bas de
+Bakker for their hard work as archivists, and to Peter Gray for
+maintaining the mailing list, without which zsh might easily have died,
+and to the latest list maintainer, Rick Ohnemus.  The world is eternally
+in the debt of Paul Falstad for inventing zsh in the first place.

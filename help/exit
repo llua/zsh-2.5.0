@@ -1,0 +1,8 @@
+       bye    Same as exit.
+
+       exit [ n ]
+              Exit the shell with the exit code specified  by  n;
+              if  none  is  specified, use the exit code from the
+              last command executed.  An EOF condition will  also
+              cause  the  shell  to  exit,  unless  the IGNOREEOF
+              option is set.

@@ -1,0 +1,20 @@
+# --- (subroutine for PATH-like walking)
+
+_var_=$1
+_fil_=$2	# can actually be dirs too
+_dir_=$3
+_dfl_=$4
+for _f_ in $_fil_
+do
+  for _d_ in $_dir_
+  do
+    _df="$_d_/$_f_"
+    if test -f "$_df" -o -d "$_df"
+    then
+      eval $_var_="$_df"
+      break
+    fi
+  done
+  eval "test -n \"\$$_var_\" || $_var_=$_dfl_"
+  eval "test -n \"\$$_var_\" && break"
+done

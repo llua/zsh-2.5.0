@@ -1,0 +1,6 @@
+       autoload [ name ... ]
+              For  each  of  the  names (which are names of func-
+              tions), create a function  marked  undefined.   The
+              fpath  variable will be searched to find the actual
+              function definition when the function is first ref-
+              erenced.

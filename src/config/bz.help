@@ -1,0 +1,212 @@
+cat <<EOH | $PAGER
+NAME
+
+	buildzsh -- zsh configuration tool
+
+SYNOPSIS
+
+	buildzsh [parameters]
+
+	buildzsh builds all or some of the files config.h, signals.h,
+	and Makefile.  These files are necessary for building zsh.
+	For more detailed explanation, see FILES below.
+
+	By default it builds them all, this can be done by simply saying
+
+		./buildzsh
+
+	from the shell level while in the same directory with buildzsh.
+	For not building all of the abovementioned files, see note 3)
+	under BOOLEAN PARAMETERS.
+
+	buildzsh supports building zsh for several architectures
+	from the same, untouched, source tree.  See MULTIARCHITECTURE
+	SUPPORT below.
+
+PARAMETERS
+
+	buildzsh knows about two kinds of parameters:
+
+	CONFIGURABLE and BOOLEAN
+
+CONFIGURABLE PARAMETERS
+
+	configurable might also be called assignable: they can be
+	assigned some value by using the form
+
+		param=value
+
+	For example
+
+		./buildzsh LIBS=-ltermcap
+
+	sets the configurable parameters "LIBS" to the value "-ltermcap"
+
+	param		explanation			default
+	-----		-----------			-------
+	CC		C compiler			$DEFAULT_C_CC
+	CFLAGS		C compiler flags    for example	$DEFAULT_C_CFLAGS
+	CFLAGS_D	C preprocessor flags (-Dfoo)	$DEFAULT_C_CFLAGS_D
+	CFLAGS_W	C warning flags	     (-ansi)	$DEFAULT_C_CFLAGS_W
+	CFLAGS_X	C extra flags        (-m486)	$DEFAULT_C_CFLAGS_X
+	CFLAGS_O	C optimizer flags    (-O)	$DEFAULT_C_CFLAGS_O
+	CFLAGS_g	C debugger flags     (-g)	$DEFAULT_C_CFLAGS_g
+	CFLAGS_z	zsh debugging flags  (-DQDEBUG)	$DEFAULT_C_CFLAGS_z
+	LDFLAGS		linking flags	     (-x)	\$(CFLAGS)
+	LIBS		libraries to link with	(-lnet)	$DEFAULT_C_LIBS
+	SRCDIR		source directory		$DEFAULT_C_SRCDIR
+	BLDDIR		building directory		$DEFAULT_C_BLDDIR
+	ARCH		architecture			(zsh HOSTTYPE)
+	ARCHPATT	ARCH pattern 2)			$DEFAULT_C_ARCHPATT
+	INSTDIR		installation directory 3)	$DEFAULT_C_INSTDIR
+	BINDIR		binary INSTDIR			$DEFAULT_C_BINDIR
+	MANDIR		manual page INSTDIR		$DEFAULT_C_MANDIR
+	ETCDIR		global init file directory	$DEFAULT_C_ETCDIR
+	MAKE		the "make" to use		$DEFAULT_C_MAKE
+
+	1) CFLAGS overrides all CFLAGS_... parameters, each CFLAGS_...
+	   overrides any guesses done by buildzsh.
+
+	2) For each instance of ARCHPATT in the parameters
+	   $ARCH_PARMS,
+	   ARCH will be substituted.
+
+	3) If INSTDIR is set, it will be a prefix for BINDIR (=INSTDIR/bin)
+	   and MANDIR (=INSTDIR/man/man1), BINDIR and MANDIR cannot then be
+	   set on their own.
+
+BOOLEAN PARAMETERS
+
+	These parameters are either present or not.
+
+	param		explanation			default
+	-----		-----------			-------
+	config.h	build config.h			$DEFAULT_B_config_h 1)
+	signals.h	build signals.h			$DEFAULT_B_signals_h 1)
+	hs		build config.h and signals.h	$DEFAULT_B_hs 1)
+	Makefile	build Makefile			$DEFAULT_B_mf 1)
+	mf		-"-				$DEFAULT_B_mf 1)
+	gcc		use gcc instead of default cc	$DEFAULT_B_gcc
+	mediumgcc	as "gcc" but with stricter	$DEFAULT_B_mediumgcc
+			flags, requires ANSI clean
+			zsh code _and_ system headers
+	strictgcc	as "gcc" but with very, VERY,	$DEFAULT_B_strictgcc
+			strict flags
+	ksh		run builzsh with ksh		$DEFAULT_B_ksh 2)
+			instead of default sh
+	help		show this help			$DEFAULT_B_help
+	query		ask configurer's judgement	$DEFAULT_B_query
+	auto		do not ask the initial question	$DEFAULT_B_auto 3)
+			about "query", start probing
+			immediately
+	noopt		no optimizing compilation (-O)	$DEFAULT_B_optimize 4)
+	debug		debugging compilation (-g)	$DEFAULT_B_debug 4)
+	zshdebug	zsh internal debugging used	$DEFAULT_B_zshdebug
+	nomake		no make at the end of buildzsh	$DEFAULT_B_nomake
+
+	For example
+
+		./buildzsh gcc
+
+	will customize Makefile so that gcc and the appropriate
+	flags will be used.
+
+	1) Normally all of config.h, signals.h, and Makefile
+	   will be built.  If, however, only certain of these are
+	   specified at the command line, only those specified will
+           be built.  For example "buildzsh mf" will build only the
+	   Makefile.
+
+	2) The default is to use sh.  ksh is needed sometimes if sh
+	   cannot for some reason handle buildzsh (e.g. Cray's UNICOS),
+	   in such cases buildzsh normally runs itself automatically
+	   with ksh and "ksh" option is not needed in the command line.
+
+	3) Meant either for the extremely optimistic first-timers or
+	   for the battle-scarred zsh hackers.
+	
+	4) These can cancel each other out: if both are present
+	   but the C compiler cannot handle both of them, optimization
+	   is turned off and debugging stays.  Only certain compilation
+	   environments support optimization and debugging simultaneously.
+
+MULTIARCHITECTURE SUPPORT
+
+	*** CURRENTLY UNSUPPORTED (=SOMEWHAT BROKEN) FEATURE	***
+	*** FOR DESPERATE USE ONLY				***
+	*** IF IT WORKS FOR YOU, FINE, BUT DON'T RELY ON IT.	***
+	*** IF IT DOESN'T WORK FOR YOU, TOUGH.			***
+	*** IF YOU DO THE BUILDING HONOURING THE TRADITION      ***
+	*** COMPILING AMONG THE SOURCES, EVERYTHING SHOULD GO	***
+	*** JUST FINE, IGNORE THIS FEATURE.			***
+
+	buildzsh understands using a common source code pool
+	for building and installing zsh for several different
+	architectures.   The configurable parameters
+
+		$ARCH_PARMS
+
+	are special: if these contain the pattern
+
+		$DEFAULT_C_ARCHPATT
+
+	this pattern will be replaced with a string describing
+	the particular architecture.  By default this string is
+	determined by buildzsh itself -- but all of these can be
+	changed from the command line, see CONFIGURABLE PARAMETERS above.
+	For example
+
+		./buildzsh BLDDIR=/var/tmp/zsh/hp48sx
+
+	will build Makefile so that by simply saying
+
+		make -f /var/tmp/zsh/hp48sx/Makefile
+
+	the whole zsh building process will happen in the directory
+	"/var/tmp/zsh/hp48sx".
+
+FILES
+
+	buildzsh builds three files:
+
+		config.h and signals.h are normal C source files:
+		config.h contains the definitions that depend on
+		the particular features of the operating system variant,
+		signals.h contains the signal definitions.
+
+		A makefile called Makefile customized for
+		the particular architecture will be built to
+		the building directory (by default the building directory
+		is the current directory).
+
+	There are fail-safe versions of config.h, signals.h and Makefile
+	called config.h.sample, signals.h.sample and Makefile.sample
+	that can be used either as-is or as raw material if buildzsh fails.
+
+	buildzsh itself is just a top-level script that uses the bz.*
+	scripts in the directory src/config.
+
+ENVIRONMENT VARIABLES
+
+	All of the configurable parameters (see above) (for example
+	CFLAGS and LIBS) are taken intact from the environment.
+
+BUGS
+
+	Nothing is perfect and buildzsh is bound to have its
+	share of bugs.  If and when modifying buildzsh becomes
+	a necessity, please read the file src/config/config.README.
+	It lists the role of each module of buildzsh and warns about
+	the most common pitfalls.
+
+WARNINGS
+
+	buildzsh is quite large piece of serious shell scripting
+	which is supposed to work under any Bourne shell (sh) AND
+	Korn shell (ksh).  Achieving this goal requires sometimes
+	dirty and/or obscure tricks to for example negotiate past
+	some bugs that appear only in some vendors' environments.
+
+	Fiddling with buildzsh is not for the faint at heart.
+EOH
+exit 1	

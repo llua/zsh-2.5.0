@@ -1,0 +1,123 @@
+_tst_="$1"
+_sym_="$2"
+_val_="$3"
+_yea_="$4"
+_nay_="$5"
+test -n "$6" && _fea_="$6" || _fea_="$4"
+_yea_fea_="$7"
+_nay_fea_="$8"
+test -n "$F_define" -a -n "$_sym_" && echo "/* define this if you use $_fea_ */"
+
+_auto=
+
+if test -n "$B_query"
+then
+  _ans_=
+  while test Z"$_ans_" != Zok
+  do
+    if test -n "$F_define" -a -z "$F_ifdef_warned"
+    then 
+      echo "	* 'Do you have' means 'Do you have _a working_ version of'" >&2
+      F_ifdef_warned=yep
+    fi
+    if test -n "$B_query"
+    then
+      eval "$_tst_" && _dfl_='Y n' || _dfl_='N y'
+      {
+        echo
+        test -n "$G_verb1_" && _verb1_="$G_verb1_" || _verb1_=Do
+        test -n "$G_subj_"  && _subj_="$G_subj_"   || _subj_=you
+        test -n "$G_verb2_" && _verb2_="$G_verb2_" || _verb2_=use
+        echo "$_verb1_ $_subj_ $_verb2_ $_fea_? [${_dfl_}aq?] " | tr -d '\012'
+      } >&2
+    fi
+    read _ans_
+    case $_ans_ in
+    [Yy]* )
+      _tst_=true
+      _ans_=ok
+      _yea=yep
+      _nay=
+      ;;
+    [Nn]* )
+      _tst_=false
+      _ans_=ok
+      _yea=
+      _nay=nope
+      ;;
+    [Aa]* )
+      {
+        echo
+        echo "	OK, will autoproceed..."
+	echo
+      } >&2
+      _ans_=ok
+      _auto=yep
+      ;;
+   [?]*  )
+      {
+cat <<__eoh__
+  
+  The default will be selected by simply pressing Return/Newline/Enter.
+  The default is probed out from the system by buildzsh, the probing
+  can take sometimes couple of seconds.
+  Inside the [brackets] the default is shown Capitalized, as the first
+  option and separated from the other options by a space.
+  
+  y (or Y)  yep
+  n (or N)  no
+  a         auto: proceed until end without querying
+  q         quit configuring this file, this file will be left unfinished;
+            to quit altogether, use Ctrl-C or your respective
+            interrupt key
+__eoh__
+      } >&2
+      _ans_=
+      ;;
+    [Qq]* )
+      exit 1
+      ;;
+    ''    )
+      case "$_dfl_" in
+      Y* ) _tst_=true  ;;
+      N* ) _tst_=false ;;
+      esac
+      _ans_=ok
+      ;;
+    esac
+  done
+fi
+
+test -n "$G_verb3a_" && _verb3a_="$G_verb3a_" || _verb3a_=using
+test -n "$G_verb3b_" && _verb3b_="$G_verb3b_" || _verb3b_=using
+  
+if eval "$_tst_" && test -z "$_auto"
+then
+  if test -n "$F_define"
+  then
+    test -n "$_sym_" && echo "#define $_sym_ $_val_" || echo "$_yea_fea_"
+  fi
+  test -n "$F_using" && echo "	$_verb3a_ $_yea_..." >&2
+  _yea=yep
+  _nay=
+else
+  if test -n "$F_define"
+  then
+    test -n "$_sym_" && echo "/*#define $_sym_*/" || echo "$_nay_fea_"
+  fi
+  if test -n "$F_using"
+  then
+    test -n "$_nay_" && echo "	$_verb3b_ $_nay_..." >&2 || echo "	not $_verb3a_ $_yea_..." >&2
+  fi
+  _yea=
+  _nay=nope
+fi
+
+_res="${_yea}${_nay}"
+test -n "$F_define" && echo
+
+G_verb1_=
+G_subj_=
+G_verb2_=
+G_verb3a_=
+G_verb3b_=

@@ -1,0 +1,13 @@
+       TRAPxxx
+              If defined and non-null, this function will be exe-
+              cuted whenever the shell catches a  signal  SIGxxx,
+              where  xxx  is  a  signal name as specified for the
+              kill builtin (see below).  The signal  number  will
+              be  passed  as the first parameter to the function.
+              In addition, TRAPZERR is executed whenever  a  com-
+              mand  has a non-zero exit status, TRAPDEBUG is exe-
+              cuted after each command, and TRAPEXIT is  executed
+              when  the shell exits, or when the current function
+              exits if defined inside a function.  If a  function
+              of  this  form  is  defined and null, the shell and
+              processes spawned by it will ignore SIGxxx.

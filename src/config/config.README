@@ -1,0 +1,236 @@
+PURPOSE
+
+	This directory contains shell scripts that are used by
+	src/buildzsh.
+
+FILES
+
+	Hierarchical list	Function of
+	of scripts called by	the particular
+	buildzsh.		script.
+	--------------------	--------------
+
+	bz.init			Initialization...
+		bz.saveargv		saving argv
+		bz.defaults		for parameters
+		bz.ifksh		for ksh-must
+	bz.argh			Argument handling...
+		bz.help			showing help
+	bz.check		Argument checking...
+		bz.doksh		do ksh if necessary
+		bz.sanity		fix up some parameters
+	bz.hs			Header building...
+		bz.config.h		config.h
+		bz.signals.h		signals.h
+	bz.Makefile		Architecture-specific Makefile building...
+	bz.finale		Shall we $MAKE?
+	
+NOTES
+
+	The following notes are meant for buildzsh hackers,
+	for others it will be a healthy example about the
+	problems of writing large and portable shell scripts.
+
+	The notes are indicated by a '*' in the left margin and
+	they are are followed by (some of) the names of the bz.* files
+	that are affected by the particular note.
+
+* all the sh-constructs must be also "Korn-compliant"
+  so that ksh also can munch this script.  This is normally not
+  a big headache because ksh should be superset of Bourne sh.
+
+  some miserable Bourne shells fail for some reason or another
+  while executing buildzsh, we will try for those wrecthes whether
+  ksh comes to rescue.
+
+	bz.ifksh
+	bz.doksh
+	bz.Makefiles
+
+* because the Makefiles are built by <<eof method *inside* buildzsh,
+  they have to be BOTH "Bourne-compliant" AND "Korn-compliant".
+  Therefore, certain measures have to be taken as certain
+  constructs are understood differently amongst sh/ksh/make.
+  These constructs are
+        
+        $@              (sh and make)
+        $(foo)          (ksh and make)
+
+  If these constructs are to be as "make" them understands, they MUST
+  be escaped with a leading backlash as follows
+
+        \$@
+        \$(foo)
+
+  All the "here-document" (<<EOF) situations cannot be handled with
+  <<'quoted-eof' trick, which would cure both the above problems,
+  because the expansion of $bar by sh/ksh is extensively used by
+  for example
+
+        CC=$CC
+
+  where $CC has been resolved by sh/ksh.  Note, however, that when
+  no $bar style expansions are needed during <<, the <<'quoted-eof'
+  method is viable and the \ escaping is not needed.
+
+	bz.Makefiles
+
+* do NOT even think about using the <<trick as
+
+  if test ...
+  then
+  exec >somefile
+  cat <<eof
+  ...
+  eof
+  fi
+  
+  thanks to Sun.  In ScumOS, you will get error messages like
+  buildzsh: /tmp/sh1708429: No such file or directory
+  after each 'cat' for each exec-cat pair.
+  One must resort to the work-around: using subshells
+
+  if test ...
+  then
+  (exec >somefile
+  cat >>eof
+  ...
+  eof
+  )
+  fi
+  
+  Note that one must be careful about the closing (: it can come
+  many lines after the initial cat <<'s eof, in buildzsh normally
+  just before the 'fi' that closes down the building of some file
+
+  if test ...doing-some-file
+  then
+  (exec >some-file
+  ...
+  )
+  fi
+
+	bz.Makefile
+	bz.config.h
+
+* do not use "test -x" because some braindead (but wide-spread)
+  tests do not know such a flag, use "-f" instead, that *should* work
+  everywhere.
+
+	bz.Makefile
+	bz.config.h
+	bz.doksh
+	bz.help
+	bz.hosttype
+
+* do not use "tr -s", either, use sed for that.
+
+* the argument list of the buildzsh is saved by bz.init/bz.saveargv
+  in to a variable called _argv that can be used in constructs like
+
+  for i in $_argv
+  do
+    ...
+
+  Whitespace is correctly saved in _argv.
+  (but exotic quoting might get fatal?)
+
+* there are a couple of subroutinish scripts that are used to automatize
+  the chores of asking/looking for different kinds of questions.
+
+  The calling sequence is as follows
+
+	set arg1 arg2 arg3 arg4 ...
+	. bz.foo
+  
+  Worrying about $@?  Saved in $_argv, see above.
+
+  bz.define:
+
+	Usage:
+
+	set symbol_name default_value description [ empty_ok [ quote_it ] ]
+	. bz.define
+
+	Used to #define FOO, the definition is output to stdout.
+
+	If empty answer is ok, the 4th argument should be non-empty.
+	
+	If the 5th argument is either " or ', the whole answer is
+	quoted with that particular character (on both sides, of course).
+
+  bz.ifdef:
+
+	Usage:
+
+	set test symbol_name default_value yea_feature \
+            [ nay_feature [ feature_name ] ]
+
+	Used to #define but only iff some condition holdsds,
+	the definition is output to stdout.
+
+	In query mode the question is normally paraphrased as
+	"Do you have YEA_FEATURE?".  These can be (and are)
+	customized: Do is G_verb1_, you is G_subj_, have is G_verb2_.
+	See for example the "suspended"/"stopped" question in
+	bz.config.h, there the "have" is changed into "prefer".
+
+	This is the subroutine that says "using foo..." or
+	"not using foo...".  Also the "using" can be customized,
+	it is G_verb3a_ and G_verb3b_, corresponding to the positive
+	and negative senses.
+
+	All the G_{verb,subject}X customizations are temporary:
+	each bz.ifdef call resets the defaults.
+
+	You can test the variables _yea and _nay after the
+	bz.ifdef call to know which alternative was chosen.
+
+  bz.walk:
+
+	set variable_name "file ..." "dir ..." default
+	. bz.walk
+
+  	Searches PATH-like for multiple files from multiple directories.
+  	The first existing dir/file is set as the value of variable_name.
+  	If no such exists, the default is used as the value.
+  	The outer loop steps through files and the inner through directories.
+  	For example:
+
+	set gorp "cc gcc" "/usr/local/bin /usr/bin /bin" /bin/echo
+	. bz.walk
+
+  	This will try /usr/local/bin/cc, /usr/bin/cc, /bin/cc,
+	/usr/local/bin/gcc, /usr/bin/gcc, and /bin/gcc, in that order.
+	If none of these exist, gorp will have the value /bin/echo.
+
+* As soon as you know for certain whether your C compiler groks -c and -o
+  simultaneously or not, add the correct variable to test to
+  either CC_GROK_c_o or CC_LOSE_c_o in bz.defaults, respectively.
+  Neither matching means running $CC *each and every* time buildzsh is run.
+
+	bz.Makefile
+	bz.defaults
+
+* As soon as you know for certain whether your C compiler groks -g and -O
+  simultaneously or not, add the correct variable to test to
+  either CC_GROK_g_O or CC_LOSE_g_O in bz.defaults, respectively.
+  Neither matching means running $CC *each and every* time buildzsh is run.
+  Variables like test:foo:bar mean testing for variable "test",
+  if that succeeds, setting CC_gFLAGS to "foo" and CC_OFLAGS to "bar".
+
+	For example: CC_GROK_g_O="AIX CC_MIPS_STYLE:-g3:-O GCC:-g:-O6"
+
+  Use 'quotes' to protect whitespace.
+
+	bz.Makefile
+	bz.defaults
+
+* if you want to display something to "stdin" while building
+  Makefile, you must "1>&2" it
+
+	bz.Makefile
+
+* the naming of the various sh variables is a total mess.
+
+---

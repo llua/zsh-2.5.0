@@ -1,0 +1,81 @@
+# multicomp() {
+# Completes all manner of files given prefixes for each path segment.
+# e.g. s/z/s -> src/zsh-2.4/src
+#
+# Usage: e.g.
+# compctl -D -f + -U -K multicomp
+#
+# Note that exactly matched directories are not expanded, e.g.
+# s/zsh-2.4/s<TAB> will not expand to src/zsh-2.4old/src.
+# Will expand glob patterns already in the word, but use complete-word,
+# not TAB (expand-or-complete), or you will get ordinary glob expansion.
+# Requires the -U option to compctl.
+# Menucompletion is highly recommended for ambiguous matches.
+# Liable to screw up escaped metacharacters royally.
+# $fignore is not used: feel free to add your own bit.
+
+local pref head rceptrue ngtrue sofar origtop newtop globdir="(-/)" wild
+
+# No point using the toggle for rcexpandparam,
+# since we don't know if the option is set already.
+# (This is always the case, so what's the point in the toggle?)
+# This stuff is going to be superceded by `setopt localopts' eventually.
+[[ -o rcexpandparam ]] && rceptrue=1
+[[ -o nullglob ]] && ngtrue=1
+setopt rcexpandparam nullglob
+
+pref=${1}$2
+# Hack to allow programmable completion to select multicomp after a :
+# (e.g.
+# compctl -D -f -x 's[:]' -U -K multicomp
+# )
+[[ $pref = :* ]] && pref=$pref[2,-1]
+
+sofar=('')
+reply=('')
+
+if [[ $pref[1] = '~' ]]; then
+  # If the string started with ~, save the head and what it will become.
+  origtop=${pref%%/*}
+  [[ $origtop = */ ]] && origtop[-1]=
+  # Next line assumes cshjunkietilde was not set.  See note on toggles above.
+  newtop=${~origtop}
+  # Save the expansion as the bit matched already
+  sofar=($newtop)
+  pref=$pref[$#origtop+1,-1]
+fi
+
+while [[ -n $pref ]]; do
+  [[ $pref = /* ]] && sofar=(${sofar}/) && pref=$pref[2,-1]
+  head=${pref%%/*}
+  [[ $head = */ ]] && head[-1]=
+  pref=$pref[$#head+1,-1]
+  if [[ $pref = /* && -z $sofar[2] && -d ${sofar}$head ]]; then
+    # Exactly matched directory: don't try to glob
+    reply=("${sofar}$head")
+  else
+    [[ $pref = /* ]] || globdir=
+    # if path segment contains wildcards, don't add another.
+    if [[ $head = *[\*\?]* ]]; then
+      wild=
+    else
+      wild='*'
+    fi
+    # $sofar must be expanded with rcexpandparam here, in such a way
+    # that metacharacters are expanded in the eval step.
+    reply=(${sofar}"${head}${wild}${globdir}")
+    eval "reply=($reply)"
+  fi
+
+  [[ -z $reply[1] ]] && reply=() && break
+  [[ -n $pref ]] && sofar=($reply)
+done
+
+# Restore ~'s in front if there were any.
+# There had better not be anything funny in $newtop.
+[[ -n $origtop ]] && eval "reply=(\$reply:gs?$newtop?\\$origtop?)"
+
+[[ rceptrue = 1 ]] || unsetopt rcexpandparam
+[[ ngtrue = 1 ]] || unsetopt nullglob
+
+# }

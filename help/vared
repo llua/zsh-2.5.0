@@ -1,0 +1,10 @@
+       vared [ -c ] [ -p prompt ] [ -r rprompt ] name
+              The value of the parameter name is loaded into  the
+              edit  buffer, and the line editor is invoked.  When
+              the editor exits, name is set to the  string  value
+              returned  by  the  editor.  If the -c flag is given
+              the parameter is  created  if  it  doesn't  already
+              exist.   If  the  -p  flag  is  given the following
+              string will be taken as the prompt  to  display  at
+              the  left and if the -r flag is given the following
+              string gives the prompt to display at the right.

@@ -1,0 +1,13 @@
+# bz.ifksh
+#
+# set the global flag F_must_ksh if we must refeed ourselves
+# (for some reason or another) through ksh
+#
+
+F_cray="`(uname -m)2>/dev/null|grep -i cray`"
+
+if test -n "$F_cray"
+then
+  F_must_ksh=yep
+fi
+

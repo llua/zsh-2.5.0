@@ -1,0 +1,4048 @@
+Path: news.csc.fi!news.eunet.fi!EU.net!uunet!sparky!not-for-mail
+From: zsh-list@sterling.com (Bas de Bakker)
+Newsgroups: comp.sources.misc
+Subject: v43i094:  zsh - The Z shell, version 2.5.0, Part05/18
+Followup-To: comp.sources.d
+Date: 13 Jul 1994 23:02:40 -0500
+Organization: Sterling Software
+Lines: 4033
+Sender: kent@sparky.sterling.com
+Approved: kent@sparky.sterling.com
+Message-ID: <302dd0$st8@sparky.sterling.com>
+References: <csm-v43i089=zsh.230017@sparky.sterling.com>
+NNTP-Posting-Host: sparky.sterling.com
+X-Md4-Signature: 1175401653d64bfde73cd48e05cb21e3
+
+Submitted-by: zsh-list@sterling.com (Bas de Bakker)
+Posting-number: Volume 43, Issue 94
+Archive-name: zsh/part05
+Environment: UNIX
+Supersedes: zsh: Volume 35, Issue 51-72
+
+#! /bin/sh
+# This is a shell archive.  Remove anything before this line, then feed it
+# into a shell via "sh file" or similar.  To overwrite existing files,
+# type "sh file -c".
+# Contents:  zsh-2.5.0/help/hash zsh-2.5.0/src/lex.c
+#   zsh-2.5.0/src/zle_tricky.c
+# Wrapped by kent@sparky on Tue Jul 12 16:47:18 1994
+PATH=/bin:/usr/bin:/usr/ucb:/usr/local/bin:/usr/lbin:$PATH ; export PATH
+echo If this archive is complete, you will see the following message:
+echo '          "shar: End of archive 5 (of 18)."'
+if test -f 'zsh-2.5.0/help/hash' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/hash'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/hash'\" \(580 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/hash' <<'END_OF_FILE'
+X       hash name path
+X              Puts name in the command hash table, associating it
+X              with the pathname path.  Whenever name is used as a
+X              command argument, the shell will try to execute the
+X              file given by path.
+X
+X       unhash [ -m ] name ...
+X              The  entry  in  the command hash table, if any, for
+X              each name is removed. If the -m flag is  given  the
+X              arguments  are taken as patterns (should be quoted)
+X              and all entries for commands  with  matching  names
+X              will be removed.
+END_OF_FILE
+  if test 580 -ne `wc -c <'zsh-2.5.0/help/hash'`; then
+    echo shar: \"'zsh-2.5.0/help/hash'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/hash'
+fi
+if test -f 'zsh-2.5.0/src/lex.c' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/lex.c'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/lex.c'\" \(18606 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/lex.c' <<'END_OF_FILE'
+X/*
+X *
+X * lex.c - lexical analysis
+X *
+X * This file is part of zsh, the Z shell.
+X *
+X * This software is Copyright 1992 by Paul Falstad
+X *
+X * Permission is hereby granted to copy, reproduce, redistribute or otherwise
+X * use this software as long as: there is no monetary profit gained
+X * specifically from the use or reproduction of this software, it is not
+X * sold, rented, traded or otherwise marketed, and this copyright notice is
+X * included prominently in any copy made.
+X *
+X * The author make no claims as to the fitness or correctness of this software
+X * for any use whatsoever, and it is provided as is. Any use of this software
+X * is at the user's own risk.
+X *
+X */
+X
+X#include "zsh.h"
+X
+X/* lexical state */
+X
+Xstatic int dbparens, in_brace_param = 0;
+Xint len = 0, bsiz = 256;
+Xchar *bptr;
+X
+Xstruct lexstack {
+X    struct lexstack *next;
+X
+X    int incmdpos;
+X    int incond;
+X    int incasepat;
+X    int dbparens;
+X    int in_brace_param;
+X    int alstat;
+X    char *hlastw;
+X    int isfirstln;
+X    int isfirstch;
+X    int histremmed;
+X    int histdone;
+X    int spaceflag;
+X    int stophist;
+X    int lithist;
+X    int alstackind;
+X    int hlinesz;
+X    char *hline;
+X    char *hptr;
+X    char *tokstr;
+X    char *bptr;
+X    int bsiz;
+X
+X    unsigned char *cstack;
+X    int csp;
+X};
+X
+Xstatic struct lexstack *lstack = NULL;
+X
+X/* save the lexical state */
+X
+X/* is this a hack or what? */
+X
+Xvoid lexsave()
+X{				/**/
+X    struct lexstack *ls;
+X
+X    ls = (struct lexstack *)malloc(sizeof(struct lexstack));
+X
+X    ls->incmdpos = incmdpos;
+X    ls->incond = incond;
+X    ls->incasepat = incasepat;
+X    ls->dbparens = dbparens;
+X    ls->in_brace_param = in_brace_param;
+X    ls->alstat = alstat;
+X    ls->alstackind = alstackind;
+X    ls->isfirstln = isfirstln;
+X    ls->isfirstch = isfirstch;
+X    ls->histremmed = histremmed;
+X    ls->histdone = histdone;
+X    ls->spaceflag = spaceflag;
+X    ls->stophist = stophist;
+X    ls->lithist = lithist;
+X    ls->hline = chline;
+X    ls->hptr = hptr;
+X    ls->hlastw = hlastw;
+X    ls->hlinesz = hlinesz;
+X    ls->cstack = cmdstack;
+X    ls->csp = cmdsp;
+X    cmdstack = (unsigned char *)zalloc(256);
+X    ls->tokstr = tokstr;
+X    ls->bptr = bptr;
+X    ls->bsiz = bsiz;
+X    in_brace_param = 0;
+X    cmdsp = 0;
+X    inredir = 0;
+X
+X    ls->next = lstack;
+X    lstack = ls;
+X}
+X
+X/* restore lexical state */
+X
+Xvoid lexrestore()
+X{				/**/
+X    struct lexstack *ln;
+X
+X    if (!lstack) {
+X	zerr("lexrestore without lexsave", NULL, 0);
+X	return;
+X    }
+X    incmdpos = lstack->incmdpos;
+X    incond = lstack->incond;
+X    incasepat = lstack->incasepat;
+X    dbparens = lstack->dbparens;
+X    in_brace_param = lstack->in_brace_param;
+X    alstat = lstack->alstat;
+X    isfirstln = lstack->isfirstln;
+X    isfirstch = lstack->isfirstch;
+X    histremmed = lstack->histremmed;
+X    histdone = lstack->histdone;
+X    spaceflag = lstack->spaceflag;
+X    stophist = lstack->stophist;
+X    lithist = lstack->lithist;
+X    chline = lstack->hline;
+X    hptr = lstack->hptr;
+X    hlastw = lstack->hlastw;
+X    if (cmdstack)
+X	free(cmdstack);
+X    cmdstack = lstack->cstack;
+X    cmdsp = lstack->csp;
+X    tokstr = lstack->tokstr;
+X    bptr = lstack->bptr;
+X    bsiz = lstack->bsiz;
+X    clearalstack();
+X    alstackind = lstack->alstackind;
+X    hlinesz = lstack->hlinesz;
+X    lexstop = errflag = 0;
+X
+X    ln = lstack->next;
+X    free(lstack);
+X    lstack = ln;
+X}
+X
+Xvoid yylex()
+X{				/**/
+X    if (tok == LEXERR)
+X	return;
+X    do
+X	tok = gettok();
+X    while (tok != ENDINPUT && exalias());
+X    if (tok != NEWLIN)
+X	isnewlin = 0;
+X    else
+X	isnewlin = (inbufct) ? -1 : 1;
+X    if (tok == SEMI || tok == NEWLIN)
+X	tok = SEPER;
+X}
+X
+Xvoid ctxtlex()
+X{				/**/
+X    static int oldpos;
+X
+X    yylex();
+X    switch (tok) {
+X    case SEPER:
+X    case NEWLIN:
+X    case SEMI:
+X    case DSEMI:
+X    case AMPER:
+X    case INPAR:
+X    case INBRACE:
+X    case DBAR:
+X    case DAMPER:
+X    case BAR:
+X    case BARAMP:
+X    case INOUTPAR:
+X    case DO:
+X    case THEN:
+X    case ELIF:
+X    case ELSE:
+X	incmdpos = 1;
+X	break;
+X    case STRING:		/* case ENVSTRING: */
+X    case ENVARRAY:
+X    case OUTPAR:
+X    case CASE:
+X	incmdpos = 0;
+X	break;
+X    }
+X    if (IS_REDIROP(tok) || tok == FOR || tok == FOREACH || tok == SELECT) {
+X	inredir = 1;
+X	oldpos = incmdpos;
+X	incmdpos = 0;
+X    } else if (inredir) {
+X	incmdpos = oldpos;
+X	inredir = 0;
+X    }
+X}
+X
+X#define LX1_BKSLASH 0
+X#define LX1_COMMENT 1
+X#define LX1_NEWLIN 2
+X#define LX1_SEMI 3
+X#define LX1_BANG 4
+X#define LX1_AMPER 5
+X#define LX1_BAR 6
+X#define LX1_INPAR 7
+X#define LX1_OUTPAR 8
+X#define LX1_INBRACE 9
+X#define LX1_OUTBRACE 10
+X#define LX1_INBRACK 11
+X#define LX1_OUTBRACK 12
+X#define LX1_INANG 13
+X#define LX1_OUTANG 14
+X#define LX1_OTHER 15
+X
+X#define LX2_BREAK 0
+X#define LX2_OUTPAR 1
+X#define LX2_BAR 2
+X#define LX2_STRING 3
+X#define LX2_INBRACK 4
+X#define LX2_OUTBRACK 5
+X#define LX2_TILDE 6
+X#define LX2_INPAR 7
+X#define LX2_INBRACE 8
+X#define LX2_OUTBRACE 9
+X#define LX2_OUTANG 10
+X#define LX2_INANG 11
+X#define LX2_EQUALS 12
+X#define LX2_BKSLASH 13
+X#define LX2_QUOTE 14
+X#define LX2_DQUOTE 15
+X#define LX2_BQUOTE 16
+X#define LX2_OTHER 17
+X
+Xunsigned char lexact1[256], lexact2[256], lextok2[256];
+X
+Xvoid initlextabs()
+X{				/**/
+X    int t0;
+X    static char *lx1 = "\\q\n;!&|(){}[]<>xx";
+X    static char *lx2 = "x)|$[]~({}><=\\\'\"`x";
+X
+X    for (t0 = 0; t0 != 256; t0++) {
+X	lexact1[t0] = LX1_OTHER;
+X	lexact2[t0] = LX2_OTHER;
+X	lextok2[t0] = t0;
+X    }
+X    for (t0 = 0; lx1[t0]; t0++)
+X	if (lx1[t0] != 'x')
+X	    lexact1[(int)lx1[t0]] = t0;
+X    for (t0 = 0; lx2[t0]; t0++)
+X	if (lx2[t0] != 'x')
+X	    lexact2[(int)lx2[t0]] = t0;
+X    lexact2[';'] = LX2_BREAK;
+X    lexact2['&'] = LX2_BREAK;
+X    lextok2[','] = Comma;
+X    lextok2['*'] = Star;
+X    lextok2['?'] = Quest;
+X    lextok2['{'] = Inbrace;
+X    lextok2['['] = Inbrack;
+X    lextok2['$'] = String;
+X}
+X
+X/* initialize lexical state */
+X
+Xvoid lexinit()
+X{				/**/
+X    incond = incasepat = nocorrect =
+X    dbparens = alstat = lexstop = in_brace_param = 0;
+X    incmdpos = 1;
+X    tok = ENDINPUT;
+X    if (isset(EXTENDEDGLOB)) {
+X	lextok2['#'] = Pound;
+X	lextok2['^'] = Hat;
+X    } else {
+X	lextok2['#'] = '#';
+X	lextok2['^'] = '^';
+X    }
+X}
+X
+X/* add a char to the string buffer */
+X
+Xvoid add(c)			/**/
+Xint c;
+X{
+X    *bptr++ = c;
+X    if (bsiz == ++len) {
+X	int newbsiz;
+X
+X	newbsiz = bsiz * 8;
+X	while (newbsiz < inbufct)
+X	    newbsiz *= 2;
+X	bptr = len + (tokstr = (char *)hrealloc(tokstr, bsiz, newbsiz));
+X	bsiz = newbsiz;
+X    }
+X}
+X
+XSPROTO(void unadd, (void));
+X
+Xstatic void unadd()
+X{
+X    bptr--;
+X    len--;
+X}
+X
+Xint gettok()
+X{				/**/
+X    int bct = 0, pct = 0, brct = 0;
+X    int c, d, intpos = 1;
+X    int peekfd = -1, peek, ninbracks, intick;
+X
+X  beginning:
+X    hlastw = NULL;
+X    tokstr = NULL;
+X    parbegin = -1;
+X    while (iblank(c = hgetc()) && !lexstop);
+X    isfirstln = 0;
+X    wordbeg = inbufct;
+X    hwbegin();
+X    hwaddc(c);
+X    if (dbparens) {
+X	hungetc(c);
+X	c = '\"';
+X    } else if (idigit(c)) {	/* handle 1< foo */
+X	d = hgetc();
+X	hungetc(d);
+X	lexstop = 0;
+X	if (d == '>' || d == '<') {
+X	    peekfd = c - '0';
+X	    c = hgetc();
+X	}
+X    }
+X/* chars in initial position in word */
+X
+X    if (c == hashchar &&
+X	(isset(INTERACTIVECOMMENTS) ||
+X	 (!zleparse && (!interact || unset(SHINSTDIN) || strin)))) {
+X    /* History is handled here to prevent extra newlines
+X		 * being inserted into the history.
+X		 *
+X		 * Also ignore trailing spaces to prevent history from
+X		 * changing. If trailing spaces are not ignored then
+X		 * each time a comment inside a command (a 'for' loop
+X		 * is a good example) is seen an extra space is appended
+X		 * to the end of the comment causing a new history entry
+X		 * even if HISTIGNOREDUPS is set.
+X		 */
+X	int nsp = 0;		/* number of contiguos spaces */
+X
+X	while ((c = hgetch()) != '\n' && !lexstop) {
+X	    if (c == ' ')
+X		++nsp;
+X	    else {
+X		while (nsp) {
+X		    hwaddc(' ');
+X		    --nsp;
+X		}
+X		hwaddc(c);
+X	    }
+X	}
+X	if (errflag)
+X	    peek = LEXERR;
+X	else {
+X	    hwadd();
+X	    hwbegin();
+X	    hwaddc('\n');
+X	    peek = NEWLIN;
+X	}
+X	return peek;
+X    }
+X    if (lexstop)
+X	return (errflag) ? LEXERR : ENDINPUT;
+X    switch (lexact1[(unsigned char)c]) {
+X    case LX1_BKSLASH:
+X	d = hgetc();
+X	if (d == '\n')
+X	    goto beginning;
+X	hungetc(d);
+X	break;
+X    case LX1_NEWLIN:
+X	return NEWLIN;
+X    case LX1_SEMI:
+X	d = hgetc();
+X	if (d != ';') {
+X	    hungetc(d);
+X	    return SEMI;
+X	}
+X	return DSEMI;
+X    case LX1_BANG:
+X	d = hgetc();
+X	hungetc(d);
+X	if (!inblank(d))
+X	    break;
+X	if (incmdpos || incond)
+X	    return BANG;
+X	break;
+X    case LX1_AMPER:
+X	d = hgetc();
+X	if (d != '&') {
+X	    hungetc(d);
+X	    return AMPER;
+X	}
+X	return DAMPER;
+X    case LX1_BAR:
+X	d = hgetc();
+X	if (d == '|')
+X	    return DBAR;
+X	else if (d == '&')
+X	    return BARAMP;
+X	hungetc(d);
+X	return BAR;
+X    case LX1_INPAR:
+X	d = hgetc();
+X	if (d == '(' && incmdpos) {
+X	    dbparens = 1;
+X	    return DINPAR;
+X	} else if (d == ')')
+X	    return INOUTPAR;
+X	hungetc(d);
+X	if (!(incond == 1 || incmdpos))
+X	    break;
+X	return INPAR;
+X    case LX1_OUTPAR:
+X	return OUTPAR;
+X    case LX1_INBRACE:
+X	if (!incmdpos)
+X	    break;
+X	return INBRACE;
+X    case LX1_OUTBRACE:
+X	return OUTBRACE;
+X    case LX1_INBRACK:
+X	if (!incmdpos)
+X	    break;
+X	d = hgetc();
+X	if (d == '[')
+X	    return DINBRACK;
+X	hungetc(d);
+X	break;
+X    case LX1_OUTBRACK:
+X	if (!incond)
+X	    break;
+X	d = hgetc();
+X	if (d == ']')
+X	    return DOUTBRACK;
+X	hungetc(d);
+X	break;
+X    case LX1_INANG:
+X	d = hgetc();
+X	if ((!incmdpos && d == '(') || incasepat) {
+X	    hungetc(d);
+X	    break;
+X	} else if (idigit(d) || d == '-' || d == '>') {
+X	    int tbs = 256, n = 0, nc;
+X	    char *tbuf, *tbp, *ntb;
+X
+X	    tbuf = tbp = (char *)zalloc(tbs);
+X	    hungetc(d);
+X
+X	    while ((nc = hgetc()) && !lexstop) {
+X		if (!idigit(nc) && nc != '-')
+X		    break;
+X		*tbp++ = (char)nc;
+X		if (++n == tbs) {
+X		    ntb = (char *)realloc(tbuf, tbs *= 2);
+X		    tbp += ntb - tbuf;
+X		    tbuf = ntb;
+X		}
+X	    }
+X	    if (nc == '>' && !lexstop) {
+X		lexstop = 0;
+X		hungetc(nc);
+X		while (n--)
+X		    hungetc(*--tbp);
+X		zfree(tbuf, tbs);
+X		break;
+X	    }
+X	    lexstop = 0;
+X	    if (nc)
+X		hungetc(nc);
+X	    while (n--)
+X		hungetc(*--tbp);
+X	    zfree(tbuf, tbs);
+X	    peek = INANG;
+X	} else if (d == '<') {
+X	    int e = hgetc();
+X
+X	    if (e == '(') {
+X		hungetc(e);
+X		hungetc(d);
+X		peek = INANG;
+X	    } else if (e == '<')
+X		peek = TRINANG;
+X	    else if (e == '-')
+X		peek = DINANGDASH;
+X	    else {
+X		hungetc(e);
+X		peek = DINANG;
+X	    }
+X	} else if (d == '&')
+X	    peek = INANGAMP;
+X	else {
+X	    peek = INANG;
+X	    hungetc(d);
+X	}
+X	tokfd = peekfd;
+X	return peek;
+X    case LX1_OUTANG:
+X	d = hgetc();
+X	if (d == '(') {
+X	    hungetc(d);
+X	    break;
+X	} else if (d == '&') {
+X	    d = hgetc();
+X	    if (d == '!')
+X		peek = OUTANGAMPBANG;
+X	    else {
+X		hungetc(d);
+X		peek = OUTANGAMP;
+X	    }
+X	} else if (d == '!')
+X	    peek = OUTANGBANG;
+X	else if (d == '>') {
+X	    d = hgetc();
+X	    if (d == '&') {
+X		d = hgetc();
+X		if (d == '!')
+X		    peek = DOUTANGAMPBANG;
+X		else {
+X		    hungetc(d);
+X		    peek = DOUTANGAMP;
+X		}
+X	    } else if (d == '!')
+X		peek = DOUTANGBANG;
+X	    else if (d == '(') {
+X		hungetc(d);
+X		hungetc('>');
+X		peek = OUTANG;
+X	    } else {
+X		hungetc(d);
+X		peek = DOUTANG;
+X		if (isset(NOCLOBBER))
+X		    hwaddc('!');
+X	    }
+X	} else {
+X	    hungetc(d);
+X	    peek = OUTANG;
+X	    if (!incond && isset(NOCLOBBER))
+X		hwaddc('!');
+X	}
+X	tokfd = peekfd;
+X	return peek;
+X    }
+X
+X/* we've started a string, now get the rest of it, performing
+X		tokenization */
+X
+X    peek = STRING;
+X    len = 0;
+X    bptr = tokstr = (char *)ncalloc(bsiz = 256);
+X    for (;;) {
+X	int act;
+X	int e;
+X	int endchar;
+X
+X	if (inblank(c) && !bct && !pct)
+X	    act = LX2_BREAK;
+X	else {
+X	    act = lexact2[(unsigned char)c];
+X	    c = lextok2[(unsigned char)c];
+X	}
+X	switch (act) {
+X	case LX2_BREAK:
+X	    if (!in_brace_param)
+X		goto brk;
+X	    break;
+X	case LX2_OUTPAR:
+X	    if (!pct)
+X		goto brk;
+X	    c = Outpar;
+X	    pct--;
+X	    break;
+X	case LX2_BAR:
+X	    if (!pct && !incasepat)
+X		goto brk;
+X	    c = Bar;
+X	    break;
+X	case LX2_STRING:
+X	    e = hgetc();
+X	    if (e == '[') {
+X		cmdpush(CS_MATHSUBST);
+X		add(String);
+X		add(Inbrack);
+X		ninbracks = 1;
+X		while (ninbracks && (c = hgetc()) && !lexstop) {
+X		    if (c == '[')
+X			ninbracks++;
+X		    else if (c == ']')
+X			ninbracks--;
+X		    if (ninbracks)
+X			add(c);
+X		}
+X		c = Outbrack;
+X		cmdpop();
+X	    } else if (e == '(') {
+X		add(String);
+X		if (skipcomm()) {
+X		    peek = LEXERR;
+X		    goto brk;
+X		}
+X		c = Outpar;
+X	    } else {
+X		if (e == '{')
+X		    in_brace_param = 1;
+X		hungetc(e);
+X	    }
+X	    break;
+X	case LX2_INBRACK:
+X	    brct++;
+X	    break;
+X	case LX2_OUTBRACK:
+X	    if (incond && !brct)
+X		goto brk;
+X	    brct--;
+X	    c = Outbrack;
+X	    break;
+X	case LX2_TILDE:	/* if (intpos) */
+X	    c = Tilde;
+X	    break;
+X	case LX2_INPAR:
+X	    e = hgetc();
+X	    hungetc(e);
+X	    if (e == ')' ||
+X		(incmdpos && !brct && peek != ENVSTRING))
+X		goto brk;
+X	    pct++;
+X	    c = Inpar;
+X	    break;
+X	case LX2_INBRACE:
+X	    bct++;
+X	    break;
+X	case LX2_OUTBRACE:
+X	    if (!bct)
+X		goto brk;
+X	    if (!--bct && in_brace_param)
+X		in_brace_param = 0;
+X	    c = Outbrace;
+X	    break;
+X	case LX2_OUTANG:
+X	    e = hgetc();
+X	    if (e != '(') {
+X		hungetc(e);
+X		goto brk;
+X	    }
+X	    add(Outang);
+X	    if (skipcomm()) {
+X		peek = LEXERR;
+X		goto brk;
+X	    }
+X	    c = Outpar;
+X	    break;
+X	case LX2_INANG:
+X	    e = hgetc();
+X	    if (!(idigit(e) || e == '-' || e == '>' || e == '(' || e == ')')) {
+X		hungetc(e);
+X		goto brk;
+X	    }
+X	    c = Inang;
+X	    if (e == '(') {
+X		add(c);
+X		if (skipcomm()) {
+X		    peek = LEXERR;
+X		    goto brk;
+X		}
+X		c = Outpar;
+X	    } else if (e == ')')
+X		hungetc(e);
+X	    else {
+X		add(c);
+X		c = e;
+X		while (c != '>' && !lexstop)
+X		    add(c), c = hgetc();
+X		c = Outang;
+X	    }
+X	    break;
+X	case LX2_EQUALS:
+X	    if (intpos) {
+X		e = hgetc();
+X		if (e != '(') {
+X		    hungetc(e);
+X		    c = Equals;
+X		} else {
+X		    add(Equals);
+X		    if (skipcomm()) {
+X			peek = LEXERR;
+X			goto brk;
+X		    }
+X		    c = Outpar;
+X		}
+X	    } else if (peek != ENVSTRING && incmdpos && !bct) {
+X		e = hgetc();
+X		if (e == '(' && incmdpos) {
+X		    *bptr = '\0';
+X		    return ENVARRAY;
+X		}
+X		hungetc(e);
+X		peek = ENVSTRING;
+X		intpos = 2;
+X	    } else
+X		c = Equals;
+X	    break;
+X	case LX2_BKSLASH:
+X	    c = hgetc();
+X	    if (c == '\n') {
+X		c = hgetc();
+X		continue;
+X	    }
+X	    add(Bnull);
+X	    add(c);
+X	    c = hgetc();
+X	    continue;
+X	case LX2_QUOTE:
+X	    add(Snull);
+X
+X	/* we add the Nularg to prevent this:
+X
+X				echo $PA'TH'
+X
+X				from printing the path. */
+X
+X	    cmdpush(CS_QUOTE);
+X	    for (;;) {
+X		while ((c = hgetc()) != '\'' && !lexstop) {
+X		    if (isset(CSHJUNKIEQUOTES) && c == '\n') {
+X			if (bptr[-1] == '\\')
+X			    unadd();
+X			else
+X			    break;
+X		    }
+X		    add(c);
+X		}
+X		if (c != '\'') {
+X		    zerr("unmatched \'", NULL, 0);
+X		    peek = LEXERR;
+X		    cmdpop();
+X		    goto brk;
+X		}
+X		e = hgetc();
+X		if (e != '\'' || unset(RCQUOTES))
+X		    break;
+X		add(c);
+X	    }
+X	    cmdpop();
+X	    hungetc(e);
+X	    c = Snull;
+X	    break;
+X	case LX2_DQUOTE:
+X	    add(Dnull);
+X	    cmdpush(dbparens ? CS_MATH : CS_DQUOTE);	/* math or dquote */
+X	    endchar = dbparens ? ')' : '"';
+X	    intick = 0;
+X	    while (((c = hgetc()) != endchar || (dbparens && pct > 0))
+X		   && !lexstop)
+X		if (c == '\\') {
+X		    c = hgetc();
+X		    if (c != '\n') {
+X			add(c == '$' || c == '\\' ||
+X			    c == '\"' || c == '`' ? Bnull : '\\');
+X			add(c);
+X		    }
+X		} else {
+X		    if (isset(CSHJUNKIEQUOTES) && c == '\n') {
+X			if (bptr[-1] == '\\')
+X			    unadd();
+X			else
+X			    break;
+X		    }
+X		    if (c == '$' && !intick) {
+X			e = hgetc();
+X			if (e == '(') {
+X			    add(Qstring);
+X			    if (skipcomm()) {
+X				peek = LEXERR;
+X				cmdpop();
+X				goto brk;
+X			    }
+X			    c = Outpar;
+X			} else if (e == '[') {
+X			    add(String);
+X			    add(Inbrack);
+X			    while ((c = hgetc()) != ']' && !lexstop)
+X				add(c);
+X			    c = Outbrack;
+X			} else {
+X			    c = Qstring;
+X			    hungetc(e);
+X			}
+X		    } else if (c == '`') {
+X			c = Qtick;
+X			intick = !intick;
+X		    } else if (dbparens) {
+X			if (c == '(')
+X			    pct++;
+X			else if (c == ')')
+X			    pct--;
+X		    }
+X		    add(c);
+X		}
+X	    cmdpop();
+X	    if (c != endchar || (dbparens && (pct || (c = hgetc()) != ')'))) {
+X		if (!dbparens)
+X		    zerr("unmatched \"", NULL, 0);
+X		peek = LEXERR;
+X		goto brk;
+X	    }
+X	    if (dbparens) {
+X		dbparens = 0;
+X		add(Dnull);
+X		*bptr = '\0';
+X		return DOUTPAR;
+X	    }
+X	    c = Dnull;
+X	    break;
+X	case LX2_BQUOTE:
+X	    add(Tick);
+X	    cmdpush(CS_BQUOTE);
+X	    parbegin = inbufct;
+X	    while ((c = hgetc()) != '`' && !lexstop)
+X		if (c == '\\') {
+X		    c = hgetc();
+X		    if (c != '\n') {
+X			add(c == '`' || c == '\\' || c == '$' ? Bnull : '\\');
+X			add(c);
+X		    }
+X		} else {
+X		    if (isset(CSHJUNKIEQUOTES) && c == '\n') {
+X			if (bptr[-1] == '\\')
+X			    unadd();
+X			else
+X			    break;
+X		    }
+X		    add(c);
+X		}
+X	    cmdpop();
+X	    if (c != '`') {
+X		if (!zleparse)
+X		    zerr("unmatched `", NULL, 0);
+X		peek = LEXERR;
+X		goto brk;
+X	    }
+X	    c = Tick;
+X	    parbegin = -1;
+X	    break;
+X	}
+X	add(c);
+X	c = hgetc();
+X	if (intpos)
+X	    intpos--;
+X	if (lexstop)
+X	    break;
+X    }
+X  brk:
+X    hungetc(c);
+X    *bptr = '\0';
+X    return peek;
+X}
+X
+X/* expand aliases, perhaps */
+X
+Xint exalias()
+X{				/**/
+X    struct alias *an;
+X    char *s, *t;
+X
+X    s = yytext = hwadd();
+X    for (t = s; *t && *t != HISTSPACE; t++);
+X    if (!*t)
+X	t = NULL;
+X    else
+X	*t = '\0';
+X    if (interact && isset(SHINSTDIN) && !strin && !incasepat && tok == STRING &&
+X	(isset(CORRECTALL) || (isset(CORRECT) && incmdpos)) && !nocorrect)
+X	spckword(&tokstr, &s, &t, !incmdpos, 1);
+X    if (zleparse && !alstackind) {
+X	int zp = zleparse;
+X
+X	gotword(s);
+X	if (zp && !zleparse) {
+X	    if (t)
+X		*t = HISTSPACE;
+X	    return 0;
+X	}
+X    }
+X    an = noaliases ? NULL : (struct alias *)gethnode(s, aliastab);
+X    if (t)
+X	*t = HISTSPACE;
+X    if (alstackind != MAXAL && an && !an->inuse)
+X	if (!(an->cmd && !incmdpos && alstat != ALSTAT_MORE)) {
+X	    if (an->cmd < 0) {
+X		tok = DO - an->cmd - 1;
+X		return 0;
+X	    } else {
+X		an->inuse = 1;
+X		hungets(ALPOPS);
+X		hungets((alstack[alstackind++] = an)->text);
+X		alstat = 0;
+X	    /* remove from history if it begins with space */
+X		if (isset(HISTIGNORESPACE) && an->text[0] == ' ')
+X		    remhist();
+X		lexstop = 0;
+X		return 1;
+X	    }
+X	}
+X    return 0;
+X}
+X
+X/* skip (...) */
+X
+Xint skipcomm()
+X{				/**/
+X    int pct = 1, c;
+X
+X    cmdpush(CS_CMDSUBST);
+X    parbegin = inbufct;
+X    c = Inpar;
+X    do {
+X	add(c);
+X	c = hgetc();
+X	if (itok(c) || lexstop)
+X	    break;
+X	else if (c == '(')
+X	    pct++;
+X	else if (c == ')')
+X	    pct--;
+X	else if (c == '\\') {
+X	    add(c);
+X	    c = hgetc();
+X	} else if (c == '\'') {
+X	    add(c);
+X	    while ((c = hgetc()) != '\'' && !lexstop)
+X		add(c);
+X	} else if (c == '\"') {
+X	    add(c);
+X	    while ((c = hgetc()) != '\"' && !lexstop)
+X		if (c == '\\') {
+X		    add(c);
+X		    add(hgetc());
+X		} else
+X		    add(c);
+X	} else if (c == '`') {
+X	    add(c);
+X	    while ((c = hgetc()) != '`' && !lexstop)
+X		if (c == '\\')
+X		    add(c), add(hgetc());
+X		else
+X		    add(c);
+X	}
+X    }
+X    while (pct);
+X    if (!lexstop)
+X	parbegin = -1;
+X    cmdpop();
+X    return lexstop;
+X}
+END_OF_FILE
+  if test 18606 -ne `wc -c <'zsh-2.5.0/src/lex.c'`; then
+    echo shar: \"'zsh-2.5.0/src/lex.c'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/lex.c'
+fi
+if test -f 'zsh-2.5.0/src/zle_tricky.c' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/zle_tricky.c'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/zle_tricky.c'\" \(62106 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/zle_tricky.c' <<'END_OF_FILE'
+X/*
+X *
+X * zle_tricky.c - expansion and completion
+X *
+X * This file is part of zsh, the Z shell.
+X *
+X * This software is Copyright 1992 by Paul Falstad
+X *
+X * Permission is hereby granted to copy, reproduce, redistribute or otherwise
+X * use this software as long as: there is no monetary profit gained
+X * specifically from the use or reproduction of this software, it is not
+X * sold, rented, traded or otherwise marketed, and this copyright notice is
+X * included prominently in any copy made.
+X *
+X * The author make no claims as to the fitness or correctness of this software
+X * for any use whatsoever, and it is provided as is. Any use of this software
+X * is at the user's own risk.
+X *
+X */
+X
+X#define ZLE
+X#include "zsh.h"
+X#include	<pwd.h>
+X
+X#ifdef HAS_NIS
+X#include	<rpc/types.h>
+X#include	<rpc/rpc.h>
+X#include	<rpcsvc/ypclnt.h>
+X#include	<rpcsvc/yp_prot.h>
+X
+X#define PASSWD_FILE	"/etc/passwd"
+X#define PASSWD_MAP	"passwd.byname"
+X
+Xtypedef struct {
+X    int len;
+X    char *s;
+X}
+Xdopestring;
+X
+X#endif
+X
+X#define inststr(X) inststrlen((X),1,-1)
+X
+Xextern char *glob_pre, *glob_suf;
+X
+X/*
+X * We store the following prefizes/suffizes:
+X * lpre/lsuf -- what's on the line
+X * rpre/rsuf -- same as lpre/lsuf, but expanded
+X *   ... and if we are completing files, too:
+X * ppre/psuf -- the path prefix/suffix
+X * fpre/fsuf -- prefix/suffix of the pathname component the cursor is in
+X * prpre     -- ppre in expanded form usable for opendir
+X */
+X
+Xstatic int we, wb, usemenu, useglob;
+X
+Xstatic char **menuarr, **menucur;
+Xstatic int menupos, menulen, menuend, menuwe;
+Xstatic Lklist matches;
+Xstatic char **amatches;
+Xstatic int nmatches;
+Xstatic int ispattern;
+Xstatic Comp patcomp, filecomp;
+Xstatic char *lpre, *lsuf;
+Xstatic char *rpre, *rsuf;
+Xstatic char *ppre, *psuf, *prpre;
+Xstatic char *fpre, *fsuf;
+Xstatic char *mpre, *msuf;
+Xstatic char ic;
+Xstatic int lpl, lsl, rpl, rsl, fpl, fsl, noreal;
+Xstatic int ab, ae;
+Xstatic int addwhat;
+Xstatic char *firstm, *shortest, *qword;
+Xstatic int shortl, amenu;
+X
+Xint usetab()
+X{				/**/
+X    unsigned char *s = line + cs - 1;
+X
+X    for (; s >= line && *s != '\n'; s--)
+X	if (*s != '\t' && *s != ' ')
+X	    return 0;
+X    return 1;
+X}
+X
+X#define COMP_COMPLETE 0
+X#define COMP_LIST_COMPLETE 1
+X#define COMP_SPELL 2
+X#define COMP_EXPAND 3
+X#define COMP_EXPAND_COMPLETE 4
+X#define COMP_LIST_EXPAND 5
+X#define COMP_ISEXPAND(X) ((X) >= COMP_EXPAND)
+X
+Xvoid completeword()
+X{				/**/
+X    usemenu = isset(MENUCOMPLETE);
+X    useglob = isset(GLOBCOMPLETE);
+X    if (c == '\t' && usetab())
+X	selfinsert();
+X    else
+X	docomplete(COMP_COMPLETE);
+X}
+X
+Xvoid menucompleteword()
+X{				/**/
+X    usemenu = 1;
+X    useglob = isset(GLOBCOMPLETE);
+X    if (c == '\t' && usetab())
+X	selfinsert();
+X    else
+X	docomplete(COMP_COMPLETE);
+X}
+X
+Xvoid listchoices()
+X{				/**/
+X    usemenu = isset(MENUCOMPLETE);
+X    useglob = isset(GLOBCOMPLETE);
+X    docomplete(COMP_LIST_COMPLETE);
+X}
+X
+Xvoid spellword()
+X{				/**/
+X    usemenu = useglob = 0;
+X    docomplete(COMP_SPELL);
+X}
+X
+Xvoid deletecharorlist()
+X{				/**/
+X    char **mc = menucur;
+X
+X    usemenu = isset(MENUCOMPLETE);
+X    useglob = isset(GLOBCOMPLETE);
+X    if (cs != ll)
+X	deletechar();
+X    else
+X	docomplete(COMP_LIST_COMPLETE);
+X
+X    menucur = mc;
+X}
+X
+Xvoid expandword()
+X{				/**/
+X    usemenu = useglob = 0;
+X    if (c == '\t' && usetab())
+X	selfinsert();
+X    else
+X	docomplete(COMP_EXPAND);
+X}
+X
+Xvoid expandorcomplete()
+X{				/**/
+X    usemenu = isset(MENUCOMPLETE);
+X    useglob = isset(GLOBCOMPLETE);
+X    if (c == '\t' && usetab())
+X	selfinsert();
+X    else
+X	docomplete(COMP_EXPAND_COMPLETE);
+X}
+X
+Xvoid menuexpandorcomplete()
+X{				/**/
+X    usemenu = 1;
+X    useglob = isset(GLOBCOMPLETE);
+X    if (c == '\t' && usetab())
+X	selfinsert();
+X    else
+X	docomplete(COMP_EXPAND_COMPLETE);
+X}
+X
+Xvoid listexpand()
+X{				/**/
+X    usemenu = isset(MENUCOMPLETE);
+X    useglob = isset(GLOBCOMPLETE);
+X    docomplete(COMP_LIST_EXPAND);
+X}
+X
+Xvoid reversemenucomplete()
+X{				/**/
+X    if (!menucmp) {
+X	menucompleteword();	/* better than just feep'ing, pem */
+X	return;
+X    }
+X    if (menucur == menuarr)
+X	menucur = menuarr + arrlen(menuarr) - 1;
+X    else
+X	menucur--;
+X    do_single(*menucur);
+X}
+X
+X/*
+X * Accepts the current completion and starts a new arg,
+X * with the next completions. This gives you a way to accept
+X * several selections from the list of matches.
+X */
+Xvoid acceptandmenucomplete()
+X{				/**/
+X    if (!menucmp) {
+X	feep();
+X	return;
+X    }
+X    cs = menuend;
+X    inststrlen(" ", 1, 1);
+X    if (mpre)
+X	inststrlen(mpre, 1, -1);
+X    if (msuf)
+X	inststrlen(msuf, 0, -1);
+X    menupos = cs;
+X    menuend = cs + (msuf ? strlen(msuf) : 0);
+X    menulen = 0;
+X    menuwe = 1;
+X    menucompleteword();
+X}
+X
+Xstatic int lincmd, linredir, lastambig, inwhat, haswhat;
+Xstatic char *cmdstr;
+X
+X#define IN_NOTHING 0
+X#define IN_CMD     1
+X#define IN_MATH    2
+X#define IN_COND    3
+X#define IN_ENV     4
+X
+X#define HAS_SUFFIX  1
+X#define HAS_FILES   2
+X#define HAS_MISC    4
+X#define HAS_PATHPAT 8
+X
+Xint checkparams(p)		/**/
+Xchar *p;
+X{
+X    int t0, n, l = strlen(p), e = 0;
+X    struct hashnode *hn;
+X
+X    for (t0 = paramtab->hsize - 1, n = 0; n < 2 && t0 >= 0; t0--)
+X	for (hn = paramtab->nodes[t0]; n < 2 && hn; hn = hn->next)
+X	    if (pfxlen(p, hn->nam) == l) {
+X		n++;
+X		if (strlen(hn->nam) == l)
+X		    e = 1;
+X	    }
+X    return (n == 1) ? (getsparam(p) != NULL) :
+X	(!menucmp && e && isset(RECEXACT));
+X}
+X
+Xint cmphaswilds(str)		/**/
+Xchar *str;
+X{
+X    if ((*str == Inbrack || *str == Outbrack) && !str[1])
+X	return 0;
+X    if (str[0] == '%')
+X	return 0;
+X    for (; *str;) {
+X	if (*str == String || *str == Qstring) {
+X	    if (*++str == Inbrace) {
+X		for (str++; *str; str++)
+X		    if (*str == Outbrace)
+X			break;
+X	    } else
+X		for (; *str; str++)
+X		    if (*str != '^' && *str != Hat &&
+X			*str != '=' && *str != Equals &&
+X			*str != '#' && *str != Pound &&
+X			*str != '~' && *str != Tilde &&
+X			*str != '+')
+X			break;
+X	}
+X	if (*str == Pound || *str == Hat || *str == Star ||
+X	    *str == Bar || *str == Inbrack || *str == Inang ||
+X	    *str == Quest || (*str == Inpar && str[1] == ':'))
+X	    return 1;
+X	if (*str)
+X	    str++;
+X    }
+X    return 0;
+X}
+X
+Xvoid docomplete(lst)		/**/
+Xint lst;
+X{
+X    char *s, *ol;
+X    int olst = lst, dh, chl = 0;
+X
+X    if (menucmp) {
+X	do_menucmp(lst);
+X	return;
+X    } else if ((amenu = (isset(AUTOMENU) &&
+X			 (lastcmd & ZLE_MENUCMP) &&
+X			 lastambig)))
+X	usemenu = 1;
+X
+X    dh = doexpandhist();
+X    if (dh == 0 || dh == 1)
+X	return;
+X
+X    if (!isfirstln && chline != NULL) {
+X	char *p;
+X
+X	ol = dupstring((char *) line);
+X	*hptr = '\0';
+X	chl = strlen(chline);
+X	sizeline(ll + chl + 1);
+X	strcpy((char *) line, chline);
+X	strcat((char *) line, ol);
+X	for (p = (char *) line; *p; p++)
+X	    if (*p == '\n')
+X		*p = ' ';
+X	cs += chl;
+X	ll = strlen((char *) line);
+X    }
+X    else
+X	ol = NULL;
+X    inwhat = IN_NOTHING;
+X    qword = NULL;
+X    s = get_comp_string();
+X    lexrestore();
+X    if (ol) {
+X	strcpy((char *) line, ol);
+X	ll = strlen((char *) line);
+X	cs -= chl;
+X	wb -= chl;
+X	we -= chl;
+X	if (wb < 0 || we < 0)
+X	    return;
+X    }
+X    freeheap();
+X    lexsave();
+X    if (inwhat == IN_ENV)
+X	lincmd = 0;
+X    if (s) {
+X	if (lst == COMP_EXPAND_COMPLETE) {
+X	    char *q = s;
+X
+X	    if (*q == Equals) {
+X		q = s + 1;
+X		if (gethnode(q, cmdnamtab) || hashcmd(q, pathchecked))
+X		    if (isset(RECEXACT))
+X			lst = COMP_EXPAND;
+X		    else {
+X			int t0, n = 0;
+X			char *fc;
+X			struct hashnode *hn;
+X
+X			for (t0 = cmdnamtab->hsize - 1; t0 >= 0; t0--)
+X			    for (hn = cmdnamtab->nodes[t0]; hn; hn = hn->next) {
+X				if (strpfx(q, hn->nam) &&
+X				    ISEXCMD(((Cmdnam) hn)->flags) &&
+X				    (fc = findcmd(hn->nam))) {
+X				    zsfree(fc);
+X				    n++;
+X				}
+X				if (n == 2)
+X				    break;
+X			    }
+X
+X			if (n == 1)
+X			    lst = COMP_EXPAND;
+X		    }
+X	    } else if (*q != Tilde) {
+X		for (; *q && *q != String; q++);
+X		if (*q == String && q[1] != Inpar && q[1] != Inbrack) {
+X		    if (*++q == Inbrace) {
+X			for (++q; *q && *q != Outbrace; q++);
+X			if (*q && q - s + 1 == cs - wb)
+X			    lst = COMP_EXPAND;
+X		    } else {
+X			char *t, sav;
+X
+X			for (; *q; q++)
+X			    if (*q != '^' && *q != Hat &&
+X				*q != '=' && *q != Equals &&
+X				*q != '#' && *q != Pound &&
+X				*q != '~' && *q != Tilde &&
+X				*q != '+')
+X				break;
+X			for (t = q; *q && (ialnum(*q) || *q == '_'); q++);
+X			sav = *q;
+X			*q = '\0';
+X			if (cs - wb == q - s && checkparams(t))
+X			    lst = COMP_EXPAND;
+X			*q = sav;
+X		    }
+X		    if (lst != COMP_EXPAND)
+X			lst = COMP_COMPLETE;
+X		}
+X		q = s;
+X	    }
+X	    if (lst == COMP_EXPAND_COMPLETE) {
+X		for (q = s; *q; q++)
+X		    if (*q == Tick || *q == Qtick ||
+X			*q == String || *q == Qstring)
+X			break;
+X		lst = *q ? COMP_EXPAND : COMP_COMPLETE;
+X	    }
+X	    if (unset(GLOBCOMPLETE) && cmphaswilds(s))
+X		lst = COMP_EXPAND;
+X	}
+X	if (lincmd && (inwhat == IN_NOTHING))
+X	    inwhat = IN_CMD;
+X
+X	if (lst == COMP_SPELL) {
+X	    char **x = &s;
+X	    char *q = s;
+X
+X	    for (; *q; q++)
+X		if (INULL(*q))
+X		    *q = Nularg;
+X	    untokenize(s);
+X	    cs = wb;
+X	    foredel(we - wb);
+X	/* call the real spell checker, ash@aaii.oz.zu */
+X	    spckword(x, NULL, NULL, !lincmd, 0);
+X	    inststr(*x);
+X	} else if (COMP_ISEXPAND(lst)) {
+X	    char *ol = (olst == COMP_EXPAND_COMPLETE) ?
+X	    dupstring((char *)line) : (char *)line;
+X	    int ocs = cs, ne = noerrs;
+X
+X	    noerrs = 1;
+X
+X	    doexpansion(s, lst, lincmd);
+X	    lastambig = 0;
+X
+X	    noerrs = ne;
+X
+X	    if (olst == COMP_EXPAND_COMPLETE &&
+X		!strcmp(ol, (char *)line)) {
+X
+X		cs = ocs;
+X		errflag = 0;
+X
+X		untokenize(s);
+X		docompletion(s, lst, lincmd);
+X	    }
+X	} else
+X	    docompletion(s, lst, lincmd);
+X	zsfree(s);
+X    }
+X    lexrestore();
+X    popheap();
+X    zsfree(qword);
+X}
+X
+Xvoid do_menucmp(lst)		/**/
+Xint lst;
+X{
+X    if (lst == COMP_LIST_COMPLETE) {
+X	amatches = menuarr;
+X	listmatches();
+X	return;
+X    }
+X    if (!*++menucur)
+X	menucur = menuarr;
+X    do_single(*menucur);
+X}
+X
+Xint addedx;			/* 1 if x added to complete in a blank between words */
+Xint instring;			/* 1 if we are completing in a string */
+X
+Xvoid addx(ptmp)			/**/
+Xchar **ptmp;
+X{
+X    if (!line[cs] || inblank(line[cs]) || line[cs] == ')') {
+X	*ptmp = (char *)line;
+X	line = (unsigned char *)ncalloc(strlen((char *)line) + 3);
+X	memcpy(line, *ptmp, cs);
+X	line[cs] = 'x';
+X	strcpy((char *)line + cs + 1, (*ptmp) + cs);
+X	addedx = 1;
+X    } else {
+X	addedx = 0;
+X	*ptmp = NULL;
+X    }
+X}
+X
+Xchar *get_comp_string()
+X{				/**/
+X    int t0, tt0, i, j, k, l, cp, rd, inc = 0, opb = -1, sl, im = 0, ocs;
+X    char *s = NULL, *linptr, *tmp, *p, *tt = NULL, *q = NULL;
+X
+X    noaliases = isset(COMPLETEALIASES);
+X
+X    instring = 0;
+X    for (i = j = k = l = 0, q = p = (char *)line; p < (char *)line + cs; p++)
+X	if (*p == '`' && !(k & 1))
+X	    i++, q = p;
+X	else if (*p == '\"' && !(k & 1))
+X	    j++;
+X	else if (*p == '\'' && !(j & 1))
+X	    k++;
+X	else if (*p == '(' && p[1] == '(')
+X	    l++, p++;
+X	else if (*p == ')' && p[1] == ')')
+X	    l--, p++;
+X	else if (*p == '\\' && p[1] && !((k & 1) && p[1] == '\''))
+X	    p++;
+X    if ((i & 1) || (j & 1) || (k & 1) || l) {
+X	instring = (j & 1) ? 2 : (k & 1);
+X	if (l)
+X	    im = 2;
+X	addx(&tmp);
+X	if (!addedx) {
+X	    tmp = (char *)line;
+X	    if (i & 1) {
+X		line = (unsigned char *)dupstring((char *)line);
+X		strcpy((char *)line, (char *)tmp);
+X	    } else
+X		line = (unsigned char *)dupstring((char *)line);
+X	}
+X	for (p = (char *)line; *p; p++)
+X	    if (*p == '"' || *p == '\'')
+X		*p = ' ';
+X	    else if ((*p == '(' && p[1] == '(') || (*p == ')' && p[1] == ')'))
+X		*p = p[1] = ' ', p++;
+X    } else
+X	addx(&tmp);
+X    if (i & 1) {
+X	sizeline(ll + 1);
+X	if (tmp)
+X	    q = (char *)line + (q - tmp);
+X	for (p = q + strlen(q); p > q; p--)
+X	    p[1] = *p;
+X	*q++ = '$';
+X	*q = '(';
+X	ll++;
+X	cs++;
+X	inc = 1;
+X    }
+X    linptr = (char *)line;
+X    q = NULL;
+X  start:
+X    lincmd = incmdpos;
+X    linredir = inredir;
+X    cmdstr = NULL;
+X    zleparse = 1;
+X    clwpos = -1;
+X    lexsave();
+X    hungets(" ");		/* KLUDGE! */
+X    hungets(UTOSCP(linptr));
+X    strinbeg();
+X    pushheap();
+X    heapalloc();
+X    i = tt0 = cp = rd = 0;
+X
+X    do {
+X	lincmd = incmdpos;
+X	linredir = inredir;
+X	ctxtlex();
+X	if (tok == DINBRACK)
+X	    im |= 1;
+X	else if (tok == DOUTBRACK)
+X	    im &= ~1;
+X	else if (tok == DINPAR)
+X	    im |= 2;
+X	else if (tok == DOUTPAR)
+X	    im &= ~2;
+X
+X	if (tok == ENDINPUT)
+X	    break;
+X	if (tok == BAR || tok == AMPER || tok == BARAMP ||
+X	    tok == DBAR || tok == DAMPER)
+X	    if (tt)
+X		break;
+X	    else
+X		i = tt0 = cp = rd = 0;
+X	if (lincmd && tok == STRING)
+X	    cmdstr = dupstring(tokstr), i = 0;
+X	if (!zleparse && !tt0) {
+X	    tt = tokstr ? dupstring(tokstr) : NULL;
+X	    if (addedx && tt)
+X		chuck(tt + cs - wb - 1);
+X	    tt0 = tok;
+X	    clwpos = i;
+X	    cp = lincmd;
+X	    rd = linredir;
+X	}
+X	if (!tokstr)
+X	    continue;
+X	if (i + 1 == clwsize) {
+X	    clwords = (char **)realloc(clwords, (clwsize *= 2) * sizeof(char *));
+X	    memset((vptr) (clwords + i), 0, (clwsize / 2) * sizeof(char *));
+X	}
+X	zsfree(clwords[i]);
+X	clwords[i] = ztrdup(tokstr);
+X	sl = strlen(tokstr);
+X	while (sl && clwords[i][sl - 1] == ' ')
+X	    clwords[i][--sl] = '\0';
+X	if (clwpos == i++ && addedx)
+X	    chuck(&clwords[i - 1][((cs - wb - 1) >= sl) ? (sl - 1) : (cs - wb - 1)]);
+X    }
+X    while (tok != LEXERR && tok != ENDINPUT &&
+X	   (tok != SEPER || (zleparse && !tt0)));
+X    clwnum = (tt || !i) ? i : i - 1;
+X    zsfree(clwords[clwnum]);
+X    clwords[clwnum] = NULL;
+X    t0 = tt0;
+X    lincmd = cp;
+X    linredir = rd;
+X
+X    if (!t0 || t0 == ENDINPUT) {
+X	s = ztrdup("");
+X	we = wb = cs;
+X	clwpos = clwnum;
+X	t0 = STRING;
+X    } else if (t0 == STRING) {
+X	s = ztrdup(clwords[clwpos]);
+X    } else if (t0 == ENVSTRING) {
+X	for (s = tt; *s && *s != '='; s++, wb++);
+X	if (*s) {
+X	    s++;
+X	    wb++;
+X	    t0 = STRING;
+X	    s = ztrdup(s);
+X	    inwhat = IN_ENV;
+X	}
+X	lincmd = 1;
+X    }
+X    hflush();
+X    strinend();
+X    errflag = zleparse = 0;
+X    if (addedx)
+X	wb++;
+X    if (we > ll)
+X	we = ll;
+X    if (im & 2) {
+X	if (tokstr) {
+X	    *tokstr = ' ';
+X	    if (addedx)
+X		tokstr[cs - wb + 1] = '\0';
+X	    s = ztrdup(tokstr);
+X	}
+X	if (tmp)
+X	    line = (unsigned char *)tmp;
+X	goto check;
+X    }
+X    if (t0 == LEXERR && parbegin != -1) {
+X	if (opb == parbegin) {
+X	    if (inc)
+X		cs--, ll--, inc = 0;
+X	    if (tmp)
+X		line = (unsigned char *)tmp;
+X	    feep();
+X	    noaliases = 0;
+X	    permalloc();
+X	    return NULL;
+X	}
+X	opb = parbegin;
+X	linptr += ll + 1 - parbegin;
+X	popheap();
+X	permalloc();
+X	lexrestore();
+X	if (inc)
+X	    cs--, ll--, inc = 0;
+X	goto start;
+X    }
+X    if (inc)
+X	cs--, ll--, inc = 0;
+X    tt = (char *)line;
+X    if (tmp)
+X	line = (unsigned char *)tmp;
+X    if (t0 != STRING) {
+X	if (tmp) {
+X	    tmp = NULL;
+X	    linptr = (char *)line;
+X	    popheap();
+X	    permalloc();
+X	    lexrestore();
+X	    goto start;
+X	}
+X	feep();
+X	noaliases = 0;
+X	permalloc();
+X	return NULL;
+X    } else if (clwords[clwpos] && clwords[clwpos][0]) {
+X	for (p = clwords[clwpos]; *p; p++)
+X	    if ((*p == String || *p == Equals || *p == Inang || *p == Outang) &&
+X		p[1] == Inpar)
+X		break;
+X	if (*p && cs > p - clwords[clwpos]) {
+X	    for (q = clwords[clwpos] + we - wb; q > p; q--)
+X		if (*q == Outpar)
+X		    break;
+X	    if (q > p && cs - wb <= q - clwords[clwpos]) {
+X		if (!tmp) {
+X		    tmp = (char *)line;
+X		    tt = dupstring((char *)line);
+X		}
+X		line = (unsigned char *)tt;
+X		line[wb + q - clwords[clwpos] + addedx] = '\0';
+X		linptr = (char *)line;
+X		ll = strlen((char *)line) - 1;
+X		popheap();
+X		permalloc();
+X		lexrestore();
+X		q = NULL;
+X		goto start;
+X	    }
+X	    q = NULL;
+X	}
+X    }
+X  check:
+X
+X    if (q)
+X	wb--, we--;
+X
+X    noaliases = 0;
+X
+X    inwhat = (im & 1) ? IN_COND : (inwhat == IN_ENV ? IN_ENV : IN_NOTHING);
+X    im &= ~1;
+X
+X /* check if we are in a mathematical expression */
+X
+X    if (!im) {
+X	for (tt = s + cs - wb; tt > s && *tt != Inbrack; tt--);
+X	if (*tt == Inbrack) {
+X	    if (tt[-1] == String)
+X		im = 1;
+X	    else {
+X		for (p = tt - 1; p > s && (ialnum(*p) || *p == '_'); p--);
+X		if (*p == String || (*p == Inbrace && p > s && p[-1] == String))
+X		    im = 1;
+X		else if (*p == Outpar) {
+X		    for (i = 1, p--; p >= s && i; p--)
+X			if (*p == Outpar)
+X			    i++;
+X			else if (*p == Inpar)
+X			    i--;
+X		    if (!i && ((p >= s && *p == String) ||
+X			       (p > s && *p == Inbrack && p[-1] == String)))
+X			im = 1;
+X		}
+X	    }
+X	    if (im) {
+X		for (i = 1, p = tt + 1; *p && i; p++)
+X		    if (*p == Inbrack)
+X			i++;
+X		    else if (*p == Outbrack)
+X			i--;
+X		if (cs - wb >= p - s)
+X		    im = 0;
+X	    }
+X	}
+X    }
+X    if (im) {
+X	inwhat = IN_MATH;
+X	for (p = s + cs - wb - 1; p >= s && (ialnum(*p) || *p == '_'); p--);
+X	if (++p > s) {
+X	    strcpy(s, p);
+X	    wb += p - s - ((im & 2) ? 1 : 0);
+X	}
+X	for (p = s; *p && (ialnum(*p) || *p == '_'); p++);
+X	*p = '\0';
+X	we = wb + p - s;
+X    }
+X    qword = ztrdup(s);
+X    for (p = s, tt = qword, i = wb; *p; p++, tt++, i++)
+X	if (INULL(*p)) {
+X	    if (p[1] || *p != Bnull) {
+X		if (*p == Bnull)
+X		    *tt = '\\';
+X		else {
+X		    ocs = cs;
+X		    cs = i;
+X		    foredel(1);
+X		    chuck(tt--);
+X		    if ((cs = ocs) >= i--)
+X			cs--;
+X		    we--;
+X		}
+X	    } else {
+X		ocs = cs;
+X		*tt = '\0';
+X		cs = we;
+X		backdel(1);
+X		if (ocs == we)
+X		    cs = we - 1;
+X		else
+X		    cs = ocs;
+X		we--;
+X	    }
+X	    chuck(p--);
+X	}
+X    if (unset(NOBANGHIST)) {
+X	q = tt = ncalloc(2 * strlen(qword) + 1);
+X	for (p = qword; *p; p++) {
+X	    if (*p == (char)bangchar)
+X		*q++ = '\\';	/*, wb--, cs--;*/
+X	    *q++ = *p;
+X	}
+X	*q = '\0';
+X	zsfree(qword);
+X	qword = ztrdup(tt);
+X    }
+X    ll = strlen((char *)line);
+X    permalloc();
+X
+X    return (char *)s;
+X}
+X
+Xvoid doexpansion(s, lst, explincmd)	/**/
+Xchar *s;
+Xint lst;
+Xint explincmd;
+X{
+X    Lklist vl = newlist();
+X    char *ss;
+X    int ng = opts[NULLGLOB];
+X
+X    opts[NULLGLOB] = OPT_SET;
+X    lexsave();
+X    s = dupstring(s);
+X    pushheap();
+X    addnode(vl, s);
+X    prefork(vl, 0);
+X    if (errflag)
+X	goto end;
+X    postfork(vl, (lst == COMP_LIST_EXPAND) || (lst == COMP_EXPAND));
+X    if (errflag)
+X	goto end;
+X    if (empty(vl) || !*(char *)peekfirst(vl)) {
+X	if (!noerrs)
+X	    feep();
+X	goto end;
+X    }
+X    if (lst == COMP_LIST_EXPAND) {
+X	listlist(vl);
+X	goto end;
+X    } else if (peekfirst(vl) == (vptr) s ||
+X	       (!nextnode(firstnode(vl)) && *s == Tilde &&
+X		(ss = dupstring(s), filesubstr(&ss, 0)) &&
+X		!strcmp(ss, (char *)peekfirst(vl)))) {
+X	if (lst == COMP_EXPAND_COMPLETE)
+X	    docompletion(s, COMP_COMPLETE, explincmd);
+X	else
+X	    feep();
+X	goto end;
+X    }
+X    cs = wb;
+X    foredel(we - wb);
+X    while ((ss = (char *)ugetnode(vl))) {
+X	untokenize(ss);
+X	ss = quotename(ss, NULL, NULL, NULL);
+X	inststr(ss);
+X#if 0
+X	if (full(vl)) {
+X	    spaceinline(1);
+X	    line[cs++] = ' ';
+X	}
+X#endif
+X	spaceinline(1);
+X	line[cs++] = ' ';
+X    }
+X  end:
+X    opts[NULLGLOB] = ng;
+X    popheap();
+X    lexrestore();
+X}
+X
+Xvoid gotword(s)			/**/
+Xchar *s;
+X{
+X    we = ll + 1 - inbufct;
+X    if (cs <= we) {
+X	wb = ll - wordbeg;
+X	zleparse = 0;
+X    /* major hack ahead */
+X	if (wb > 0 && line[wb] == '!' && line[wb - 1] == '\\')
+X	    wb--;
+X    }
+X}
+X
+Xvoid inststrlen(str, move, len)	/**/
+Xchar *str;
+Xint move;
+Xint len;
+X{
+X    if (!len)
+X	return;
+X    if (len == -1)
+X	len = strlen(str);
+X    spaceinline(len);
+X    strncpy((char *)(line + cs), str, len);
+X    if (move)
+X	cs += len;
+X}
+X
+Xchar *quotename(s, e, te, pl)	/**/
+Xchar *s;
+Xchar **e;
+Xchar **te;
+Xint *pl;
+X{
+X    char *tt, *v, *u, buf[MAXPATHLEN * 2];
+X    int sf = 0;
+X
+X    tt = v = buf;
+X    u = s;
+X    for (; *u; u++) {
+X	if (e && *e == u)
+X	    *e = v, sf |= 1;
+X	if (te && *te == u)
+X	    *pl = v - tt, sf |= 2;
+X	if (ispecial(*u) &&
+X	    (!instring || (!isset(NOBANGHIST) &&
+X			   *u == (char)bangchar) ||
+X	     (instring == 2 &&
+X	      (*u == '$' || *u == '`' || *u == '\"')) ||
+X	     (instring == 1 && *u == '\'')))
+X	    if (*u == '\n' || (instring == 1 && *u == '\'')) {
+X		*v++ = '\'';
+X		if (*u == '\'')
+X		    *v++ = '\\';
+X		*v++ = *u;
+X		*v++ = '\'';
+X		continue;
+X	    } else
+X		*v++ = '\\';
+X	*v++ = *u;
+X    }
+X    *v = '\0';
+X    if (strcmp(buf, s))
+X	tt = dupstring(buf);
+X    else
+X	tt = s;
+X    v += tt - buf;
+X    if (e && (sf & 1))
+X	*e += tt - buf;
+X    if (te && (sf & 2))
+X	*te += tt - buf;
+X
+X    if (e && *e == u)
+X	*e = v;
+X    if (te && *te == u)
+X	*pl = v - tt;
+X
+X    return tt;
+X}
+X
+Xvoid addmatch(s, t)		/**/
+Xchar *s;
+Xchar *t;
+X{
+X    int test = 0, sl = strlen(s), pl = rpl, cc = 0;
+X    char sav = 0, *e = NULL, *tt, *te, *fc;
+X    Comp cp = patcomp;
+X    Param pm;
+X
+X    if (!addwhat)
+X	test = 1;
+X    else if (addwhat == -1 || addwhat == -5 || addwhat == -6 ||
+X	     addwhat == CC_FILES || addwhat == -7 || addwhat == -8) {
+X	if (sl < fpl + fsl)
+X	    return;
+X
+X	if ((addwhat == CC_FILES ||
+X	     addwhat == -5) && !*psuf && !*fsuf) {
+X	    char **pt = fignore;
+X	    int filell;
+X
+X	    for (test = 1; test && *pt; pt++)
+X		if ((filell = strlen(*pt)) < sl
+X		    && !strcmp(*pt, s + sl - filell))
+X		    test = 0;
+X
+X	    if (!test)
+X		return;
+X	}
+X	pl = fpl;
+X	if (addwhat == -5 || addwhat == -8) {
+X	    test = 1;
+X	    cp = filecomp;
+X	    cc = cp || ispattern;
+X	    e = s + sl - fsl;
+X	} else {
+X	    if ((cp = filecomp)) {
+X		if ((test = domatch(s, filecomp, 0)))
+X		    cc = 1;
+X	    } else {
+X		e = s + sl - fsl;
+X		if ((test = !strncmp(s, fpre, fpl)))
+X		    test = !strcmp(e, fsuf);
+X		if (ispattern)
+X		    cc = 1;
+X	    }
+X	}
+X	if (test) {
+X	    fc = NULL;
+X	    if (addwhat == -7 && ISEXCMD(((Cmdnam) t)->flags) &&
+X		!(fc = findcmd(s)))
+X		return;
+X	    if (fc)
+X		zsfree(fc);
+X	    haswhat |= HAS_FILES;
+X
+X	    if (addwhat == CC_FILES || addwhat == -6 ||
+X		addwhat == -5 || addwhat == -8) {
+X		te = s + pl;
+X		s = quotename(s, &e, &te, &pl);
+X		sl = strlen(s);
+X	    } else if (!cc) {
+X		s = dupstring(t = s);
+X		e += s - t;
+X	    }
+X	    if (cc) {
+X		tt = (char *)halloc(strlen(ppre) + strlen(psuf) + sl + 1);
+X		strcpy(tt, ppre);
+X		strcat(tt, s);
+X		strcat(tt, psuf);
+X		untokenize(s = tt);
+X	    }
+X	}
+X    } else if (addwhat == -2 ||
+X	       (addwhat == -3 && !(((Cmdnam) t)->flags & DISABLED)) ||
+X	       (addwhat == -4 && (pm = (Param) t) && (pmtype(pm) == PMFLAG_s) &&
+X		(tt = pm->gets.cfn(pm)) && *tt == '/') ||
+X	       (addwhat > 0 &&
+X		(((addwhat & CC_ARRAYS) && (((Param) t)->flags & PMFLAG_A)) ||
+X		 ((addwhat & CC_INTVARS) && (((Param) t)->flags & PMFLAG_i)) ||
+X		 ((addwhat & CC_ENVVARS) && (((Param) t)->flags & PMFLAG_x)) ||
+X		 ((addwhat & CC_SCALARS) &&
+X		  !(((Param) t)->flags & (PMFLAG_A | PMFLAG_i))) ||
+X		 ((addwhat & CC_READONLYS) && (((Param) t)->flags & PMFLAG_r)) ||
+X		 ((addwhat & CC_SPECIALS) && (((Param) t)->flags & PMFLAG_SPECIAL)) ||
+X		 ((addwhat & CC_PARAMS) && !(((Param) t)->flags & PMFLAG_x)) ||
+X		 ((addwhat & CC_FUNCS) && (((Cmdnam) t)->flags & SHFUNC)) ||
+X		 ((addwhat & CC_BUILTINS) && (((Cmdnam) t)->flags & BUILTIN) &&
+X		  !(((Cmdnam) t)->flags & EXCMD)) ||
+X		 ((addwhat & CC_DISCMDS) && (((Cmdnam) t)->flags & DISABLED)) ||
+X		 ((addwhat & CC_EXCMDS) && (((Cmdnam) t)->flags & EXCMD)) ||
+X		 ((addwhat & CC_ALREG) && (((Alias) t)->cmd) == 1) ||
+X		 ((addwhat & CC_ALGLOB) && !(((Alias) t)->cmd))))) {
+X	if (sl >= rpl + rsl) {
+X	    if (cp)
+X		test = domatch(s, patcomp, 0);
+X	    else {
+X		e = s + sl - rsl;
+X		if ((test = !strncmp(s, rpre, rpl)))
+X		    test = !strcmp(e, rsuf);
+X	    }
+X	}
+X	if (!test && sl < lpl + lsl)
+X	    return;
+X	if (!test && !noreal && sl >= lpl + lsl) {
+X	    e = s + sl - lsl;
+X	    if ((test = !strncmp(s, lpre, lpl)))
+X		test = !strcmp(e, lsuf);
+X	    pl = lpl;
+X	}
+X	if (test)
+X	    haswhat |= HAS_MISC;
+X    }
+X    if (!test)
+X	return;
+X
+X    t = s += (ispattern ? 0 : pl);
+X    e += t - s;
+X    s = t;
+X
+X    if (ispattern)
+X	e = NULL, sav = '\0';
+X    else {
+X	if ((sav = *e)) {
+X	    *e = '\0';
+X	    t = dupstring(t);
+X	}
+X    }
+X
+X    if (!ispattern && firstm) {
+X	if ((test = pfxlen(firstm, s)) < ab)
+X	    ab = test;
+X	if ((test = sfxlen(firstm, s)) < ae)
+X	    ae = test;
+X    }
+X /* If we are doing a glob completion we store the whole string in
+X     * the list. Otherwise only the part that fits between the prefix
+X     * and the suffix is stored. */
+X
+X    addnode(matches, t);
+X    if (!firstm)
+X	firstm = t, ab = ae = shortl = 100000;
+X    if (!ispattern && (sl = strlen(t)) < shortl)
+X	shortl = sl, shortest = t;
+X    if (sav)
+X	*e = sav;
+X}
+X
+X#ifdef HAS_NIS
+Xstatic int match_username(status, key, keylen, val, vallen, data)
+Xint status;
+Xchar *key, *val;
+Xint keylen, vallen;
+Xdopestring *data;
+X{
+X    if (errflag || status != YP_TRUE)
+X	return 1;
+X
+X    if (vallen > keylen && val[keylen] == ':') {
+X	val[keylen] = '\0';
+X	addmatch(dupstring(val), NULL);
+X    }
+X    return 0;
+X}
+X
+X#endif
+X
+Xvoid maketildelist()
+X{				/**/
+X    int i;
+X
+X#ifdef HAS_NIS
+X    char domain[YPMAXDOMAIN];
+X    struct ypall_callback cb;
+X    dopestring data;
+X    FILE *pwf;
+X    char buf[BUFSIZ], *p;
+X    int skipping;
+X
+X    data.s = fpre;
+X    data.len = fpl;
+X /* Get potential matches from NIS and cull those without local accounts */
+X    if (getdomainname(domain, YPMAXDOMAIN) == 0) {
+X	cb.foreach = (int ((*)()))match_username;
+X	cb.data = (char *)&data;
+X	yp_all(domain, PASSWD_MAP, &cb);
+X/*	for (n = firstnode(matches); n; incnode(n))
+X	    if (getpwnam(getdata(n)) == NULL)
+X		uremnode(matches, n);*/
+X    }
+X /* Don't forget the non-NIS matches from the flat passwd file */
+X    if ((pwf = fopen(PASSWD_FILE, "r")) != NULL) {
+X	skipping = 0;
+X	while (fgets(buf, BUFSIZ, pwf) != NULL) {
+X	    if (strchr(buf, '\n') != NULL) {
+X		if (!skipping) {
+X		    if ((p = strchr(buf, ':')) != NULL) {
+X			*p = '\0';
+X			addmatch(dupstring(buf), NULL);
+X		    }
+X		} else
+X		    skipping = 0;
+X	    } else
+X		skipping = 1;
+X	}
+X	fclose(pwf);
+X    }
+X#else
+X    struct passwd *tmppwd;
+X
+X#ifdef CACHE_USERNAMES
+X    static int usernamescached = 0;
+X
+X    if (!usernamescached) {
+X	setpwent();
+X	while ((tmppwd = getpwent()) != NULL && !errflag)
+X	    adduserdir(dupstring(tmppwd->pw_name), tmppwd->pw_dir, 1, 1);
+X	endpwent();
+X	usernamescached = 1;
+X    }
+X#else
+X    setpwent();
+X    while ((tmppwd = getpwent()) != NULL && !errflag)
+X	addmatch(dupstring(tmppwd->pw_name), NULL);
+X    endpwent();
+X
+X    if (addwhat != -1)
+X	return;
+X#endif
+X#endif
+X
+X    for (i = 0; i < userdirct; i++)
+X	if (addwhat == -1 || namdirs[i].homedir)
+X	    addmatch(namdirs[i].name, NULL);
+X}
+X
+Xchar *rembslash(s)		/**/
+Xchar *s;
+X{
+X    char *t = s = dupstring(s);
+X
+X    while (*s)
+X	if (*s == '\\') {
+X	    chuck(s);
+X	    if (*s)
+X		s++;
+X	} else
+X	    s++;
+X
+X    return t;
+X}
+X
+Xint getcpat(str, cpatindex, cpat, class)	/**/
+Xchar *str;
+Xint cpatindex;
+Xchar *cpat;
+Xint class;
+X{
+X    char *s, *t, *p;
+X    int d = 0;
+X
+X    if (!str || !*str)
+X	return -1;
+X
+X    cpat = rembslash(cpat);
+X
+X    str = ztrdup(str);
+X    untokenize(str);
+X    if (!cpatindex)
+X	cpatindex++, d = 0;
+X    else if ((d = (cpatindex < 0)))
+X	cpatindex = -cpatindex;
+X
+X    for (s = d ? str + strlen(str) - 1 : str;
+X	 d ? (s >= str) : *s;
+X	 d ? s-- : s++) {
+X	for (t = s, p = cpat; *t && *p; p++) {
+X	    if (class) {
+X		if (*p == *s && !--cpatindex) {
+X		    zsfree(str);
+X		    return (int)(s - str + 1);
+X		}
+X	    } else if (*t++ != *p)
+X		break;
+X	}
+X	if (!class && !*p && !--cpatindex) {
+X	    zsfree(str);
+X	    return (int)(t - str);
+X	}
+X    }
+X    zsfree(str);
+X    return -1;
+X}
+X
+XCompctl ccmain;
+X
+XCompctl get_ccompctl(occ, compadd, incmd)	/**/
+XCompctl occ;
+Xint *compadd;
+Xint incmd;
+X{
+X    Compctl compc, ret;
+X    Compctlp ccp;
+X    int t, i, a, b, tt, ra = 0, rb = 0, j;
+X    Compcond or, cc;
+X    char *s, *ss, *sc = NULL;
+X    Comp comp;
+X
+X    *compadd = 0;
+X
+X    if (!(ret = compc = occ)) {
+X	if (inwhat == IN_ENV)
+X	    ret = &cc_default;
+X	else if (inwhat == IN_MATH) {
+X	    cc_dummy.mask = CC_PARAMS;
+X	    ret = &cc_dummy;
+X	    cc_dummy.refc = 10000;
+X	} else if (inwhat == IN_COND) {
+X	    s = clwpos ? clwords[clwpos - 1] : "";
+X	    cc_dummy.mask = !strcmp("-o", s) ? CC_OPTIONS :
+X		((*s == '-' && s[1] && !s[2]) ||
+X		 !strcmp("-nt", s) ||
+X		 !strcmp("-ot", s) ||
+X		 !strcmp("-ef", s)) ? CC_FILES :
+X		(CC_FILES | CC_PARAMS);
+X	    ret = &cc_dummy;
+X	    cc_dummy.refc = 10000;
+X	} else if (incmd)
+X	    ret = &cc_compos;
+X	else if (linredir ||
+X		 !(cmdstr &&
+X		   (((ccp = (Compctlp) gethnode(cmdstr, compctltab)) &&
+X		     (compc = ret = ccp->cc)) ||
+X		    ((s = dupstring(cmdstr)) && remlpaths(&s) &&
+X		     (ccp = (Compctlp) gethnode(s, compctltab)) &&
+X		     (compc = ret = ccp->cc)))))
+X	    ret = &cc_default;
+X
+X	ccmain = compc = ret;
+X	ccmain->refc++;
+X    }
+X    if (compc && compc->ext) {
+X	compc = compc->ext;
+X	for (t = 0; compc && !t; compc = compc->next) {
+X	    for (cc = compc->cond; cc && !t; cc = or) {
+X		or = cc->or;
+X		for (t = 1; cc && t; cc = cc->and) {
+X		    for (t = i = 0; i < cc->n && !t; i++) {
+X			s = NULL;
+X			ra = 0;
+X			rb = clwnum - 1;
+X			switch (cc->type) {
+X			case CCT_POS:
+X			    tt = clwpos;
+X			    goto cct_num;
+X			case CCT_NUMWORDS:
+X			    tt = clwnum;
+X			  cct_num:
+X			    if ((a = cc->u.r.a[i]) < 0)
+X				a += clwnum;
+X			    if ((b = cc->u.r.b[i]) < 0)
+X				b += clwnum;
+X			    if (cc->type == CCT_POS)
+X				ra = a, rb = b;
+X			    t = (tt >= a && tt <= b);
+X			    break;
+X			case CCT_CURSUF:
+X			case CCT_CURPRE:
+X			    s = ztrdup(clwpos < clwnum ? clwords[clwpos] : "");
+X			    untokenize(s);
+X			    sc = rembslash(cc->u.s.s[i]);
+X			    a = strlen(sc);
+X			    if (!strncmp(s, sc, a)) {
+X				*compadd = (cc->type == CCT_CURSUF ? a : 0);
+X				t = 1;
+X			    }
+X			    break;
+X			case CCT_CURSUB:
+X			case CCT_CURSUBC:
+X			    if (clwpos < 0 || clwpos > clwnum)
+X				t = 0;
+X			    else {
+X				if ((a = getcpat(clwords[clwpos],
+X						 cc->u.s.p[i],
+X						 cc->u.s.s[i],
+X						 cc->type == CCT_CURSUBC)) != -1)
+X				    *compadd = a, t = 1;
+X			    }
+X			    break;
+X
+X			case CCT_CURPAT:
+X			case CCT_CURSTR:
+X			    tt = clwpos;
+X			    goto cct_str;
+X			case CCT_WORDPAT:
+X			case CCT_WORDSTR:
+X			    tt = 0;
+X			  cct_str:
+X			    if ((a = tt + cc->u.s.p[i]) < 0)
+X				a += clwnum;
+X			    s = ztrdup((a < 0 || a >= clwnum) ? "" : clwords[a]);
+X			    untokenize(s);
+X
+X			    if (cc->type == CCT_CURPAT || cc->type == CCT_WORDPAT) {
+X				tokenize(ss = dupstring(cc->u.s.s[i]));
+X				t = ((comp = parsereg(ss)) && domatch(s, comp, 0));
+X			    } else
+X				t = (!strcmp(s, rembslash(cc->u.s.s[i])));
+X			    break;
+X			case CCT_RANGESTR:
+X			case CCT_RANGEPAT:
+X			    if (cc->type == CCT_RANGEPAT)
+X				tokenize(sc = dupstring(cc->u.l.a[i]));
+X			    for (j = clwpos; j; j--) {
+X				untokenize(s = ztrdup(clwords[j]));
+X				if (cc->type == CCT_RANGESTR)
+X				    sc = rembslash(cc->u.l.a[i]);
+X				if (cc->type == CCT_RANGESTR ?
+X				    !strncmp(s, sc, strlen(sc)) :
+X				    ((comp = parsereg(sc)) &&
+X				     domatch(s, comp, 0))) {
+X				    zsfree(s);
+X				    ra = j + 1;
+X				    t = 1;
+X				    break;
+X				}
+X				zsfree(s);
+X			    }
+X			    if (t) {
+X				if (cc->type == CCT_RANGEPAT)
+X				    tokenize(sc = dupstring(cc->u.l.b[i]));
+X				for (j++; j < clwnum; j++) {
+X				    untokenize(s = ztrdup(clwords[j]));
+X				    if (cc->type == CCT_RANGESTR)
+X					sc = rembslash(cc->u.l.b[i]);
+X				    if (cc->type == CCT_RANGESTR ?
+X					!strncmp(s, sc, strlen(sc)) :
+X					((comp = parsereg(sc)) &&
+X					 domatch(s, comp, 0))) {
+X					zsfree(s);
+X					rb = j - 1;
+X					t = clwpos <= rb;
+X					break;
+X				    }
+X				    zsfree(s);
+X				}
+X			    }
+X			    s = NULL;
+X			}
+X			zsfree(s);
+X		    }
+X		}
+X	    }
+X	    if (t)
+X		break;
+X	}
+X	if (compc)
+X	    ret = compc;
+X    }
+X    if (ret->subcmd) {
+X	char **ow = clwords, *os = cmdstr, *ops = NULL;
+X	int oldn = clwnum, oldp = clwpos;
+X
+X	if (ra < 1)
+X	    ra = 1;
+X	if (ra >= clwnum)
+X	    ra = clwnum - 1;
+X	if (rb < 1)
+X	    rb = 1;
+X	if (rb >= clwnum)
+X	    rb = clwnum - 1;
+X
+X	clwnum = rb - ra + 1;
+X	clwpos = clwpos - ra;
+X	if (ret->subcmd[0]) {
+X	    clwnum++;
+X	    clwpos++;
+X	    incmd = 0;
+X	    ops = clwords[ra - 1];
+X	    clwords[ra - 1] = cmdstr = ret->subcmd;
+X	    clwords += ra - 1;
+X	} else {
+X	    cmdstr = clwords[ra];
+X	    incmd = !clwpos;
+X	    clwords += ra;
+X	}
+X	*compadd = 0;
+X	if (ccmain != &cc_dummy)
+X	    freecompctl(ccmain);
+X	ret = get_ccompctl(NULL, compadd, incmd);
+X	clwords = ow;
+X	cmdstr = os;
+X	clwnum = oldn;
+X	clwpos = oldp;
+X	if (ops)
+X	    clwords[ra - 1] = ops;
+X    }
+X    return ret;
+X}
+X
+Xvoid dumphtable(ht, what)	/**/
+XHashtab ht;
+Xint what;
+X{
+X    int t0;
+X    struct hashnode *hn;
+X
+X    addwhat = what;
+X
+X    for (t0 = ht->hsize - 1; t0 >= 0; t0--)
+X	for (hn = ht->nodes[t0]; hn; hn = hn->next)
+X	    addmatch(hn->nam, (char *)hn);
+X
+X}
+X
+Xchar *getreal(str)		/**/
+Xchar *str;
+X{
+X    Lklist l = newlist();
+X    int ne = noerrs;
+X
+X    noerrs = 1;
+X    addnode(l, dupstring(str));
+X    prefork(l, 0);
+X    if (!errflag) {
+X	postfork(l, 0);
+X	if (!errflag && full(l)) {
+X	    noerrs = ne;
+X	    return ztrdup(peekfirst(l));
+X	}
+X    }
+X    errflag = 0;
+X    noerrs = ne;
+X
+X    return ztrdup(str);
+X}
+X
+Xvoid gen_matches_files(dirs, execs, all)	/**/
+Xint dirs;
+Xint execs;
+Xint all;
+X{
+X    DIR *d;
+X    struct dirent *de;
+X    struct stat buf;
+X    char *n, p[MAXPATHLEN], *q = NULL, *e;
+X    Lklist l = NULL;
+X    int ns = 0, ng = opts[NULLGLOB], test, aw = addwhat;
+X
+X    addwhat = execs ? -8 : -5;
+X    opts[NULLGLOB] = OPT_SET;
+X
+X    if (*psuf) {
+X	q = psuf + strlen(psuf) - 1;
+X	ns = !(*q == Star || *q == Outpar);
+X	l = newlist();
+X	dirs = 1;
+X	all = execs = 0;
+X    }
+X    if ((d = opendir((prpre && *prpre) ? prpre : "."))) {
+X	if (!all && prpre) {
+X	    strcpy(p, prpre);
+X	    q = p + strlen(prpre);
+X	}
+X	while ((de = readdir(d)) && !errflag) {
+X	    n = de->d_name;
+X	    if (n[0] == '.' && (n[1] == '\0' || (n[1] == '.' && n[2] == '\0')))
+X		continue;
+X	    if (*n != '.' || *fpre == '.' || isset(GLOBDOTS)) {
+X		if (filecomp)
+X		    test = domatch(n, filecomp, 0);
+X		else {
+X		    e = n + strlen(n) - fsl;
+X		    if ((test = !strncmp(n, fpre, fpl)))
+X			test = !strcmp(e, fsuf);
+X		}
+X		if (!test)
+X		    continue;
+X		if (!all) {
+X		    strcpy(q, n);
+X		    if (stat(p, &buf) < 0)
+X			continue;
+X		}
+X		if (all ||
+X		    (dirs && (buf.st_mode & S_IFMT) == S_IFDIR) ||
+X		    (execs &&
+X		     ((buf.st_mode & (S_IFMT | S_IEXEC))
+X		      == (S_IFREG | S_IEXEC)))) {
+X		    if (*psuf) {
+X			int o = strlen(p), tt;
+X
+X			strcpy(p + o, psuf);
+X
+X			if (ispattern || (ns && isset(GLOBCOMPLETE))) {
+X			    if (ns) {
+X				int tl = strlen(p);
+X
+X				p[tl] = Star;
+X				p[tl + 1] = '\0';
+X			    }
+X			    addnode(l, p);
+X			    postfork(l, 1);
+X			    tt = full(l);
+X			    while (ugetnode(l));
+X			} else
+X			    tt = !access(p, F_OK);
+X
+X			p[o] = '\0';
+X			if (tt)
+X			    addmatch(dupstring(n), NULL);
+X		    } else
+X			addmatch(dupstring(n), NULL);
+X		}
+X	    }
+X	}
+X	closedir(d);
+X    }
+X    opts[NULLGLOB] = ng;
+X    addwhat = aw;
+X}
+X
+Xchar *expl, *ccsuffix;
+Xint remsuffix;
+X
+Xvoid quotepresuf(ps)		/**/
+Xchar **ps;
+X{
+X    if (*ps) {
+X	char *p = quotename(*ps, NULL, NULL, NULL);
+X
+X	if (p != *ps) {
+X	    zsfree(*ps);
+X	    *ps = ztrdup(p);
+X	}
+X    }
+X}
+X
+Xint clearflag;
+X
+Xvoid docompletion(s, lst, incmd)/**/
+Xchar *s;
+Xint lst;
+Xint incmd;
+X{
+X    Compctl cc = NULL;
+X    int offs, t, sf1, sf2, compadd, isp = 0, ooffs;
+X    char *p, *sd = NULL, sav, *tt, *s1, *s2, *os = NULL;
+X    int owe = we, owb = wb, ocs = cs, delit;
+X    unsigned char *ol = NULL;
+X
+X  xorrec:
+X
+X    if (unset(COMPLETEINWORD) && cs != we)
+X	cs = we;
+X    if ((offs = cs - wb) > (t = strlen(s)))
+X	offs = t;
+X
+X    ispattern = haswhat = lastambig = 0;
+X    patcomp = filecomp = NULL;
+X    menucur = NULL;
+X    shortest = NULL;
+X
+X    zsfree(rpre);
+X    zsfree(rsuf);
+X    zsfree(lpre);
+X    zsfree(lsuf);
+X    zsfree(ppre);
+X    zsfree(psuf);
+X    zsfree(prpre);
+X    zsfree(fpre);
+X    zsfree(fsuf);
+X    zsfree(mpre);
+X    zsfree(msuf);
+X
+X    rpre = rsuf = lpre = lsuf = ppre = psuf = prpre =
+X	fpre = fsuf = mpre = msuf = firstm = NULL;
+X
+X    if (!cc) {
+X	heapalloc();
+X	pushheap();
+X	os = dupstring(s);
+X	ol = (unsigned char *)dupstring((char *)line);
+X    }
+X    matches = newlist();
+X
+X    if (!cc || cc->ext)
+X	cc = get_ccompctl(cc, &compadd, incmd);
+X
+X    wb += compadd;
+X    s += compadd;
+X    if ((offs -= compadd) < 0) {
+X	feep();
+X	goto compend;
+X    }
+X /* insert prefix, if any */
+X
+X    if (cc->prefix) {
+X	int pl = 0, sl = strlen(cc->prefix);
+X
+X	if (*s) {
+X	    sd = dupstring(s);
+X	    untokenize(sd);
+X	    pl = pfxlen(cc->prefix, sd);
+X	    s += pl;
+X	}
+X	if (pl < sl) {
+X	    int savecs = cs;
+X
+X	    cs = wb + pl;
+X	    inststrlen(cc->prefix + pl, 0, sl - pl);
+X	    cs = savecs + sl - pl;
+X	}
+X	wb += sl;
+X	we += sl - pl;
+X    }
+X    if ((ccsuffix = cc->suffix) && *ccsuffix) {
+X	char *sdup = dupstring(ccsuffix);
+X	int sl = strlen(sdup), suffixll;
+X
+X	for (p = sdup + sl - 1; p >= sdup && *p == ' '; p--, sl--);
+X	p[1] = '\0';
+X
+X	if (!sd) {
+X	    sd = dupstring(s);
+X	    untokenize(sd);
+X	}
+X	if (*sd && (suffixll = strlen(sd)) >= sl &&
+X	    !strcmp(sdup, sd + suffixll - sl))
+X	    ccsuffix = NULL, haswhat |= HAS_SUFFIX, s[suffixll - sl] = '\0';
+X    }
+X    if ((ic = *s) != Tilde && ic != Equals)
+X	ic = '\0';
+X    offs = cs - wb;
+X    if ((offs = cs - wb) > (t = strlen(s)))
+X	offs = t;
+X
+X /* Check if we have to complete a parameter name... */
+X
+X    for (p = s + offs; p > s && *p != String; p--);
+X    if (*p == String && p[1] != Inpar && p[1] != Inbrack) {
+X	char *b = p + 1, *e = b;
+X	int n, br = 1;
+X
+X	if (*b == Inbrace)
+X	    b++, br++;
+X
+X	for (t = 0; *b && !t; b++)
+X	    if (*b == Inpar) {
+X		for (n = 1, b++; *b && b < s + offs && n; b++)
+X		    if (*b == Inpar)
+X			n++;
+X		    else if (*b == Outpar)
+X			n--;
+X		b--;
+X	    } else
+X		t = ialnum(*b) || *b == '_' || *b == Star || *b == Quest ||
+X		    *b == Inbrack || *b == Outbrace || *b == '/';
+X
+X	for (e = b; *e && t; e++)
+X	    if (!(ialnum(*e) || *e == '_' || *e == Star || *e == Quest))
+X		break;
+X
+X	if (offs <= e - s) {
+X	    if (b > s && b[-1] != String)
+X		b--;
+X	    if (cs == we)
+X		complexpect = br;
+X	    wb += b - s;
+X	    offs -= b - s;
+X	    we = wb + e - b;
+X	    *e = '\0';
+X	    s = b;
+X	    isp = 1;
+X	    cc = ccmain = &cc_dummy;
+X	    cc_dummy.refc = 10000;
+X	    cc_dummy.mask = CC_PARAMS | CC_ENVVARS;
+X	} else
+X	    complexpect = 0;
+X    }
+X    ooffs = offs;
+X    if (cc->mask & CC_DELETE) {
+X	delit = 1;
+X	*s = '\0';
+X	offs = 0;
+X    } else
+X	delit = 0;
+X
+X /* compute line prefix/suffix */
+X
+X    sav = s[offs];
+X    s[offs] = '\0';
+X    p = quotename(s, NULL, NULL, NULL);
+X    if (strcmp(p, s) && !strpfx(p, qword)) {
+X	int l1, l2;
+X
+X	backdel(l1 = cs - wb);
+X	untokenize(p);
+X	inststrlen(p, 1, l2 = strlen(p));
+X	we += l2 - 1l;
+X    }
+X    lpre = ztrdup(s);
+X    s[offs] = sav;
+X    if (s[offs] &&
+X	(p = quotename(s + offs, NULL, NULL, NULL)) &&
+X	(strcmp(p, s + offs) && !strsfx(p, qword))) {
+X	int l1, l2;
+X
+X	foredel(l1 = strlen(s + offs));
+X	untokenize(p);
+X	inststrlen(p, 0, l2 = strlen(p));
+X	we += l2 - l1;
+X    }
+X    lsuf = ztrdup(s + offs);
+X
+X /* first check for ~... and =... */
+X
+X    if (ic) {
+X	for (p = lpre + strlen(lpre); p > lpre; p--)
+X	    if (*p == '/')
+X		break;
+X
+X	if (*p == '/')
+X	    ic = 0;
+X    }
+X /* compute real prefix/suffix */
+X
+X    noreal = !delit;
+X    for (p = lpre; *p && *p != String && *p != Tick; p++);
+X    tt = ic ? lpre + 1 : lpre;
+X    rpre = (*p || *lpre == Tilde || *lpre == Equals) ?
+X	(noreal = 0, getreal(tt)) :
+X	ztrdup(tt);
+X
+X    for (p = lsuf; *p && *p != String && *p != Tick; p++);
+X    rsuf = *p ? (noreal = 0, getreal(lsuf)) : ztrdup(lsuf);
+X
+X /* check if word is a pattern */
+X
+X    for (s1 = NULL, sf1 = 0, p = rpre + (rpl = strlen(rpre)) - 1;
+X	 p >= rpre && (ispattern != 3 || !sf1);
+X	 p--)
+X	if (itok(*p) && (p > rpre || (*p != Equals && *p != Tilde)))
+X	    ispattern |= sf1 ? 1 : 2;
+X	else if (*p == '/') {
+X	    sf1++;
+X	    if (!s1)
+X		s1 = p;
+X	}
+X    for (s2 = NULL, sf2 = t = 0, p = rsuf; *p && (!t || !sf2); p++)
+X	if (itok(*p))
+X	    t |= sf2 ? 4 : 2;
+X	else if (*p == '/') {
+X	    sf2++;
+X	    if (!s2)
+X		s2 = p;
+X	}
+X    ispattern = ispattern | t;
+X
+X    if (!useglob)
+X	ispattern = 0;
+X
+X    if (ispattern) {
+X	p = (char *)ncalloc(rpl + rsl + 2);
+X	strcpy(p, rpre);
+X	if (rpl && p[rpl - 1] != Star) {
+X	    p[rpl] = Star;
+X	    strcpy(p + rpl + 1, rsuf);
+X	} else
+X	    strcpy(p + rpl, rsuf);
+X	patcomp = parsereg(p);
+X    }
+X    if (!patcomp) {
+X	untokenize(rpre);
+X	untokenize(rsuf);
+X
+X	rpl = strlen(rpre);
+X	rsl = strlen(rsuf);
+X    }
+X    untokenize(lpre);
+X    untokenize(lsuf);
+X
+X    lpl = strlen(lpre);
+X    lsl = strlen(lsuf);
+X
+X /* handle completion of files specially */
+X
+X    if ((cc->mask & (CC_FILES | CC_COMMPATH)) || cc->glob) {
+X	if (!s1)
+X	    s1 = rpre;
+X	if (!s2)
+X	    s2 = rsuf + rsl;
+X
+X	if (*s1 != '/')
+X	    ppre = ztrdup("");
+X	else {
+X	    if ((sav = *s1 ? s1[1] : '\0'))
+X		s1[1] = '\0';
+X	    ppre = ztrdup(rpre);
+X	    if (sav)
+X		s1[1] = sav;
+X	}
+X	psuf = ztrdup(s2);
+X
+X	fpre = ztrdup(((s1 == s || s1 == rpre || ic) &&
+X		       (*s != '/' || cs == wb)) ? s1 : s1 + 1);
+X	sav = *s2;
+X	*s2 = '\0';
+X	fsuf = ztrdup(rsuf);
+X	*s2 = sav;
+X
+X	if (useglob && (ispattern & 2)) {
+X	    int t2;
+X
+X	    p = (char *)ncalloc((t2 = strlen(fpre)) + strlen(fsuf) + 2);
+X	    strcpy(p, fpre);
+X	    if ((!t2 || p[t2 - 1] != Star) && *fsuf != Star)
+X		p[t2++] = Star;
+X	    strcpy(p + t2, fsuf);
+X	    filecomp = parsereg(p);
+X	}
+X	if (!filecomp) {
+X	    untokenize(fpre);
+X	    untokenize(fsuf);
+X
+X	    fpl = strlen(fpre);
+X	    fsl = strlen(fsuf);
+X	}
+X	addwhat = -1;
+X
+X	if (ic == Tilde)
+X	    maketildelist();
+X	else if (ic == Equals) {
+X	    if (isset(HASHLISTALL))
+X		fullhash();
+X	    dumphtable(cmdnamtab, -7);
+X	} else {
+X	    if (ispattern & 1) {
+X		Lklist l = newlist();
+X		Lknode n;
+X		int ng = opts[NULLGLOB];
+X
+X		opts[NULLGLOB] = OPT_SET;
+X
+X		addwhat = 0;
+X		p = (char *)ncalloc(lpl + lsl + 3);
+X		strcpy(p, lpre);
+X		if (*lsuf != '*' && *lpre && lpre[lpl - 1] != '*')
+X		    strcat(p, "*");
+X		strcat(p, lsuf);
+X		if (*lsuf && lsuf[lsl - 1] != '*' && lsuf[lsl - 1] != ')')
+X		    strcat(p, "*");
+X
+X		tokenize(p);
+X		addnode(l, p);
+X		postfork(l, 1);
+X
+X		if (full(l)) {
+X		    haswhat |= HAS_PATHPAT;
+X		    for (n = firstnode(l); n; incnode(n))
+X			addmatch(getdata(n), NULL);
+X		}
+X		opts[NULLGLOB] = ng;
+X	    } else {
+X		addwhat = CC_FILES;
+X		prpre = ztrdup(ppre);
+X
+X		if (sf2)
+X		    gen_matches_files(1, 0, 0);
+X		else {
+X		    if (cc->mask & CC_FILES)
+X			gen_matches_files(0, 0, 1);
+X		    else if (cc->mask & CC_COMMPATH) {
+X			if (sf1)
+X			    gen_matches_files(1, 1, 0);
+X			else {
+X			    char **pc = path, *pp = prpre;
+X
+X			    for (; *pc; pc++)
+X				if (pc[0][0] == '.' && !pc[0][1])
+X				    break;
+X			    if (*pc) {
+X				prpre = "./";
+X				gen_matches_files(1, 1, 0);
+X				prpre = pp;
+X			    }
+X			}
+X		    }
+X		    if (cc->glob) {
+X			int ns, pl = strlen(prpre), o;
+X			char *g = dupstring(cc->glob), pa[MAXPATHLEN];
+X			char *p2, *p3;
+X			int ne = noerrs, md = opts[MARKDIRS];
+X
+X			glob_pre = fpre;
+X			glob_suf = fsuf;
+X
+X			noerrs = 1;
+X			addwhat = -6;
+X			strcpy(pa, prpre);
+X			o = strlen(pa);
+X			opts[MARKDIRS] = OPT_UNSET;
+X
+X			while (*g) {
+X			    Lklist l = newlist();
+X
+X			    while (*g && inblank(*g))
+X				g++;
+X			    if (!*g)
+X				break;
+X			    for (p = g + 1; *p && !inblank(*p); p++)
+X				if (*p == '\\' && p[1])
+X				    p++;
+X			    sav = *p;
+X			    *p = '\0';
+X			    tokenize(g = dupstring(g));
+X			    if (*g == Equals || *g == Tilde) {
+X				filesub(&g, 0);
+X				addnode(l, dupstring(g));
+X			    } else if (*g == '/')
+X				addnode(l, dupstring(g));
+X			    else {
+X				strcpy(pa + o, g);
+X				addnode(l, dupstring(pa));
+X			    }
+X			    postfork(l, 1);
+X			    if (full(l) && peekfirst(l)) {
+X				for (p2 = (char *)peekfirst(l); *p2; p2++)
+X				    if (itok(*p2))
+X					break;
+X				if (!*p2) {
+X				    if (*g == Equals || *g == Tilde || *g == '/') {
+X					while ((p2 = (char *)ugetnode(l)))
+X					    if (strpfx(prpre, p2))
+X						addmatch(p2 + pl, NULL);
+X				    } else {
+X					while ((p2 = p3 = (char *)ugetnode(l))) {
+X					    for (ns = sf1; *p3 && ns; p3++)
+X						if (*p3 == '/')
+X						    ns--;
+X
+X					    addmatch(p3, NULL);
+X					}
+X				    }
+X				}
+X			    }
+X			    pa[o] = '\0';
+X			    *p = sav;
+X			    g = p;
+X			}
+X			glob_pre = glob_suf = NULL;
+X			noerrs = ne;
+X			opts[MARKDIRS] = md;
+X		    }
+X		}
+X	    }
+X	}
+X    }
+X /* Use tricat() instead of dyncat() to get zalloc()'d memory */
+X    if (ic == Tilde || ic == Equals) {
+X	char *orpre = rpre;
+X
+X	rpre = tricat("", (ic == Tilde) ? "~" : "=", rpre);
+X	rpl++;
+X	zsfree(orpre);
+X    }
+X    if (!ic && (cc->mask & CC_COMMPATH) && !*ppre && !*psuf) {
+X	dumphtable(aliastab, -2);
+X	if (isset(HASHLISTALL))
+X	    fullhash();
+X	dumphtable(cmdnamtab, -3);
+X	if (isset(AUTOCD) && isset(CDABLEVARS))
+X	    dumphtable(paramtab, -4);
+X    }
+X    addwhat = -2;
+X
+X    if (cc->mask & CC_NAMED) {
+X	int t0;
+X
+X	for (t0 = 0; t0 < userdirct; t0++)
+X	    addmatch(namdirs[t0].name, NULL);
+X    }
+X    if (cc->mask & CC_OPTIONS) {
+X	struct option *o;
+X
+X	for (o = optns; o->name; o++)
+X	    addmatch(dupstring(o->name), NULL);
+X    }
+X    if (cc->mask & CC_VARS)
+X	dumphtable(paramtab, -2);
+X    if (cc->mask & CC_BINDINGS) {
+X	int t0;
+X
+X	for (t0 = 0; t0 != ZLECMDCOUNT; t0++)
+X	    if (*zlecmds[t0].name)
+X		addmatch(dupstring(zlecmds[t0].name), NULL);
+X    }
+X    if (cc->keyvar) {
+X	char **usr = get_user_var(cc->keyvar);
+X
+X	if (usr)
+X	    while (*usr)
+X		addmatch(*usr++, NULL);
+X    }
+X    if (cc->mask & CC_USERS)
+X	maketildelist();
+X    if (cc->func) {
+X	List list;
+X	char **r;
+X	int lv = lastval;
+X
+X	if ((list = getshfunc(cc->func))) {
+X	    Lklist args = newlist();
+X
+X	    addnode(args, cc->func);
+X
+X	    if (delit) {
+X		sav = os[ooffs];
+X		os[ooffs] = '\0';
+X		p = dupstring(os);
+X		untokenize(p);
+X		addnode(args, p);
+X		os[ooffs] = sav;
+X		p = dupstring(os + ooffs);
+X		untokenize(p);
+X		addnode(args, p);
+X	    } else {
+X		addnode(args, lpre);
+X		addnode(args, lsuf);
+X	    }
+X
+X	    inzlefunc = 1;
+X	    doshfuncnoval(list, args, 0);
+X	    inzlefunc = 0;
+X	    if ((r = get_user_var("reply")))
+X		while (*r)
+X		    addmatch(*r++, NULL);
+X	}
+X	lastval = lv;
+X    }
+X    if (cc->mask & (CC_JOBS | CC_RUNNING | CC_STOPPED)) {
+X	int i;
+X	char *j, *jj;
+X
+X	for (i = 0; i < MAXJOB; i++)
+X	    if (jobtab[i].stat & STAT_INUSE) {
+X		int stopped = jobtab[i].stat & STAT_STOPPED;
+X
+X		j = jj = dupstring(jobtab[i].procs->text);
+X		for (; *jj; jj++)
+X		    if (*jj == ' ') {
+X			*jj = '\0';
+X			break;
+X		    }
+X		if ((cc->mask & CC_JOBS) || (stopped && (cc->mask & CC_STOPPED))
+X		    || (!stopped && (cc->mask & CC_RUNNING)))
+X		    addmatch(j, NULL);
+X	    }
+X    }
+X    if (cc->str) {
+X	Lklist foo = newlist();
+X	Lknode n;
+X	int first = 1, ng = opts[NULLGLOB], oowe = we, oowb = wb;
+X
+X	opts[NULLGLOB] = OPT_SET;
+X
+X	zleparse = 1;
+X	lexsave();
+X	hungets(cc->str);
+X	hungets("foo ");	/* KLUDGE! */
+X	strinbeg();
+X	noaliases = 1;
+X	do {
+X	    ctxtlex();
+X	    if (tok == ENDINPUT)
+X		break;
+X	    if (!first && tokstr && *tokstr)
+X		addnode(foo, ztrdup(tokstr));
+X	    first = 0;
+X	}
+X	while (tok != ENDINPUT && zleparse);
+X	noaliases = 0;
+X	hflush();
+X	strinend();
+X	errflag = zleparse = 0;
+X	lexrestore();
+X	prefork(foo, 0);
+X	if (!errflag) {
+X	    postfork(foo, 1);
+X	    if (!errflag)
+X		for (n = firstnode(foo); n; incnode(n))
+X		    addmatch((char *)n->dat, NULL);
+X	}
+X	opts[NULLGLOB] = ng;
+X	we = oowe;
+X	wb = oowb;
+X    }
+X    if (cc->hpat) {
+X	Comp compc = NULL;
+X	char *e, *h, hpatsav;
+X	int i = curhist - 1, n = cc->hnum, l = lithist;
+X
+X	if (*(cc->hpat)) {
+X	    char *thpat = dupstring(cc->hpat);
+X
+X	    tokenize(thpat);
+X	    compc = parsereg(thpat);
+X	}
+X	if (!n)
+X	    n = -1;
+X	lithist = 0;
+X
+X	while (n-- && (h = qgetevent(i--))) {
+X	    while (*h) {
+X		for (e = h; *e && *e != HISTSPACE; e++);
+X		hpatsav = *e;
+X		*e = '\0';
+X		if (*h != '\'' && *h != '"' && *h != '`' && *h != '$' &&
+X		    (!compc || domatch(h, compc, 0)))
+X		    addmatch(dupstring(h), NULL);
+X		if (hpatsav) {
+X		    *e = hpatsav;
+X		    h = e + 1;
+X		} else
+X		    h = e;
+X	    }
+X	}
+X	lithist = l;
+X    }
+X    if ((t = cc->mask & (CC_ARRAYS | CC_INTVARS | CC_ENVVARS | CC_SCALARS |
+X			 CC_READONLYS | CC_SPECIALS | CC_PARAMS)))
+X	dumphtable(paramtab, t);
+X    if ((t = cc->mask & (CC_FUNCS | CC_BUILTINS | CC_DISCMDS | CC_EXCMDS)))
+X	dumphtable(cmdnamtab, t);
+X    if ((t = cc->mask & (CC_ALREG | CC_ALGLOB)))
+X	dumphtable(aliastab, t);
+X
+X    expl = cc->explain;
+X
+X    remsuffix = (cc->mask & CC_REMOVE);
+X    ccsuffix = cc->suffix;
+X
+X    mpre = ztrdup(lpre);
+X    msuf = ztrdup(lsuf);
+X    quotepresuf(&lpre);
+X    quotepresuf(&lsuf);
+X    quotepresuf(&fpre);
+X    quotepresuf(&fsuf);
+X    quotepresuf(&ppre);
+X    quotepresuf(&psuf);
+X
+X    if (empty(matches) || errflag) {
+X	if (cc->xor && !isp) {
+X	    errflag = 0;
+X	    cc = cc->xor;
+X	    wb = owb;
+X	    we = owe;
+X	    cs = ocs;
+X	    s = dupstring(os);
+X	    strcpy((char *)line, (char *)ol);
+X	    goto xorrec;
+X	}
+X	strcpy((char *)line, (char *)ol);
+X	feep();
+X    } else if (lst == COMP_LIST_COMPLETE)
+X	listtlist(matches);
+X    else {
+X	if (delit) {
+X	    wb -= compadd;
+X	    strcpy((char *)line + wb, (char *)line + we);
+X	    we = cs = wb;
+X	}
+X	if (nextnode(firstnode(matches)))
+X	    do_ambiguous();
+X	else
+X	    do_single((char *)peekfirst(matches));
+X    }
+X
+X    if (expl && (empty(matches) || nextnode(firstnode(matches)))) {
+X	int up;
+X
+X	trashzle();
+X
+X	clearflag = (isset(USEZLE) && termok &&
+X		     (isset(ALWAYSLASTPROMPT) && mult == 1)) ||
+X	    (unset(ALWAYSLASTPROMPT) && mult != 1);
+X
+X	up = printfmt(expl, countnodes(matches), 1);
+X
+X	if (clearflag)
+X	    tcmultout(TCUP, TCMULTUP, up + nlnct);
+X	fflush(stdout);
+X    }
+X    ll = strlen((char *)line);
+X    if (cs > ll)
+X	cs = ll;
+X  compend:
+X    if (ccmain != &cc_dummy)
+X	freecompctl(ccmain);
+X    popheap();
+X    permalloc();
+X}
+X
+Xchar **get_user_var(nam)	/**/
+Xchar *nam;
+X{
+X    if (!nam)
+X	return NULL;
+X    else if (*nam == '(') {
+X	char *ptr, *s, **uarr, **aptr;
+X	int count = 0, nonempty = 0, brk = 0;
+X	Lklist arrlist = newlist();
+X
+X	ptr = dupstring(nam);
+X	s = ptr + 1;
+X	while (*++ptr) {
+X	    if (*ptr == '\\' && ptr[1])
+X		chuck(ptr), nonempty++;
+X	    else if (*ptr == ',' || inblank(*ptr) || *ptr == ')') {
+X		if (*ptr == ')')
+X		    brk++;
+X		if (nonempty) {
+X		    *ptr = '\0';
+X		    count++;
+X		    if (*s == '\n')
+X			s++;
+X		    addnode(arrlist, s);
+X		}
+X		s = ptr + 1;
+X		nonempty = 0;
+X	    } else
+X		nonempty++;
+X	    if (brk)
+X		break;
+X	}
+X	if (!brk || !count)
+X	    return NULL;
+X	*ptr = '\0';
+X	aptr = uarr = (char **)ncalloc(sizeof(char *) * (count + 1));
+X
+X	while ((*aptr++ = (char *)ugetnode(arrlist)));
+X	uarr[count] = NULL;
+X	return uarr;
+X    } else
+X	return getaparam(nam);
+X}
+X
+Xint strbpcmp(a, b)		/**/
+Xconst void *a;
+Xconst void *b;
+X{
+X    char *aa = *((char **)a), *bb = *((char **)b);
+X
+X    while (*aa && *bb) {
+X	if (*aa == '\\')
+X	    aa++;
+X	if (*bb == '\\')
+X	    bb++;
+X	if (*aa != *bb)
+X	    return (int)(*aa - *bb);
+X	if (*aa)
+X	    aa++;
+X	if (*bb)
+X	    bb++;
+X    }
+X    return 0;
+X}
+X
+Xvoid do_ambiguous()
+X{				/**/
+X    char **ap, **bp, **cp;
+X    int p, atend = (cs == we);
+X    Lknode nod;
+X
+X    lastambig = 1;
+X
+X    if (menuarr) {
+X	freearray(menuarr);
+X	menuarr = NULL;
+X	menucmp = 0;
+X    }
+X    ap = amatches = (char **)ncalloc(((nmatches = countnodes(matches)) + 1) *
+X				     sizeof(char *));
+X
+X    for (nod = firstnode(matches); nod; incnode(nod))
+X	*ap++ = (char *)getdata(nod);
+X    *ap = NULL;
+X
+X    qsort((vptr) amatches, nmatches, sizeof(char *),
+X	       (int (*)DCLPROTO((const void *, const void *)))strbpcmp);
+X
+X    for (ap = cp = amatches; *ap; ap++) {
+X	*cp++ = *ap;
+X	for (bp = ap; bp[1] && !strcmp(*ap, bp[1]); bp++);
+X	ap = bp;
+X    }
+X    *cp = NULL;
+X
+X    if ((nmatches = arrlen(amatches)) == 1) {
+X	lastambig = 0;
+X	do_single(amatches[0]);
+X	return;
+X    }
+X    complexpect = 0;
+X
+X    if ((p = (usemenu || ispattern)) || isset(AUTOMENU)) {
+X	permalloc();
+X	menuarr = arrdup(amatches);
+X	heapalloc();
+X    }
+X    if (shortest && shortl == 0 && isset(RECEXACT) &&
+X	(usemenu == 0 || unset(AUTOMENU))) {
+X	do_single(shortest);
+X    } else {
+X	if (p)
+X	    do_ambig_menu();
+X	else {
+X	    if (ab)
+X		inststrlen(firstm, 1, ab);
+X	    if (ae && !atend)
+X		inststrlen(firstm + strlen(firstm) - ae, 0, ae);
+X	    if (isset(LISTAMBIGUOUS) && (ab || (ae && !atend))) {
+X		lastambig = 0;
+X		return;
+X	    }
+X	}
+X	if (unset(NOLISTBEEP))
+X	    feep();
+X	if (isset(AUTOLIST) && !amenu)
+X	    listmatches();
+X    }
+X}
+X
+Xint ztat(nam, buf, ls)		/**/
+Xchar *nam;
+Xstruct stat *buf;
+Xint ls;
+X{
+X    char b[MAXPATHLEN], *p;
+X
+X    for (p = b; *nam; nam++)
+X	if (*nam == '\\' && nam[1])
+X	    *p++ = *++nam;
+X	else
+X	    *p++ = *nam;
+X    *p = '\0';
+X
+X    return ls ? lstat(b, buf) : stat(b, buf);
+X}
+X
+Xvoid do_single(str)		/**/
+Xchar *str;
+X{
+X    int ccs, l, insc = 0, inscs = 0;
+X    char singlec = ' ';
+X
+X    addedsuffix = 0;
+X
+X    if (!menucur) {
+X	if (ispattern) {
+X	    cs = we;
+X	    menupos = wb;
+X	} else
+X	    menupos = cs;
+X	menuwe = (cs == we);
+X	if (ccsuffix && !(haswhat & HAS_SUFFIX)) {
+X	    if (*ccsuffix) {
+X		ccs = cs;
+X		cs = we;
+X		inststrlen(ccsuffix, menuwe, -1);
+X		menuend = cs;
+X		cs = ccs;
+X		if (remsuffix)
+X		    addedsuffix = strlen(ccsuffix);
+X	    } else
+X		menuend = we;
+X
+X	    haswhat |= HAS_SUFFIX;
+X	} else
+X	    menuend = we;
+X    }
+X    ccs = cs;
+X    cs = menupos;
+X    if (menucur)
+X	l = menulen;
+X    else if (ispattern)
+X	l = we - wb;
+X    else
+X	l = 0;
+X
+X    if (l) {
+X	foredel(l);
+X	if (menuwe)
+X	    ccs -= l;
+X	menuend -= l;
+X    }
+X    inststrlen(str, 1, menulen = strlen(str));
+X
+X    if (menuwe)
+X	cs = ccs + menulen;
+X    menuend += menulen;
+X
+X    if (!(haswhat & HAS_SUFFIX)) {
+X	if (!(haswhat & HAS_MISC)) {
+X	    char p[MAXPATHLEN], *ss;
+X	    struct stat buf;
+X
+X	    if (ispattern || ic) {
+X		int ne = noerrs;
+X
+X		noerrs = 1;
+X
+X		if (ic) {
+X		    *p = ic;
+X		    sprintf(p + 1, "%s%s%s%s", fpre, str, fsuf, psuf);
+X		} else
+X		    strcpy(p, str);
+X		ss = dupstring(p);
+X		singsub(&ss);
+X		strcpy(p, ss);
+X
+X		noerrs = ne;
+X	    } else
+X		sprintf(p, "%s%s%s%s%s",
+X			(prpre && *prpre) ? prpre : "./", fpre, str,
+X			fsuf, psuf);
+X	    if (!ztat(p, &buf, 0) && (buf.st_mode & S_IFMT) == S_IFDIR) {
+X		singlec = '/';
+X		if (menuwe)
+X		    addedsuffix = isset(AUTOREMOVESLASH) ? 1 : 0;
+X	    }
+X	}
+X	if (menuend > ll)
+X	    menuend = ll;
+X	if (menuend && ((char)line[menuend - 1]) != singlec)
+X	    if (!menucur || !line[menuend]) {
+X		ccs = cs;
+X		cs = menuend;
+X		inststrlen((char *)&singlec, 1, 1);
+X		insc = 1;
+X		inscs = cs;
+X		if (!menuwe)
+X		    cs = ccs;
+X	    } else
+X		line[menuend] = (unsigned char)singlec;
+X    }
+X    if (isset(ALWAYSTOEND) || menuwe)
+X	cs = menuend + !(haswhat & HAS_SUFFIX);
+X    if (menucmp && singlec == ' ' && !(haswhat & HAS_SUFFIX)) {
+X	if (insc) {
+X	    ccs = cs;
+X	    cs = inscs;
+X	    backdel(1);
+X	    if (ccs != inscs)
+X	      cs = ccs;
+X	}
+X	else
+X	    cs--;
+X    }
+X}
+X
+Xvoid do_ambig_menu()
+X{				/**/
+X    menucmp = 1;
+X    menucur = NULL;
+X    do_single(*menuarr);
+X    menucur = menuarr;
+X}
+X
+Xint strpfx(s, t)		/**/
+Xchar *s;
+Xchar *t;
+X{
+X    while (*s && *s == *t)
+X	s++, t++;
+X    return !*s;
+X}
+X
+Xint strsfx(s, t)		/**/
+Xchar *s;
+Xchar *t;
+X{
+X    int ls = strlen(s), lt = strlen(t);
+X
+X    if (ls <= lt)
+X	return !strcmp(t + lt - ls, s);
+X    return 0;
+X}
+X
+Xint pfxlen(s, t)		/**/
+Xchar *s;
+Xchar *t;
+X{
+X    int i = 0;
+X
+X    while (*s && *s == *t)
+X	s++, t++, i++;
+X    return i;
+X}
+X
+Xint sfxlen(s, t)		/**/
+Xchar *s;
+Xchar *t;
+X{
+X    if (*s && *t) {
+X	int i = 0;
+X	char *s2 = s + strlen(s) - 1, *t2 = t + strlen(t) - 1;
+X
+X	while (s2 >= s && t2 >= t && *s2 == *t2)
+X	    s2--, t2--, i++;
+X
+X	return i;
+X    } else
+X	return 0;
+X}
+X
+Xint printfmt(fmt, n, dopr)	/**/
+Xchar *fmt;
+Xint n;
+Xint dopr;
+X{
+X    char *p = fmt, nc[14];
+X    int l = 1, cc = 0;
+X
+X    for (; *p; p++) {
+X	if (*p == '%')
+X	    if (*++p)
+X		switch (*p) {
+X		case '%':
+X		    if (dopr)
+X			putchar('%');
+X		    cc++;
+X		    break;
+X		case 'n':
+X		    sprintf(nc, "%d", n);
+X		    if (dopr)
+X			printf(nc);
+X		    cc += strlen(nc);
+X	    } else
+X		break;
+X	else {
+X	    cc++;
+X	    if (*p == '\n') {
+X		l += 1 + (cc / columns);
+X		cc = 0;
+X	    }
+X	    if (dopr)
+X		putchar(*p);
+X	}
+X    }
+X    if (dopr)
+X	putchar('\n');
+X
+X    return l + (cc / columns);
+X}
+X
+Xvoid listmatches()
+X{				/**/
+X    int longest = 1, fct, fw = 0, colsz, t0, t1, ct, up, cl;
+X    int off, boff;
+X    int of = (isset(LISTTYPES) && !(haswhat & HAS_MISC));
+X    char **arr, **ap, sav;
+X
+X    off = ispattern && ppre && *ppre &&
+X	!(haswhat & (HAS_MISC | HAS_PATHPAT)) ? strlen(ppre) : 0;
+X    boff = ispattern && psuf && *psuf &&
+X	!(haswhat & (HAS_MISC | HAS_PATHPAT)) ? strlen(psuf) : 0;
+X
+X    trashzle();
+X    ct = nmatches;
+X
+X    clearflag = (isset(USEZLE) && termok &&
+X		 (isset(ALWAYSLASTPROMPT) && mult == 1)) ||
+X	(unset(ALWAYSLASTPROMPT) && mult != 1);
+X
+X    arr = amatches;
+X
+X    for (ap = arr; *ap; ap++)
+X	if ((cl = strlen(*ap + off) - boff +
+X	     (ispattern ? 0 :
+X	      (!(haswhat & HAS_MISC) ? fpl + fsl : lpl + lsl))) > longest)
+X	    longest = cl;
+X    if (of)
+X	longest++;
+X
+X    fct = (columns - 1) / (longest + 2);
+X    if (fct == 0)
+X	fct = 1;
+X    else
+X	fw = (columns - 1) / fct;
+X    colsz = (ct + fct - 1) / fct;
+X
+X    up = colsz + nlnct - clearflag;
+X
+X    if (expl)
+X	up += printfmt(expl, ct, 0);
+X
+X    if ((listmax && ct > listmax) || (!listmax && up >= lines)) {
+X	fprintf(stdout, "zsh: do you wish to see all %d possibilities? ", ct);
+X	fflush(stdout);
+X	if (getquery() != 'y') {
+X	    if (clearflag) {
+X		tcmultout(TCUP, TCMULTUP, 1);
+X		if (tccan(TCCLEAREOD))
+X		    tcout(TCCLEAREOD);
+X		tcmultout(TCUP, TCMULTUP, nlnct);
+X	    }
+X	    return;
+X	}
+X	if (clearflag) {
+X	    tcout(TCUP);
+X	    if (tccan(TCCLEAREOD))
+X		tcout(TCCLEAREOD);
+X	}
+X    }
+X    if (expl)
+X	printfmt(expl, ct, 1);
+X
+X    for (t1 = 0; t1 != colsz; t1++) {
+X	ap = arr + t1;
+X	if (of) {
+X	    while (*ap) {
+X		int t2 = ispattern ? strlen(*ap) :
+X		strlen(*ap + off) - boff + 1 + fpl + fsl;
+X		char pbuf[MAXPATHLEN], *pb;
+X		struct stat buf;
+X
+X		if (ispattern) {
+X		    sav = ap[0][t2 - boff];
+X		    ap[0][t2 - boff] = '\0';
+X		    printf("%s", *ap + off);
+X		    ap[0][t2 - boff] = sav;
+X		    pb = *ap;
+X		    t2 -= off + boff - 1;
+X		} else {
+X		    printf("%s%s%s", fpre, *ap, fsuf);
+X		    sprintf(pb = pbuf, "%s%s%s%s",
+X			    (prpre && *prpre) ? prpre : "./", fpre, *ap, fsuf);
+X		}
+X		if (ztat(pb, &buf, 1))
+X		    putchar(' ');
+X		else
+X		    putchar(file_type(buf.st_mode));
+X		for (t0 = colsz; t0 && *ap; t0--, ap++);
+X		if (*ap)
+X		    for (; t2 < fw; t2++)
+X			putchar(' ');
+X	    }
+X	} else
+X	    while (*ap) {
+X		int t2 = ispattern ? strlen(*ap) :
+X		strlen(*ap + off) - boff;
+X
+X		if (ispattern) {
+X		    sav = ap[0][t2 - boff];
+X		    ap[0][t2 - boff] = '\0';
+X		    printf("%s", *ap + off);
+X		    ap[0][t2 - boff] = sav;
+X		    t2 -= off + boff;
+X		} else if (!(haswhat & HAS_MISC)) {
+X		    printf("%s%s%s", fpre, *ap, fsuf);
+X		    t2 += fpl + fsl;
+X		} else {
+X		    printf("%s%s%s", lpre, *ap, lsuf);
+X		    t2 += lpl + lsl;
+X		}
+X		for (t0 = colsz; t0 && *ap; t0--, ap++);
+X		if (*ap)
+X		    for (; t2 < fw; t2++)
+X			putchar(' ');
+X	    }
+X	if (t1 != colsz - 1 || !clearflag)
+X	    putchar('\n');
+X    }
+X    if (clearflag)
+X	if (up < lines)
+X	    tcmultout(TCUP, TCMULTUP, up);
+X	else
+X	    clearflag = 0, putchar('\n');
+X
+X    expl = NULL;
+X
+X    fflush(stdout);
+X}
+X
+Xvoid listtlist(l)		/**/
+XLklist l;
+X{
+X    int n = countnodes(l), nm = nmatches;
+X    char **am = amatches, **ap, **bp, **cp;
+X    Lknode nod;
+X
+X    nmatches = n;
+X
+X    amatches = ap = (char **)ncalloc((n + 1) * sizeof(char *));
+X
+X    for (nod = firstnode(l); nod; incnode(nod))
+X	*ap++ = (char *)getdata(nod);
+X    *ap = NULL;
+X
+X    qsort((vptr) amatches, nmatches, sizeof(char *),
+X	       (int (*)DCLPROTO((const void *, const void *)))strpcmp);
+X
+X    for (ap = cp = amatches; *ap; ap++) {
+X	*cp++ = *ap;
+X	for (bp = ap; bp[1] && !strcmp(*ap, bp[1]); bp++);
+X	ap = bp;
+X    }
+X    *cp = NULL;
+X
+X    listmatches();
+X
+X    amatches = am;
+X    nmatches = nm;
+X}
+X
+Xvoid listlist(l)		/**/
+XLklist l;
+X{
+X    int hw = haswhat, ip = ispattern;
+X    char *lp = lpre, *ls = lsuf;
+X
+X    haswhat = HAS_MISC;
+X    ispattern = 0;
+X    lpre = lsuf = "";
+X
+X    listtlist(l);
+X
+X    lpre = lp;
+X    lsuf = ls;
+X    ispattern = ip;
+X    haswhat = hw;
+X}
+X
+Xvoid selectlist(l)		/**/
+XLklist l;
+X{
+X    int longest = 1, fct, fw = 0, colsz, t0, t1, ct;
+X    Lknode n;
+X    char **arr, **ap;
+X
+X    trashzle();
+X    ct = countnodes(l);
+X    ap = arr = (char **)alloc((countnodes(l) + 1) * sizeof(char **));
+X
+X    for (n = (Lknode) firstnode(l); n; incnode(n))
+X	*ap++ = (char *)getdata(n);
+X    *ap = NULL;
+X    for (ap = arr; *ap; ap++)
+X	if (strlen(*ap) > longest)
+X	    longest = strlen(*ap);
+X    t0 = ct;
+X    longest++;
+X    while (t0)
+X	t0 /= 10, longest++;
+X    fct = (columns - 1) / (longest + 3);	/* to compensate for added ')' */
+X    if (fct == 0)
+X	fct = 1;
+X    else
+X	fw = (columns - 1) / fct;
+X    colsz = (ct + fct - 1) / fct;
+X    for (t1 = 0; t1 != colsz; t1++) {
+X	ap = arr + t1;
+X	do {
+X	    int t2 = strlen(*ap) + 2, t3;
+X
+X	    fprintf(stderr, "%d) %s", t3 = ap - arr + 1, *ap);
+X	    while (t3)
+X		t2++, t3 /= 10;
+X	    for (; t2 < fw; t2++)
+X		fputc(' ', stderr);
+X	    for (t0 = colsz; t0 && *ap; t0--, ap++);
+X	}
+X	while (*ap);
+X	fputc('\n', stderr);
+X    }
+X
+X /* Below is a simple attempt at doing it the Korn Way..
+X       ap = arr;
+X       t0 = 0;
+X       do
+X       {
+X       t0++;
+X       fprintf(stderr,"%d) %s\n",t0,*ap);
+X       ap++;
+X       }
+X       while (*ap);*/
+X    fflush(stderr);
+X}
+X
+Xint doexpandhist()
+X{				/**/
+X    unsigned char *cc, *ce, oc = ' ', ooc = ' ';
+X    int t0, oldcs, oldll;
+X
+X    for (cc = line, ce = line + ll; cc < ce; ooc = oc, oc = *cc++)
+X	if (*cc == '\\' && cc[1])
+X	    cc++;
+X	else if ((*cc == bangchar && oc != '>' && (oc != '&' || ooc != '>')) ||
+X		 (*cc == hatchar && *line == hatchar && cc != line))
+X	    break;
+X    if (*cc == bangchar && cc[1] == '"')
+X	return 3;
+X    if (cc == ce)
+X	return 2;
+X    oldcs = cs;
+X    oldll = ll;
+X    zleparse = 1;
+X    lexsave();
+X    hungets(UTOSCP(line));
+X    strinbeg();
+X    pushheap();
+X    ll = cs = 0;
+X    for (;;) {
+X	t0 = hgetc();
+X	if (lexstop)
+X	    break;
+X	spaceinline(1);
+X	line[cs++] = t0;
+X    }
+X    hflush();
+X    popheap();
+X    strinend();
+X    errflag = zleparse = 0;
+X    t0 = histdone;
+X    lexrestore();
+X    line[ll = cs] = '\0';
+X    if (ll == oldll)
+X	cs = oldcs;
+X    return t0;
+X}
+X
+Xvoid magicspace()
+X{				/**/
+X    c = ' ';
+X    selfinsert();
+X    doexpandhist();
+X}
+X
+Xvoid expandhistory()
+X{				/**/
+X    if (!doexpandhist())
+X	feep();
+X}
+X
+Xstatic int cmdwb, cmdwe;
+X
+Xchar *getcurcmd()
+X{				/**/
+X    int curlincmd;
+X    char *s = NULL;
+X
+X    zleparse = 1;
+X    lexsave();
+X    hungets(" ");		/* KLUDGE! */
+X    hungets(UTOSCP(line));
+X    strinbeg();
+X    pushheap();
+X    do {
+X	curlincmd = incmdpos;
+X	ctxtlex();
+X	if (tok == ENDINPUT)
+X	    break;
+X	if (tok == STRING && curlincmd) {
+X	    zsfree(s);
+X	    s = ztrdup(tokstr);
+X	    cmdwb = ll - wordbeg;
+X	    cmdwe = ll + 1 - inbufct;
+X	}
+X    }
+X    while (tok != ENDINPUT && zleparse);
+X    hflush();
+X    popheap();
+X    strinend();
+X    errflag = zleparse = 0;
+X    lexrestore();
+X    return s;
+X}
+X
+Xvoid processcmd()
+X{				/**/
+X    char *s, *t;
+X
+X    s = getcurcmd();
+X    if (!s) {
+X	feep();
+X	return;
+X    }
+X    t = zlecmds[bindk].name;
+X    mult = 1;
+X    permalloc();
+X    pushline();
+X    lastalloc();
+X    sizeline(strlen(s) + strlen(t) + 1);
+X    strcpy((char *)line, t);
+X    strcat((char *)line, " ");
+X    cs = ll = strlen((char *)line);
+X    inststr(s);
+X    zsfree(s);
+X    done = 1;
+X}
+X
+Xvoid expandcmdpath()
+X{				/**/
+X    int oldcs = cs, na = noaliases;
+X    char *s, *str;
+X
+X    noaliases = 1;
+X    s = getcurcmd();
+X    noaliases = na;
+X    if (!s || cmdwb < 0 || cmdwe < cmdwb) {
+X	feep();
+X	return;
+X    }
+X    str = findcmd(s);
+X    zsfree(s);
+X    if (!str) {
+X	feep();
+X	return;
+X    }
+X    cs = cmdwb;
+X    foredel(cmdwe - cmdwb);
+X    spaceinline(strlen(str));
+X    strncpy((char *)line + cs, str, strlen(str));
+X    cs = oldcs;
+X    if (cs >= cmdwe - 1)
+X	cs += cmdwe - cmdwb + strlen(str);
+X    if (cs > ll)
+X	cs = ll;
+X    zsfree(str);
+X}
+X
+X/* Extra function added by AR Iano-Fletcher. */
+X/* This is a expand/complete in the vein of wash. */
+X
+Xvoid expandorcompleteprefix()
+X{				/**/
+X /* global c is the current character typed. */
+X    int csafe = c;
+X
+X /* insert a space and backspace. */
+X    c = ' ';
+X    selfinsert();		/* insert the extra character */
+X    forwardchar();		/* move towards beginning */
+X
+X /* do the expansion/completion. */
+X    c = csafe;
+X    expandorcomplete();		/* complete. */
+X
+X /* remove the inserted space. */
+X    backwardchar();		/* move towards ends */
+X    deletechar();		/* delete the added space. */
+X}
+END_OF_FILE
+  if test 62106 -ne `wc -c <'zsh-2.5.0/src/zle_tricky.c'`; then
+    echo shar: \"'zsh-2.5.0/src/zle_tricky.c'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/zle_tricky.c'
+fi
+echo shar: End of archive 5 \(of 18\).
+cp /dev/null ark5isdone
+MISSING=""
+for I in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 ; do
+    if test ! -f ark${I}isdone ; then
+	MISSING="${MISSING} ${I}"
+    fi
+done
+if test "${MISSING}" = "" ; then
+    echo You have unpacked all 18 archives.
+    rm -f ark[1-9]isdone ark[1-9][0-9]isdone
+else
+    echo You still must unpack the following archives:
+    echo "        " ${MISSING}
+fi
+exit 0
+exit 0 # Just in case...

@@ -1,0 +1,4 @@
+       eval [ arg ... ]
+              Read the arguments as input to the shell  and  exe-
+              cute  the resulting command(s) in the current shell
+              process.

@@ -1,0 +1,2632 @@
+Path: news.csc.fi!news.eunet.fi!EU.net!uunet!sparky!not-for-mail
+From: zsh-list@sterling.com (Bas de Bakker)
+Newsgroups: comp.sources.misc
+Subject: v43i091:  zsh - The Z shell, version 2.5.0, Part02/18
+Followup-To: comp.sources.d
+Date: 13 Jul 1994 23:01:43 -0500
+Organization: Sterling Software
+Lines: 2617
+Sender: kent@sparky.sterling.com
+Approved: kent@sparky.sterling.com
+Message-ID: <302db7$sps@sparky.sterling.com>
+References: <csm-v43i089=zsh.230017@sparky.sterling.com>
+NNTP-Posting-Host: sparky.sterling.com
+X-Md4-Signature: d559b0ef8cc769e1c74fffd9911110e6
+
+Submitted-by: zsh-list@sterling.com (Bas de Bakker)
+Posting-number: Volume 43, Issue 91
+Archive-name: zsh/part02
+Environment: UNIX
+Supersedes: zsh: Volume 35, Issue 51-72
+
+#! /bin/sh
+# This is a shell archive.  Remove anything before this line, then feed it
+# into a shell via "sh file" or similar.  To overwrite existing files,
+# type "sh file -c".
+# Contents:  zsh-2.5.0/help/unlimit zsh-2.5.0/man/zsh.1.B
+# Wrapped by kent@sparky on Tue Jul 12 16:47:16 1994
+PATH=/bin:/usr/bin:/usr/ucb:/usr/local/bin:/usr/lbin:$PATH ; export PATH
+echo If this archive is complete, you will see the following message:
+echo '          "shar: End of archive 2 (of 18)."'
+if test -f 'zsh-2.5.0/help/unlimit' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/unlimit'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/unlimit'\" \(273 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/unlimit' <<'END_OF_FILE'
+X       unlimit [ -h ] resource ...
+X              The  resource limit for each resource is set to the
+X              hard limit.  If the -h flag is given and the  shell
+X              is  running  as  root,  the hard resource limit for
+X              each resource is removed.
+END_OF_FILE
+  if test 273 -ne `wc -c <'zsh-2.5.0/help/unlimit'`; then
+    echo shar: \"'zsh-2.5.0/help/unlimit'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/unlimit'
+fi
+if test -f 'zsh-2.5.0/man/zsh.1.B' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/man/zsh.1.B'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/man/zsh.1.B'\" \(83377 characters\)
+  sed "s/^X//" >'zsh-2.5.0/man/zsh.1.B' <<'END_OF_FILE'
+X.TP
+X\fBsend-break\fP (^G)
+XAbort the current editor function, eg. \fBexecute-named-command\fP, or the
+Xeditor itself, eg. if you are in \fBvared\fP. Otherwise abort the parsing of
+Xthe current line.
+X.TP
+X\fBrun-help\fP (ESC-H ESC-h)
+XPush the buffer onto the buffer stack, and execute the
+Xcommand "\fBrun-help\fP \fIcmd\fP", where \fIcmd\fP is the current
+Xcommand.  \fBrun-help\fP is normally aliased to \fBman\fP.
+X.TP
+X\fBvi-set-buffer\fP (unbound) (")
+XSpecify a buffer to be used in the following command.
+X.TP
+X\fBvi-set-mark\fP (unbound) (m)
+XSet the specified mark at the cursor position.
+X.TP
+X\fBset-mark-command\fP (^@)
+XSet the mark at the cursor position.
+X.TP
+X\fBspell-word\fP (ESC-$ ESC-S ESC-s)
+XAttempt spelling correction on the current word.
+X.TP
+X\fBundefined-key\fP
+XBeep.
+X.TP
+X\fBundo\fP (^_ ^Xu ^X^U) (u)
+XIncrementally undo the last text modification.
+X.TP
+X\fBwhich-command\fP (ESC-?)
+XPush the buffer onto the buffer stack, and execute the
+Xcommand "\fBwhich-command\fP \fIcmd\fP", where \fIcmd\fP is the current
+Xcommand.  \fBwhich-command\fP is normally aliased to \fBwhence\fP.
+X.SH PARAMETERS
+XA parameter has a name, a value, and a number of attributes.
+XA name may be any sequence of alphanumeric
+Xcharacters and _'s, or the single characters
+X*, @, #, ?, \-, $, or !.
+XThe value may be either a \fIscalar\fP (a string),
+Xan integer, or an array.
+XTo assign a scalar or integer value to a parameter,
+Xuse the \fBtypeset\fP builtin.
+XTo assign an array value, use \fBset \-A\fP \fIname\fP \fIvalue\fP ....
+XThe value of a parameter may also be assigned by writing:
+X.RS
+X.PP
+X\fIname\fP=\fIvalue\fP ...
+X.RE
+X.PP
+XIf the integer attribute, \-\fBi\fP, is set for \fIname\fP,
+Xthe \fIvalue\fP is subject to arithmetic evaluation.
+X.PP
+XThe value of an array parameter may be assigned by writing:
+X.RS
+X.PP
+X\fIname\fP=(\fIvalue\fP ...) ...
+X.RE
+XIndividual elements of an array may be selected using a 
+Xsubscript.  A subscript of the form \fB[\fIexp\fB]\fR
+Xselects the single element \fIexp\fP, where \fIexp\fP is
+Xan arithmetic expression which will be subject to arithmetic
+Xexpansion as if it were surrounded by "$[...]".  
+XThe elements are numbered beginning with 1.
+XA subscript of the form \fB[*]\fP or \fB[@]\fP evaluates to all
+Xelements of an array; there is no difference between the two
+Xexcept when they appear within double quotes.
+X"$foo[*]" evaluates to "$foo[1] $foo[2] ...", while
+X"$foo[@]" evaluates to "$foo[1]" "$foo[2]", etc.
+XA subscript of the form \fB[\fIexp1\fP,\fIexp2\fB]\fR
+Xselects all elements in the range \fIexp1\fP to \fIexp2\fP,
+Xinclusive.
+XIf one of the subscripts evaluates to a negative number,
+Xsay \-\fIn\fP, then the \fIn\fPth element from the end
+Xof the array is used.  Thus "$foo[-3]" is the third element
+Xfrom the end of the array \fIfoo\fP, and
+X"$foo[1,-1]" is the same as "$foo[*]".
+X.PP
+XSubscripting may also be performed on non-array values, in which
+Xcase the subscripts specify a substring to be extracted.
+XFor example, if \fBFOO\fP is set to \fBfoobar\fP, then
+X\fBecho $FOO[2,5]\fP prints \fBooba\fP.
+X.PP
+XIf a subscript is used on the left side of an assignment the selected
+Xrange is replaced by the expression on the right side.
+X.PP
+XIf the opening bracket or the comma is directly followed by an opening
+Xparentheses the string up to the matching closing one is considered to
+Xbe a list of flags. The flags currently understood are:
+X.PP
+X.RS
+X.PD
+X.TP
+X.B e
+Xthe argument is expanded using full shell expansion first
+X.TP
+X.B w
+Xif the parameter subscripted is a scalar than this flag makes
+Xsubscription work on a per-word basis instead of characters
+X.TP
+X.B s:\fIstring\fB:
+Xthis gives the \fIstring\fP that separates words (for use with the
+X\fBw\fP flag)
+X.TP
+X.B r
+Xif this flag is given the \fIexp\fP is taken as a pattern and the
+Xresult is the first matching array element, substring or word (if the
+Xparameter is an array, if it is a scalar, or if it is a scalar and the
+X\fBw\fP flag is given, respectively); note that this is like giving a
+Xnumber: \fB$foo[(r)??,3]\fP and \fB$foo[(r)??,(r)f*]\fP work
+X.TP
+X.B R
+Xlike \fBr\fP, but gives the last match
+X.TP
+X.B i
+Xlike \fBr\fP, but gives the index of the match instead; this may not
+Xbe combined with a second argument
+X.TP
+X.B I
+Xlike \fBi\fP, but gives the index of the last match
+X.TP
+X.B n:\fIexpr\fB:
+Xif combined with \fBr\fP, \fBR\fP, \fI\fP, or \fBI\fP, makes them give
+Xthe \fIn\fP'th or \fIn\fP'th last match (if \fIexpr\fP evaluates to
+X\fIn\fP)
+X.PD
+X.RE
+X.SS Positional Parameters
+XPositional parameters are set by the shell on invocation,
+Xby the \fBset\fP builtin, or by direct assignment.
+XThe parameter \fIn\fP, where \fIn\fP is a number,
+Xis the \fIn\fPth positional parameter.
+XThe parameters \fB*\fP, \fB@\fP, and \fBargv\fP are
+Xarrays containing all the positional parameters;
+Xthus \fBargv\fP[\fIn\fP], etc. is equivalent to simply \fIn\fP.
+X.PP
+X.SS Special Parameters
+XThe following parameters are automatically set by the shell:
+X.PP
+X.RS
+X.PD 0
+X.TP
+X.B !
+XThe process id of the last background command invoked.
+X.TP
+X.B #
+XThe number of positional parameters in decimal.
+X.TP
+X.B ARGC
+XSame as \fB#\fP.
+X.TP
+X.B $
+XThe process id of this shell.
+X.TP
+X.B \-
+XFlags supplied to the shell on invocation or by the \fBset\fP
+Xor \fBsetopt\fP commands.
+X.TP
+X.B *
+XAn array containing the positional parameters.
+X.TP
+X.B argv
+XSame as \fB*\fP.
+X.TP
+X.B @
+XSame as \fBargv[@]\fP.
+X.TP
+X.B ?
+XThe exit value returned by the last command.
+X.TP
+X.B status
+XSame as \fB?\fP.
+X.TP
+X.B _
+XThe last argument of the previous command.
+XAlso, this parameter is set in the environment of every command
+Xexecuted to the full pathname of the command.
+X.TP
+X.B EGID
+XThe effective group id of the shell process.
+X.TP
+X.B EUID
+XThe effective user id of the shell process.
+X.TP
+X.B ERRNO
+XThe value of errno as set by the most recently failed system call.
+XThis value is system dependent and is intended for debugging
+Xpurposes.
+X.TP
+X.B GID
+XThe group id of the shell process.
+X.TP
+X.B HOST
+XThe current hostname.
+X.TP
+X.B HOSTTYPE
+XA string corresponding to the type of the host the shell
+Xis running on.
+X.TP
+X.B LINENO
+XThe line number of the current line within the current script
+Xbeing executed.
+X.TP
+X.B OLDPWD
+XThe previous working directory.
+X.TP
+X.B OPTARG
+XThe value of the last option argument processed by the \fBgetopts\fP
+Xcommand.
+X.TP
+X.B OPTIND
+XThe index of the last option argument processed by the \fBgetopts\fP
+Xcommand.
+X.TP
+X.B PPID
+XThe process id of the parent of the shell.
+X.TP
+X.B PWD
+XThe present working directory.
+X.TP
+X.B RANDOM
+XA random integer from 0 to 32767, newly generated each time
+Xthis parameter is referenced.  The random number generator
+Xcan be seeded by assigning a numeric value to \fBRANDOM\fP.
+X.TP
+X.B SECONDS
+XThe number of seconds since shell invocation.  If this parameter
+Xis assigned a value, then the value returned upon reference
+Xwill be the value that was assigned plus the number of seconds
+Xsince the assignment.
+X.TP
+X.B SHLVL
+XIncremented by one each time a new shell is started.
+X.TP
+X.B signals
+XAn array containing the names of the signals.
+X.TP
+X.B TTY
+XThe name of the tty associated with the shell, if any.
+X.TP
+X.B UID
+XThe user id of the shell process.
+X.TP
+X.B USERNAME
+X.TP
+X.B LOGNAME
+XThe username corresponding to the user id of the shell process.
+X.TP
+X.B VERSION
+XThe version number of this \fBzsh\fP.
+X.PD
+X.RE
+X.PP
+XThe following parameters are used by the shell:
+X.PP
+X.RS
+X.PD 0
+X.TP
+X.B ARGV0
+XIf exported, it's value is used as argv[0] of external commands.
+XUsually used in constructs like 'ARGV0=emacs nethack'.
+X.TP
+X.B BAUD
+XThe baud rate of the current connection.  Used by the line editor
+Xupdate mechanism to compensate for a slow terminal by delaying
+Xupdates until necessary.  This may be profitably set to a lower value
+Xin some circumstances, e.g.
+Xfor slow modems dialing into a communications server which is connected
+Xto a host via a fast link; in this case, this variable
+Xwould be set by default to the speed of the fast link, and not
+Xthe modem.
+XThis parameter should be set to the baud
+Xrate of the slowest part of the link for best performance. The compensation
+Xmechanism can be turned off by setting the variable to zero.
+X.TP
+X.B cdpath (CDPATH)
+XAn array (colon-separated list)
+Xof directories specifying the search path for the \fBcd\fP command.
+X.TP
+X.B COLUMNS
+XThe number of columns for this terminal session.
+XUsed for printing select lists and for the line editor.
+X.TP
+X.B DIRSTACKSIZE
+XThe maximum size of the directory stack.  If the 
+Xstack gets larger than this, it will be truncated automatically.
+XThis is useful with the \fBAUTO_PUSHD\fP option.
+X.TP
+X.B FCEDIT
+XThe default editor for the \fBfc\fP builtin.
+X.TP
+X.B fignore (FIGNORE)
+XAn array (colon separated list)
+Xcontaining the suffixes of files to be ignored
+Xduring filename completion.
+X.TP
+X.B fpath (FPATH)
+XAn array (colon separated list)
+Xof directories specifying the search path for
+Xfunction definitions.  This path is searched when a function
+Xwith the \-\fBu\fP attribute is referenced.  If an executable
+Xfile is found, then it is read and executed in the current environment.
+X.TP
+X.B HISTCHARS
+XThree characters used by the shell's history and lexical analysis
+Xmechanism.  The first character signals the start of a history
+Xsubstitution (default `!').  The second character signals the
+Xstart of a quick history substitution (default `^').  The third
+Xcharacter is the comment character (default `#').
+X.TP
+X.B HISTFILE
+XThe file to save the history in when an interactive shell exits.
+XIf unset, the history is not saved.
+X.TP
+X.B HISTSIZE
+XThe maximum size of the history list.
+X.TP
+X.B HOME
+XThe default argument for the \fBcd\fP command.
+X.TP
+X.B IFS
+XInternal field separators, normally space, tab, and newline, that
+Xare used to separate words which result from
+Xcommand or parameter substitution and words read by
+Xthe \fBread\fP builtin.
+X.TP
+X.B KEYTIMEOUT
+XThe time the shell waits, in hundredths of seconds, for another key to
+Xbe pressed when reading bound multi-character sequences.
+X.TP
+X.B LINES
+XThe number of lines for this terminal session.
+XUsed for printing select lists and for the line editor.
+X.TP
+X.B LISTMAX
+XIn the line editor,
+Xthe number of filenames to list without asking first.
+XIf set to zero, the shell asks only if the top of the listing would scroll
+Xoff the screen.
+X.TP
+X.B LITHISTSIZE
+XThe maximum size of the literal history list (before history expansion).
+X.TP
+X.B LOGCHECK
+XThe interval in seconds between checks for login/logout activity
+Xusing the \fBwatch\fP parameter.
+X.TP
+X.B MAIL
+XIf this parameter is set and \fBmailpath\fP is not set,
+Xthe shell looks for mail in the specified file.  By default it is set to
+Xthe user's system mailbox.
+X.TP
+X.B MAILCHECK
+XThe interval in seconds between checks for new mail. 
+X.TP
+X.B mailpath (MAILPATH)
+XAn array (colon-separated list)
+Xof filenames to check for new mail.  Each filename can
+Xbe followed by a ? and a message that will be printed.
+XThe sequence $_ in the message will be replaced by the name 
+Xof the mail file.
+XThe default message is "You have new mail." If an element is a directory
+Xinstead of a file the shell will recursively check every file in every
+Xsubdirectory of the element.
+X.TP
+X.B manpath (MANPATH)
+XAn array (colon-separated list)
+Xwhose value is not used by the shell.  The \fBmanpath\fP
+Xarray can be useful, however, since setting it also sets
+X\fBMANPATH\fP, and vice versa.
+X.TP
+X.B NULLCMD
+XThe command name to assume if a redirection is specified
+Xwith no command.  Defaults to \fBcat\fP.  For sh/ksh-like
+Xbehavior, change this to \fB:\fP.  For csh-like
+Xbehavior, unset this parameter; the shell will print an
+Xerror message if null commands are entered.
+X.TP
+X.B path (PATH)
+XAn array (colon-separated list)
+Xof directories to search for commands.
+XWhen this parameter is set, each directory is scanned
+Xand all files found are put in a hash table.
+X.TP
+X.B POSTEDIT
+XThis string is output whenever the line editor exits.
+XIt usually contains termcap strings to reset the terminal.
+X.TP
+X.B PROMPT
+XThe primary prompt string, printed before a command is read;
+Xthe default is "%m%# ".  If the escape sequence takes an optional
+Xinteger, it should appear between the '%' and the next character of the
+Xsequence.  The following escape sequences are recognized:
+X.PD
+X.PP
+X.PD 0
+X.RS
+X.TP
+X.B %d
+X.TP
+X.B %/
+XPresent working directory ($PWD).
+X.TP
+X.B %~
+X$PWD.
+XIf it has a named directory as its prefix, that part is replaced
+Xby a ~ followed by the name of the directory.
+XIf it starts with $HOME, that part is
+Xreplaced by a ~.
+X.TP
+X.B %c
+X.TP
+X.B %.
+X.TP
+X.B %C
+XTrailing component of $PWD.
+XAn integer may follow the '%' to get more than one component.
+XUnless \fB%C\fP is used, tilde expansion is performed first.
+X.TP
+X.B !
+X.TP
+X.B %h
+X.TP
+X.B %!
+XCurrent history event number
+X.TP
+X.B %M
+XThe full machine hostname.
+X.TP
+X.B %m
+XThe hostname up to the first '.'.
+XAn integer may follow the '%' to specify
+Xhow many components of the hostname are desired.
+X.TP
+X.B %S (%s)
+XStart (stop) standout mode.
+X.TP
+X.B %U (%u)
+XStart (stop) underline mode.
+X.TP
+X.B %B (%b)
+XStart (stop) boldface mode.
+X.TP
+X.B %t
+X.TP
+X.B %@
+XCurrent time of day, in 12-hour, am/pm format.
+X.TP
+X.B %T
+XCurrent time of day, in 24-hour format.
+X.TP
+X.B %*
+XCurrent time of day in 24-hour format, with seconds.
+X.TP
+X.B %n
+X\fB$USERNAME\fP.
+X.TP
+X.B %w
+XThe date in day\-dd format.
+X.TP
+X.B %W
+XThe date in mm/dd/yy format.
+X.TP
+X.B %D
+XThe date in yy\-mm\-dd format.
+X.TP
+X.B %D{\fIstring\fP}
+X\fIstring\fP is formatted using the \fBstrftime\fP function.
+XSee \fBstrftime(3)\fP for more details, if your system has it.
+X.TP
+X.B %l
+XThe line (tty) the user is logged in on.
+X.TP
+X.B %?
+XThe return code of the last command executed just before the prompt.
+X.TP
+X.B %_
+XThe status of the parser, i.e. the shell constructs (like `if' and
+X`for') that have been started on the command line. If given an integer
+Xnumber that many strings will be printed.
+X.TP
+X.B
+X%E
+XClears to end of line.
+X.TP
+X.B %#
+XA '#' if the shell is running as root, a '%' if not.
+XEquivalent to %(#.#.%%).
+X.TP
+X.B %v
+XThe value of the first element of the $psvar array parameter.  Following
+Xthe '%' with an integer gives that element of the array.
+X.TP
+X\fB%{\fP...\fB%}\fP
+XInclude a string as a literal escape sequence.
+XThe string within the braces should not change the cursor
+Xposition.
+X.TP
+X.B %(x\fI.true-text.false-text\fB)\fP
+XSpecifies a ternary expression.  The character following the \fBx\fP is
+Xarbitrary; the same character is used to separate the text for the
+X"true" result from that for the "false" result.  Both the separator and
+Xthe right parenthesis may be escaped with a backslash.  \fITrue-text\fP
+Xand \fIfalse-text\fP may both contain arbitrarily-nested escape
+Xsequences, including further ternary expressions.  The left
+Xparenthesis may be preceded or followed by a positive integer \fIn\fP,
+Xwhich defaults to zero.  The test character \fBx\fP may be any of the
+Xfollowing:
+X.PD
+X.PP
+X.PD 0
+X.RS
+X.B c
+X.TP 
+X.B .
+X.TP
+X.B ~
+XTrue if the current path, with prefix replacement, has at least \fIn\fP
+Xelements.
+X.TP
+X.B /
+X.TP
+X.B C
+XTrue if the current absolute path has at least \fIn\fP elements.
+X.TP
+X.B t
+XTrue if the time in minutes is equal to \fIn\fP.
+X.TP
+X.B T
+XTrue if the time in hours is equal to \fIn\fP.
+X.TP
+X.B d
+XTrue if the day of the month is equal to \fIn\fP.
+X.TP
+X.B D
+XTrue if the month is equal to \fIn\fP (January = 0).
+X.TP
+X.B w
+XTrue if the day of the week is equal to \fIn\fP (Sunday = 0).
+X.TP
+X.B ?
+XTrue if the exit status of the last command was \fIn\fP.
+X.TP
+X.B #
+XTrue if the effective uid of the current process is \fIn\fP.
+X.TP
+X.B g
+XTrue if the effective gid of the current process is \fIn\fP.
+X.TP
+X.B L
+XTrue if the SHLVL parameter is at least \fIn\fP.
+X.TP
+X.B S
+XTrue if the SECONDS parameter is at least \fIn\fP.
+X.TP
+X.B v
+XTrue if the array psvar has at least \fIn\fP elements.
+X.TP
+X.B _
+XTrue if at least \fIn\fP shell constructs were started.
+X.RE
+X.RE
+X.PD
+X.PP
+X.PD 0
+X.TP
+X.B PROMPT2
+XThe secondary prompt, printed when the shell needs more information
+Xto complete a command.
+XRecognizes the same escape sequences as \fB$PROMPT\fP.
+XThe default is "> ".
+X.TP
+X.B PROMPT3
+XSelection prompt used within a \fBselect\fP loop.
+XRecognizes the same escape sequences as \fB$PROMPT\fP.
+XThe default is "?# ".
+X.TP
+X.B PROMPT4
+XThe execution trace prompt.  Default is "+ ".
+X.TP
+X.B PS1
+X.TP
+X.B PS2
+X.TP
+X.B PS3
+X.TP
+X.B PS4
+XSame as \fBPROMPT\fP, \fBPROMPT2\fP, \fBPROMPT3\fP, and \fBPROMPT4\fP,
+Xrespectively.
+X.TP
+X.B psvar (PSVAR)
+XAn array (colon-separated list) whose first nine values can be used in
+X\fBPROMPT\fP strings.  Setting \fBpsvar\fP also sets \fBPSVAR\fP, and
+Xvice versa.
+X.TP
+X.B prompt
+XSame as \fBPROMPT\fP.
+X.TP
+X.B READNULLCMD
+XThe command name to assume if a single input redirection
+Xis specified with no command.  Defaults to \fBmore\fP.
+X.TP
+X.B REPORTTIME
+XIf nonnegative, commands whose combined user and system execution times
+X(measured in seconds) are greater than this value have timing
+Xstatistics printed for them.
+X.TP
+X.B RPROMPT
+X.TP
+X.B RPS1
+XThis prompt is displayed on the right-hand side of the screen
+Xwhen the primary prompt is being displayed on the left.
+XThis does not work if the \fBSINGLELINEZLE\fP option is set.
+XRecognizes the same escape sequences as \fBPROMPT\fP.
+X.TP
+X.B SAVEHIST
+XThe maximum number of history events to save in the history file.
+X.TP
+X.B SPROMPT
+XThe prompt used for spelling correction.  The sequence
+X\fB%R\fP expands to the string which presumably needs spelling
+Xcorrection, and \fB%r\fP expands to the proposed correction.
+XAll other \fBPROMPT\fP escapes are also allowed.
+X.TP
+X.B STTY
+XIf this parameter is set in a command's environment, the shell runs the
+X\fBstty\fP command with the value of this parameter as arguments in order to
+Xset up the terminal before executing the command. The modes apply only to the
+Xcommand, and are reset when it finishes or is suspended. If the command is
+Xsuspended and continued later with the \fBfg\fP or \fBwait\fP builtins it will
+Xsee the modes specified by STTY, as if it were not suspended.  This
+X(intentionally) does not apply if the command is continued via "kill -CONT".
+XSTTY is ignored if the command is run in the background, or if it is in the
+Xenvironment of the shell but not explicitly assigned to in the input line. This
+Xavoids running stty at every external command by accidentally exporting it.
+XAlso note that STTY should not be used for window size specifications; these
+Xwill not be local to the command.
+X.TP
+X.B TIMEFMT
+XThe format of process time reports with the \fBtime\fP keyword.
+XThe default is "%E real  %U user  %S system  %P %J".
+XRecognizes the following escape sequences:
+X.PD
+X.PP
+X.PD 0
+X.RS
+X.TP
+X.B %U
+XCPU seconds spent in user mode.
+X.TP
+X.B %S
+XCPU seconds spent in kernel mode.
+X.TP
+X.B %E
+XElapsed time in seconds.
+X.TP
+X.B %P
+XThe CPU percentage, computed as (%U+%S)/%E.
+X.TP
+X.B %W
+XNumber of times the process was swapped.
+X.TP
+X.B %X
+XThe average amount in (shared) text space used in Kbytes.
+X.TP
+X.B %D
+XThe average amount in (unshared) data/stack space used in Kbytes.
+X.TP
+X.B %K
+XThe total space used (%X+%D) in Kbytes.
+X.TP
+X.B %M
+XThe maximum memory the process had in use at any time in Kbytes.
+X.TP
+X.B %F
+XThe number of major page faults (page needed to be brought from disk).
+X.TP
+X.B %R
+XThe number of minor page faults.
+X.TP
+X.B %I
+XThe number of input operations.
+X.TP
+X.B %O
+XThe number of output operations.
+X.TP
+X.B %r
+XThe number of socket messages received.
+X.TP
+X.B %s
+XThe number of socket messages sent.
+X.TP
+X.B %k
+XThe number of signals received.
+X.TP
+X.B %w
+XNumber of voluntary context switches (waits).
+X.TP
+X.B %c
+XNumber of involuntary context switches.
+X.TP
+X.B %J
+XThe name of this job.
+X.RE
+X.PD
+X.PP
+X.PD 0
+X.TP
+X.B TMOUT
+XIf this parameter is nonzero, the shell will terminate if a command is not
+Xentered within the specified number of seconds after issuing
+Xa prompt.
+X.TP
+X.B TMPPREFIX
+XA pathname prefix which the shell will use for all temporary files.
+XNote that this should include an initial part for the file name as
+Xwell as any directory names.  The default is /tmp/zsh.
+X.TP
+X.B watch (WATCH)
+XAn array (colon-separated list) of login/logout events to report.
+XIf it contains the single word "all", then all login/logout events
+Xare reported.  If it contains the single word "notme", then all
+Xevents are reported as with "all" except $USERNAME.
+XAn entry in this list may consist of a username,
+Xan `@' followed by a remote hostname,
+Xand a `%' followed by a line (tty).
+XAny or all of these components may be present in an entry;
+Xif a login/logout event matches all of them,
+Xit is reported.
+X.TP
+X.B WATCHFMT
+XThe format of login/logout reports if the \fBwatch\fP parameter is set.
+XDefault is "%n has %a %l from %m."
+XRecognizes the following escape sequences:
+X.PD
+X.PP
+X.PD 0
+X.RS
+X.TP
+X.B %n
+XThe name of the user that logged in/out.
+X.TP
+X.B %a
+XThe observed action, i.e. "logged on" or "logged off".
+X.TP
+X.B %l
+XThe line (tty) the user is logged in on.
+X.TP
+X.B %M
+XThe full hostname of the remote host.
+X.TP
+X.B %m
+XThe hostname up to the first ".".  If only the
+Xip address is available or the utmp field contains
+Xthe name of an X-windows display, the whole name is printed.
+X.TP
+X.B NOTE:
+XThe %m and %M escapes will work only if there is a host name
+Xfield in the utmp on your machine.  Otherwise they are
+Xtreated as ordinary strings.
+X.TP
+X.B %S (%s)
+XStart (stop) standout mode.
+X.TP
+X.B %U (%u)
+XStart (stop) underline mode.
+X.TP
+X.B %B (%b)
+XStart (stop) boldface mode.
+X.TP
+X.B %t
+X.TP
+X.B %@
+XThe time, in 12-hour, am/pm format.
+X.TP
+X.B %T
+XThe time, in 24-hour format.
+X.TP
+X.B %w
+XThe date in day\-dd format.
+X.TP
+X.B %W
+XThe date in mm/dd/yy format.
+X.TP
+X.B %D
+XThe date in yy\-mm\-dd format.
+X.TP
+X.B %(x\fI:true-text:false-text\fB)\fP
+XSpecifies a ternary expression.
+XThe character following the \fBx\fP is
+Xarbitrary; the same character is used to separate the text
+Xfor the "true" result from that for the "false" result.
+XBoth the separator and the right parenthesis may be escaped
+Xwith a backslash.
+XTernary expressions may be nested.
+X.sp
+XThe test character \fBx\fP may be any one of \fBl\fP, \fBn\fP, \fBm\fP,
+Xor \fBM\fP, which indicate a "true" result if the corresponding
+Xescape sequence would return a non-empty value; or may be \fBa\fP,
+Xwhich indicates a "true" result if the watched user has logged in,
+Xor "false" if he has logged out.
+XOther characters evaluate to neither true nor false; the entire
+Xexpression is omitted in this case.
+X.sp
+XIf the result is "true", then the \fItrue-text\fP
+Xis formatted according to the rules above and printed,
+Xand the \fIfalse-text\fP is skipped.
+XIf "false", the \fItrue-text\fP is skipped and the \fIfalse-text\fP
+Xis formatted and printed.
+XEither or both of the branches may be empty, but
+Xboth separators must be present in any case.
+X.RE
+X.PD
+X.PP
+X.PD 0
+X.TP
+X.B WORDCHARS
+XA list of nonalphanumeric characters considered part of a word
+Xby the line editor.
+X.TP
+X.B ZDOTDIR
+XThe directory to search for shell startup files (.zshrc, etc),
+Xif not \fB$HOME\fP.
+X.PD
+X.RE
+X.PP
+X.SH OPTIONS
+XThe following options may be set upon invocation of the shell,
+Xor with the \fBset\fP or \fBsetopt\fP builtins. They are case insensitive and
+Xunderscores are ignored, that is, "allexport" is equivalent to "A__lleXP_ort".
+X.RS
+X.PD 0
+X.TP
+X\fBALL_EXPORT\fP (\-\fBa\fP)
+XAll parameters subsequently defined are automatically exported.
+X.TP
+X\fBALWAYS_LAST_PROMPT\fP
+XIf unset, key functions that list completions try to return to the last
+Xprompt if given a numeric argument. If set these functions try to
+Xreturn to the last prompt if given \fBno\fP numeric argument.
+X.TP
+X\fBALWAYS_TO_END\fP
+XIf a completion with the cursor in the word was started and it results
+Xin only one match, the cursor is placed at the end of the word.
+X.TP
+X\fBAPPEND_HISTORY\fP
+XIf this is set, zsh sessions will append their history list to
+Xthe history file, rather than overwrite it. Thus, multiple parallel
+Xzsh sessions will all have their history lists added to the
+Xhistory file, in the order they are killed.
+X.TP
+X\fBAUTO_CD\fP (\-\fBJ\fP)
+XIf a command is not in the hash table, and there exists an
+Xexecutable directory by that name, perform the \fBcd\fP
+Xcommand to that directory.
+X.TP
+X\fBAUTO_LIST\fP (\-\fB9\fP)
+XAutomatically list choices on an ambiguous completion.
+X.TP
+X\fBAUTO_MENU\fP
+XAutomatically use menu completion after the second consecutive request for
+Xcompletion, for example by pressing the \fPTAB\fP key repeatedly. This option
+Xis overridden by \fBMENU_COMPLETE\fP.
+X.TP
+X\fBAUTO_NAME_DIRS
+XAny parameter that is set to the absolute name of a directory
+Ximmediately becomes a name for that directory in the usual form
+X~param.  If this option is not set, the parameter must be used in that
+Xform for it to become a name (a command-line completion is sufficient
+Xfor this).
+X.TP
+X\fBAUTO_PARAM_KEYS\fP
+XIf a parameter name was completed and the next character typed is one
+Xof those that have to come directly after the name (like `}', `:',
+Xetc.) they are placed there automatically.
+X.TP
+X\fBAUTO_PUSHD\fP (\-\fBN\fP)
+XMake \fBcd\fP act like \fBpushd\fP.
+X.TP
+X\fBAUTO_REMOVE_SLASH\fP
+XWhen the last character resulting from a completion is a slash and the next
+Xcharacter typed is a word delimiter, remove the slash.
+X.TP
+X\fBAUTO_RESUME\fP (\-\fBW\fP)
+XTreat single word simple commands without redirection
+Xas candidates for resumption of an existing job.
+X.TP
+X\fBBG_NICE\fP (\-\fB6\fP)
+XRun all background jobs at a lower priority.  This option
+Xis set by default.
+X.TP
+X\fBBRACE_CCL\fP
+XAllow brace expansions of the form \fB{a-zA-Z}\fP, etc.
+X.TP
+X\fBCDABLE_VARS\fP (\-\fBT\fP)
+XIf the argument to a \fBcd\fP command (or an implied \fBcd\fP with the
+X\fBAUTO_CD\fP option set) is not a directory, and does not begin with a
+Xslash, try to expand the expression as if it were preceded by a ~ (see
+X\fBFilename Expansion\fP above).
+X.TP
+X\fBCHASE_LINKS\fP (\-\fBw\fP)
+XResolve symbolic links to their true values.
+X.TP
+X\fBCOMPLETE_ALIASES\fP
+XIf set, aliases on the command line are not internally substituted
+Xbefore completion is attempted.
+X.TP
+X\fBCOMPLETE_IN_WORD\fP
+XIf unset, the cursor is set to the end of the word if completion is
+Xstarted. Otherwise it stays there and completion is done from both ends.
+X.TP
+X\fBCORRECT\fP (\-\fB0\fP)
+XTry to correct the spelling of commands.
+X.TP
+X\fBCORRECT_ALL\fP (\-\fBO\fP)
+XTry to correct the spelling of all arguments in a line.
+X.TP
+X\fBCSH_JUNKIE_HISTORY\fP
+XA history reference without an event specifier will always refer to the
+Xprevious command.
+X.TP
+X\fBCSH_JUNKIE_LOOPS\fP
+XAllow loop bodies to take the form
+X"\fIlist\fP; \fBend\fP" instead of
+X"\fBdo\fP \fIlist\fP; \fBdone\fP".
+X.TP
+X\fBCSH_JUNKIE_PAREN\fP
+XAllow \fBfor\fP, \fBif\fP and \fBwhile\fP loops where the argument
+Xlist is given in parentheses.  Otherwise, the parentheses will be
+Xtreated as specifying a subshell.
+X.TP
+X\fBCSH_JUNKIE_QUOTES\fP
+XComplain if a quoted expression runs off the end of a line;
+Xprevent quoted expressions from containing unescaped newlines.
+X.TP
+X\fBCSH_NULL_GLOB\fP
+XIf a pattern for filename generation has no matches,
+Xdelete the pattern from the argument list;
+Xdo not report an error unless all the patterns
+Xin a command have no matches.
+XOverrides \fBNULLGLOB\fP.
+X.TP
+X\fBERR_EXIT\fP (\-\fBe\fP)
+XIf a command has a non-zero exit status, execute the \fBZERR\fP
+Xtrap, if set, and exit.  This is disabled while running initialization
+Xscripts.
+X.TP
+X\fBEXTENDED_GLOB\fP
+XTreat the #, ~ and ^ characters as part of patterns for filename
+Xgeneration, etc.  (An initial unquoted ~ always produces named
+Xdirectory expansion as in \fBFilename Expansion\fP above.)
+X.TP
+X\fBEXTENDED_HISTORY\fP
+XSave beginning and ending timestamps to the history file.
+XThe format of these timestamps is
+X\fI:<beginning time>:<ending time>:<command>.\fP
+X.TP
+X\fBGLOB_COMPLETE\fP
+XWhen the current word has a glob pattern, do not insert all the words
+Xresulting from the expansion but cycle through them like
+X\fBMENU_COMPLETE\fP. If no matches are found, a `*' is added to the end of the
+Xword or inserted at the cursor if \fBCOMPLETE_IN_WORD\fP is set, and expansion
+Xis attempted again. Using patterns works not only for files but for all
+Xcompletions, such as options, user names, etc.
+X.TP
+X\fBGLOB_DOTS\fP (\-\fB4\fP)
+XDo not require a leading . in a filename to be matched explicitly.
+X.TP
+X\fBGLOB_SUBST\fP
+XTreat any characters resulting from parameter substitution as being
+Xeligible for file expansion and filename generation, and any
+Xcharacters resulting from command substitution as being eligible for
+Xfilename generation.
+X.TP
+X\fBHASH_CMDS\fP
+XPlace the location of each command in the hash table the first
+Xtime it is executed.  If this option is unset, no path hashing
+Xwill be done at all.
+X.TP
+X\fBHASH_DIRS\fP
+XWhenever a command is executed, hash the directory containing it,
+Xas well as all directories that occur earlier in the path.
+XHas no effect if \fBHASH_CMDS\fP is unset.
+X.TP
+X\fBHASH_LIST_ALL\fP
+XWhenever a command completion is attempted, make sure the entire
+Xcommand path is hashed first.  This makes the first completion slower.
+X.TP
+X\fBHIST_IGNORE_DUPS\fP (\-\fBh\fP)
+XDo not enter command lines into the history list
+Xif they are duplicates of the previous event.
+X.TP
+X\fBHIST_IGNORE_SPACE\fP (\-\fBg\fP)
+XDo not enter command lines into the history list
+Xif any command on the line begins with a blank.
+X.TP
+X\fBHIST_LIT\fP (\-\fBj\fP)
+XUse literal (unparsed) versions of the history lines
+Xin the editor.
+X.TP
+X\fBHIST_NO_STORE\fP
+XRemove the \fBhistory\fP (\fBfc\fP \-\fBl\fP) command from
+Xthe history when invoked.
+X.TP
+X\fBHIST_VERIFY\fP
+XWhenever the user enters a line with history substitution,
+Xdon't execute the line directly; instead, perform
+Xhistory substitution and reload the line into the editing buffer.
+X.TP
+X\fBIGNORE_BRACES\fP (\-\fBI\fP)
+XDo not perform brace expansion.
+X.TP
+X\fBIGNORE_EOF\fP (\-\fB7\fP)
+XDo not exit on end-of-file.  Require the use
+Xof \fBexit\fP or \fBlogout\fP instead.
+X.TP
+X\fBINTERACTIVE\fP (\-\fBi\fP)
+XThis is an interactive shell.
+X.TP
+X\fBINTERACTIVE_COMMENTS\fP (\-\fBk\fP)
+XAllow comments even in interactive shells.
+X.TP
+X\fBKSH_OPTION_PRINT\fP
+XAlters the way options settings are printed.
+X.TP
+X\fBLIST_AMBIGUOUS\fP
+XIf this option is set, completions are shown only if the completions
+Xdon't have a unambiguous prefix or suffix that could be inserted in
+Xthe command line.
+X.TP
+X\fBLIST_TYPES\fP (\-\fBX\fP)
+XWhen listing files that are possible completions, show the
+Xtype of each file with a trailing identifying mark.
+X.TP
+X\fBLOGIN\fP (\-\fBl\fP)
+XThis is a login shell.
+X.TP
+X\fBLONG_LIST_JOBS\fP (\-\fBR\fP)
+XList jobs in the long format by default.
+X.TP
+X\fBMAGIC_EQUAL_SUBST\fP
+XAll unquoted arguments of the from \fIidentifier\fB=\fIexpression\fR
+Xhave file expansion performed on \fIexpression\fR as if it were a
+Xparameter assignment, although the argument is not otherwise treated
+Xspecially.
+X.TP
+X\fBMAIL_WARNING\fP (\-\fBU\fP)
+XPrint a warning message if a mail file has been
+Xaccessed since the shell last checked.
+X.TP
+X\fBMARK_DIRS\fP (\-\fB8\fP)
+XAppend a trailing / to all directory
+Xnames resulting from filename generation (globbing).
+X.TP
+X\fBMENU_COMPLETE\fP (\-\fBY\fP)
+XOn an ambiguous completion, instead of listing possibilities or beeping,
+Xinsert the first match immediately.  Then when completion is requested
+Xagain, remove the first match and insert the second match, etc.
+XWhen there are no more matches, go back to the first one again.
+X\fBreverse-menu-complete\fP may be used to loop through the list
+Xin the other direction. This option overrides \fBAUTO_MENU\fP.
+X.TP
+X\fBMONITOR\fP (\-\fBm\fP)
+XAllow job control.  Set by default in interactive shells.
+X.TP
+X\fBNO_BAD_PATTERN\fP (\-\fB2\fP)
+XIf a pattern for filename generation is badly formed,
+Xleave it unchanged in the argument list instead of
+Xprinting an error.
+X.TP
+X\fBNO_BANG_HIST\fP (\-\fBK\fP)
+XDo not perform textual history substitution.  Do not
+Xtreat the ! character specially.
+X.TP
+X\fBNO_BEEP\fP (\-\fBB\fP)
+XDo not beep.
+X.TP
+X\fBNO_CLOBBER\fP (\-\fB1\fP)
+XPrevents \fB>\fP redirection from truncating existing files.
+X\fB>!\fP may be used to truncate a file instead.
+XAlso prevents \fB>>\fP from creating files.
+X\fB>>!\fP may be used instead.
+X.TP
+X\fBNO_EQUALS\fP
+XDon't perform \fB=\fP filename substitution.
+X.TP
+X\fBNO_EXEC\fP (\-\fBn\fP)
+XRead commands and check them for syntax errors, but do not execute them.
+X.TP
+X\fBNO_GLOB\fP (\-\fBF\fP)
+XDisable filename generation.
+X.TP
+X\fBNO_FLOW_CONTROL\fP
+XDisable output flow control via start/stop characters (usually assigned to
+X^S/^Q) in the shell's editor.
+X.TP
+X\fBNO_HIST_BEEP\fP
+XDon't beep when an attempt is made to access a history entry which
+Xisn't there.
+X.TP
+X\fBNO_HUP\fP
+XDon't send the \fBHUP\fP signal to running jobs when the
+Xshell exits.
+X.TP
+X\fBNO_LIST_BEEP\fP
+XDon't beep on an ambiguous completion.
+X.TP
+X\fBNO_NOMATCH\fP (\-\fB3\fP)
+XIf a pattern for filename generation has no matches,
+Xleave it unchanged in the argument list instead of
+Xprinting an error.  This also applies to file expansion 
+Xof an initial ~ or =.
+X.TP
+X\fBNO_PROMPT_CR\fP (\-\fBV\fP)
+XDon't print a carriage return just before printing
+Xa prompt in the line editor.
+X.TP
+X\fBNO_RCS\fP (\-\fBf\fP)
+XSource only the /etc/zshenv file.
+XDo not source the .zshenv, /etc/zprofile, .zprofile,
+X/etc/zshrc, .zshrc, /etc/zlogin, .zlogin, or .zlogout files.
+X.TP
+X\fBNO_SHORT_LOOPS\fP
+XDisallow the short forms of \fBfor\fP, \fBselect\fP,
+X\fBif\fP, and \fBfunction\fP constructs.
+X.TP
+X\fBNOTIFY\fP (\-\fB5\fP)
+XReport the status of background jobs immediately, rather than
+Xwaiting until just before printing a prompt.
+X.TP
+X\fBNO_UNSET\fP (\-\fBu\fP)
+XTreat unset parameters as an error when substituting.
+X.TP
+X\fBNULL_GLOB\fP (\-\fBG\fP)
+XIf a pattern for filename generation has no matches,
+Xdelete the pattern from the argument list instead
+Xof reporting an error.  Overrides \fBNO_NOMATCH\fP.
+X.TP
+X\fBNUMERIC_GLOB_SORT\fP
+XIf numeric filenames are matched by a filename generation pattern,
+Xsort the filenames numerically rather than lexicographically.
+X.TP
+X\fBOVER_STRIKE\fP
+XStart up the line editor in overstrike mode.
+X.TP
+X\fBPATH_DIRS\fP (\-\fBQ\fP)
+XPerform a path search even on command names with slashes in them.
+XThus if "/usr/local/bin" is in the user's path, and he types
+X"X11/xinit", the command "/usr/local/bin/X11/xinit" will be executed
+X(assuming it exists).
+XThis applies to the \fB\&.\fP builtin as well as to command execution.
+XCommands explicitly beginning with "./" or "../" are not subject to
+Xpath search.
+X.TP
+X\fBPRINT_EXIT_VALUE\fP (\-\fBC\fP)
+XPrint the exit value of programs with non-zero exit status.
+X.TP
+X\fBPROMPT_SUBST\fP
+XIf set expressions like \fB${...}\fP, \fB$(...)\fP, and \fB$[...]\fP
+Xin prompts will be expanded.
+X.TP
+X\fBPUSHD_IGNORE_DUPS\fP
+XDon't push multiple copies of the same directory onto the directory stack.
+X.TP
+X\fBPUSHD_MINUS\fP
+XSee \fBpopd\fP below.
+X.TP
+X\fBPUSHD_SILENT\fP (\-\fBE\fP)
+XDo not print the directory stack after \fBpushd\fP
+Xor \fBpopd\fP.
+X.TP
+X\fBPUSHD_TO_HOME\fP (\-\fBD\fP)
+XHave \fBpushd\fP with no arguments act like
+X\fBpushd\fP $HOME.
+X.TP
+X\fBRC_EXPAND_PARAM\fP (\-\fBP\fP)
+XSee \fIParameter Expansion\fP.
+X.TP
+X\fBRC_QUOTES\fP
+XAllow the character sequence \fB''\fP to signify a single quote
+Xwithin singly quoted strings.
+X.TP
+X\fBREC_EXACT\fP (\-\fBS\fP)
+XIn completion, recognize exact matches even
+Xif they are ambiguous.
+X.TP
+X\fBRM_STAR_SILENT\fP (\-\fBH\fP)
+XDo not query the user before executing "rm *" or "rm path/*".
+X.TP
+X\fBSHIN_STDIN\fP (\-\fBs\fP)
+XRead commands from the standard input.
+X.TP
+X\fBSH_WORD_SPLIT\fP (\-\fBy\fP)
+XSee \fIParameter Expansion\fP.
+X.TP
+X\fBSINGLE_LINE_ZLE\fP (\-\fBM\fP)
+XUse single-line command line editing instead of multi-line.
+X.TP
+X\fBSUN_KEYBOARD_HACK\fP (\-\fBL\fP)
+XIf a line ends with a backquote, and there are an odd number
+Xof backquotes on the line, ignore the trailing backquote.
+XThis is useful on some keyboards where the return key is
+Xtoo small, and the backquote key lies annoyingly close to it.
+X.TP
+X\fBVERBOSE\fP (\-\fBv\fP)
+XPrint shell input lines as they are read.
+X.TP
+X\fBXTRACE\fP (\-\fBx\fP)
+XPrint commands and their arguments as they are executed.
+X.TP
+X\fBZLE\fP (\-\fBZ\fP)
+XUse the zsh line editor.
+X.RE
+X.PD
+X.SH "SHELL BUILTIN COMMANDS"
+X.TP
+X\fB\&.\fP \fIfile\fP [ \fIarg\fP ... ]
+XRead commands from \fIfile\fP and execute them in the current shell
+Xenvironment.
+XIf \fIfile\fP does not contain a slash, or if \fBPATH_DIRS\fP
+Xis set, the shell looks in the components of \fBpath\fP to find the
+Xdirectory containing \fIfile\fP.
+XFiles in the current directory are not read unless "." appears
+Xsomewhere in \fBpath\fP.
+XIf any arguments \fIarg\fP are given,
+Xthey become the positional parameters; the old positional
+Xparameters are restored when the \fIfile\fP is done executing.
+XThe exit status is the exit status of the last command executed.
+X.TP
+X\fB:\fP [ \fIarg\fP ... ]
+XThis command only expands parameters.  A zero exit code is returned.
+X.TP
+X\fBalias\fP [ \-\fBgrm\fP ] [ \fIname\fP[=\fIvalue\fP] ] ...
+XWith no arguments, print the list of aliases in the form
+X\fIname\fP=\fBvalue\fP on the standard output.
+XFor each \fIname\fP with a corresponding \fIvalue\fP, define an alias 
+Xwith that value.
+XA trailing space in \fIvalue\fP causes the next
+Xword to be checked for alias substitution.
+XIf the \-\fBg\fP flag is present, define a global alias; global aliases
+Xare expanded even if they do not occur in command position.
+XFor each \fIname\fP with no \fIvalue\fP, print the value of \fIname\fP,
+Xif any.
+XIf only the \-\fBg\fP or the \-\fBr\fP flags are given only global or regular
+Xaliases are listed. If the \-\fBm\fP flag is given the arguments are taken
+Xas patterns (they should be quoted to preserve them from being
+Xinterpreted as glob patterns) and the aliases matching these patterns
+Xare printed.
+XThe exit status is nonzero if a \fIname\fP (with no \fIvalue\fP) is
+Xgiven for which no alias has been defined.
+X.TP
+X\fBautoload\fP [ \fIname\fP ... ]
+XFor each of the \fIname\fPs (which are names of functions),
+Xcreate a function marked undefined.
+XThe \fBfpath\fP variable will be searched to find the
+Xactual function definition when the function is first referenced.
+X.TP
+X.PD 0
+X\fBbg\fP [ \fIjob\fP ... ]
+X.TP
+X\fIjob\fP ... \fB&\fP
+X.PD
+XPut each specified \fIjob\fP in the background,
+Xor the current job if none is specified.
+X.TP
+X.PD 0
+X\fBbindkey\fP \-\fBmevd
+X.TP
+X\fBbindkey\fP \-\fBr\fP \fIin-string\fP ...
+X.TP
+X\fBbindkey\fP [ \-\fBa\fP ] \fIin-string\fP [ \fIcommand\fP ] ...
+X.TP
+X\fBbindkey\fP \-\fBs\fP [ \-\fBa\fP ] \fIin-string\fP \fIout-string\fP ...
+X.PD
+XThe \-\fBe\fP and \-\fBv\fP options put the keymaps in emacs mode or vi mode
+Xrespectively; they cannot be used simultaneously. The \-\fBd\fP option resets
+Xall bindings to the compiled-in settings. If not used with options \-\fBe\fP
+Xor \-\fBv\fP, the maps will be left in emacs mode, or in vi mode if the
+X\fBVISUAL\fP or \fBEDITOR\fP variables exist and contain the string "vi".
+XMetafied characters are bound to self-insert by default. The \-\fBm\fP option
+Xloads the compiled-in bindings of these characters for the mode determined by
+Xthe preceding options, or the current mode if used alone. Any previous bindings
+Xdone by the user will be preserved. If the \-\fBr\fP option is given, remove
+Xany binding for each \fIin-string\fP. If the \-\fBs\fP option is not
+Xspecified, bind each \fIin-string\fP to a specified \fIcommand\fP. If no
+X\fIcommand\fP is specified, print the binding of \fIin-string\fP if it is
+Xbound, or return a nonzero exit code if it is not bound. If the \-\fBs\fP
+Xoption is specified, bind each \fIin-string\fP to each specified
+X\fIout-string\fP. When \fIin-string\fP is typed, \fIout-string\fP will be
+Xpushed back and treated as input to the line editor. This process is recursive
+Xbut, to avoid infinite loops, the shell will report an error if more than 20
+Xconsecutive replacements happen. If the \-\fBa\fP option is specified, bind
+Xthe \fIin-strings\fP in the alternative keymap instead of the standard one.
+XThe alternative keymap is used in vi command mode.
+X.sp
+XIt's possible for an \fIin-string\fP to be bound to something and also be the
+Xbeginning of a longer bound string. In this case the shell
+Xwill wait a certain time to see if more characters are typed and if not it
+Xwill execute the binding. This timeout is defined by the KEYTIMEOUT
+Xparameter; its default is 0.4 sec. No timeout is done if the prefix string is
+Xnot bound.
+X.RS
+X.PP
+XFor either \fIin-string\fP or \fIout-string\fP, control characters
+Xmay be specified in the form \fB^X\fP, and the backslash may
+Xbe used to introduce one of the following escape sequences:
+X.RS
+X.PD 0
+X.TP
+X.B \ea
+Xbell character
+X.TP
+X.B \en
+Xlinefeed (newline)
+X.TP
+X.B \eb
+Xbackspace
+X.TP
+X.B \et
+Xhorizontal tab
+X.TP
+X.B \ev
+Xvertical tab
+X.TP
+X.B \ef
+Xform feed
+X.TP
+X.B \er
+Xcarriage return
+X.TP
+X.B \ee, \eE
+Xescape
+X.TP
+X.B \eNNN
+Xcharacter code in octal
+X.TP
+X.B \exNN
+Xcharacter code in hexadecimal
+X.TP
+X.B \eM\-xxx
+Xcharacter or escape sequence with meta bit set. The `-' after the `M' is
+Xoptional.
+X.TP
+X.B \eC\-X
+Xcontrol character.  The `-' after the `C' is optional.
+X.PD
+X.PP
+X.RE
+XIn all other cases, \e escapes the following character.  Delete is
+Xwritten as `\fB^?\fP'. Note that `\eM^?' and `^\eM?' are not the same.
+X.sp
+XMulti-character \fIin-string\fPs cannot contain the null character ("^@" or
+X"^ "). If they appear in a bindkey command, they will be silently translated
+Xto "\eM-^@". This restriction does not apply to \fIout-string\fPs,
+Xsingle-character \fIin-string\fPs and the first character of a multi-char
+X\fIin-string\fP.
+X.RE
+X.TP
+X\fBbreak\fP [ \fIn\fP ]
+XExit from an enclosing \fBfor\fP, \fBwhile\fP,
+X\fBuntil\fP, \fBselect\fP, or \fBrepeat\fP loop.  If \fIn\fP
+Xis specified, then break \fIn\fP levels instead of just one.
+X.TP
+X\fBbuiltin\fP \fIname\fP [ \fIargs\fP ] ...
+XExecutes the builtin \fIname\fP, with the given \fIargs\fP.
+X.TP
+X\fBbye\fP
+XSame as \fBexit\fP.
+X.TP
+X.PD 0
+X\fBcd\fP [ \fIarg\fP ]
+X.TP
+X\fBcd\fP \fIold\fP \fInew\fP
+X.TP
+X\fBcd\fP \(+-\fBn\fP
+X.PD
+XChange the current directory.  In the first form, change the
+Xcurrent directory to \fIarg\fP, or to the value of \fBHOME\fP if
+X\fIarg\fP is not specified.  If \fIarg\fP is \-, change to the
+Xvalue of \fBOLDPWD\fP, the previous directory.
+XIf a directory named \fIarg\fP is not found in the current directory
+Xand \fIarg\fP does not begin with a slash,
+Xsearch each component of the shell parameter \fBcdpath\fP.
+XIf the option \fBCDABLEVARS\fP is set, and a parameter named \fIarg\fP
+Xexists whose value begins with a slash, treat its value as
+Xthe directory.
+X.RS
+X.PP
+XThe second form of \fBcd\fP substitutes the string \fInew\fP
+Xfor the string \fIold\fP in the name of the current directory,
+Xand tries to change to this new directory.
+X.PP
+XThe third form of \fBcd\fP is equivalent to \fBpopd\fP.
+X.RE
+X.TP
+X\fBchdir\fP
+XSame as \fBcd\fP.
+X.TP
+X.PD 0
+X\fBcompctl\fP [ \-\fBcfqovbCDAIFpEjBaRGuderzNOZn\fP ] [ \-\fBk\fP \fIname\fP ]
+X.br
+X[ \-\fBX\fP \fIexplanation\fP ] [ \-\fBK\fP \fIfunction\fP ] 
+X.br
+X[ \-\fBP\fP \fIprefix\fP ] [ \-\fBS\fP \fIsuffix\fP ]
+X.br
+X[ \-\fBg\fP \fIglobstring\fP ] [ \-\fBs\fP \fIsubststring\fP ] 
+X.br
+X[ \-\fBH\fP \fInum pattern\fP ] [ \-\fBl\fP \fIcmd\fP ] [
+X\fIarg\fP ... ]
+X.TP
+X\fBcompctl\fP \fIflags\fP \fB+\fP \fIflags\fP \fB+\fP ...
+X.TP
+X\fBcompctl\fP \fIflags\fP \-\fBx\fP \fIpattern\fP \fIflags\fP \- ... \-\- \fIarg\fP ...
+X.PD
+XControl the editor's completion behavior when one of \fIarg\fP is the current
+Xcommand.  (Note that aliases are expanded before this is determined,
+Xunless the \fBCOMPLETE_ALIASES\fP option is set.)
+XWith the \-\fBD\fP flag, control default completion behavior
+Xfor commands not assigned any special behavior; with \-\fBC\fP, control
+Xcompletion when there is no current command.  The remaining options
+Xspecify the type of command arguments to look for during completion.
+XIf completion is attempted for a command with a pathname containing
+Xslashes and no completion definition is found, the search is retried
+Xwith the last pathname component.
+X.RS
+X.TP
+X.PD 0
+X\-\fBc\fP
+XExpect command names.
+X.TP
+X\-\fBf\fP
+XExpect filenames and filesystem paths.
+X.TP
+X\-\fBo\fP
+XExpect option names.
+X.TP
+X\-\fBv\fP
+XExpect variable names.
+X.TP
+X\-\fBb\fP
+XExpect key binding names.
+X.TP
+X\-\fBA\fP
+XExpect array names.
+X.TP
+X\-\fBI\fP
+XExpect integer variable names.
+X.TP
+X\-\fBF\fP
+XExpect function names.
+X.TP
+X\-\fBp\fP
+XExpect parameter names.
+X.TP
+X\-\fBE\fP
+XExpect environment variable names.
+X.TP
+X\-\fBj\fP
+XExpect job names (the first word of the job leader's command line, useful
+Xwith the \fBkill\fP builtin).
+X.TP
+X\-\fBr\fP
+XExpect names of running jobs.
+X.TP
+X\-\fBz\fP
+XExpect names of suspended jobs.
+X.TP
+X\-\fBB\fP
+XExpect names of builtin commands.
+X.TP
+X\-\fBa\fP
+XExpect alias names.
+X.TP
+X\-\fBR\fP
+XExpect names of regular aliases.
+X.TP
+X\-\fBG\fP
+XExpect names of global aliases.
+X.TP
+X\-\fBu\fP
+XExpect user names.
+X.TP
+X\-\fBd\fP
+XExpect names of disabled commands.
+X.TP
+X\-\fBe\fP
+XExpect names of executable (and enabled) commands.
+X.TP
+X\-\fBN\fP
+XExpect names of scalar parameters.
+X.TP
+X\-\fBO\fP
+XExpect names of readonly variables.
+X.TP
+X\-\fBZ\fP
+XExpect names of shell special parameters.
+X.TP
+X\-\fBn\fP
+XExpect named directories.
+X.TP
+X\-\fBq\fP
+XIf given together with a suffix (see the \-\fBS\fP flag below) it
+Xmakes this suffix be removed if the next character typed is a blank or
+Xdoes not insert anything (this is the same rule as used for the
+X\fBAUTO_REMOVE_SLASH\fP option).
+X.TP
+X\-\fBk\fP \fIname\fP
+XExpect names taken from the elements of \fB$name\fP (which should be
+Xan array).  Alternatively, the
+Xargument \fIname\fP itself may be a set of space- or comma-separated
+Xvalues in parentheses, in which any delimiter may be escaped with a
+Xbackslash.  (Example: `compctl -k "(cputime filesize datasize stacksize
+Xcoredumpsize resident descriptors)" limit'.)
+X.TP
+X\-\fBK\fP \fIfunction\fP
+XCall the given function to get the completions.  The function gets two
+Xarguments: the prefix and the suffix of the word on which completion
+Xis tried.
+XThe function should set the variable \fBreply\fP to an array
+Xcontaining the completions (one completion per element); note that
+X\fBreply\fP should not be made local.  From such a function the
+Xcommand line can be accessed with the \fB\-c\fP and \fB\-l\fP flags to
+Xthe \fBread\fP builtin.
+X(Example: `function whoson { reply=(`users`); };
+Xcompctl -K whoson talk' completes only logged-on users after `talk'.) Note
+Xthat whoson must return an array so that just "reply=`users`" is incorrect.
+X.TP
+X\-\fBX\fP \fIexplanation\fP
+XPrint the explanation string when trying completion. A `%n' in
+Xthis string is replaced by the number of matches.
+X.TP
+X\-\fBP\fP \fIprefix\fP
+XThe \fIprefix\fP is inserted just before the completed string; any
+Xinitial part already typed will be completed and the whole \fIprefix\fP
+Xignored for completion purposes. (Example: `compctl -j -P "%"
+Xkill').
+X.TP
+X\-\fBS\fP \fIsuffix\fP
+XAfter a unique completion is found the \fIsuffix\fP is inserted after
+Xthe completed string.
+X.TP
+X\-\fBg\fP \fIglobstring\fP
+XThe \fIglobstring\fP is expanded using filename globbing; it should be
+Xquoted to protect it from immediate expansion. The resulting
+Xfilenames are taken as the possible completions.  Use `*(/)' instead of
+X`*/' for directories.  The \fBfignore\fP special parameter is not used.
+XMore than one pattern may be given separated by blanks. (Note that
+Xbrace expansion is \fInot\fP part of globbing.)
+X.TP
+X\-\fBs\fP \fIsubststring\fP
+XThe \fIsubstring\fP is split into words and these words are than
+Xexpanded using all shell expansion mechanisms. The resulting words are
+Xtaken as possible completions. The \fBfignore\fP special parameter is
+X\fInot\fP used.  Note that \-\fBg\fP is faster for filenames.
+X.TP
+X\-\fBH\fP \fInum pattern\fP
+XThe possible completions are taken from the last \fInum\fP history
+Xlines. Only words matching \fIpattern\fP are taken. If \fInum\fP is
+Xzero or negative the whole history is searched and if \fIpattern\fP is
+Xthe empty string (or \fB'*'\fP, of course) all words are taken.
+X.TP
+X\-\fBl\fP \fIcmd\fP
+XThis option can not be combined with any other option. If it is given
+Xit restricts the range of command line words that are considered to be
+Xarguments. By default this range contains all arguments without the
+Xcommand string. If combined with extended completion (see below) and
+Xone of the patterns 
+X`\fBp\fP[...]', `\fBr\fP[...]', or `\fBR\fP[...]' the range is
+Xrestricted to the arguments between the ones that are specified in the
+Xbrackets. After the range of arguments is determined completion is
+Xdone in it as if they were arguments to the \fIcmd\fP given with this
+Xoption. If this string is empty the first word in the range is taken
+Xas the command name for which to complete. In this case, if the cursor
+Xis in the first word, command names are completed.
+XExample: `compctl -x 'r[-exec,;]' -l '' -- find' completes the
+Xarguments between `-exec' and the following `;' (or the end of the
+Xcommand line if there is no such string) as if they were specifying a
+Xcommand on there own.
+X.TP
+X\-\fBU\fP
+XUse the whole list of possible completions, whether or not they actually
+Xmatch the word on the command line.  The word typed so far will be
+Xdeleted.  This is most useful with a function (\-\fBK\fP option), which
+Xcan examine the word via the \fBread\fP builtin's \-\fBc\fP and
+X\-\fBl\fP flags and use its own criterion to decide what matches.
+X.LP
+X.PD 0
+X.PP
+XThe second form specifies alternative options. First completion is
+Xtried with the options before the first `+'. If this produces no
+Xmatches completion is tried with the flags after the `+' and so on. If
+Xthere are no flags after the last `+' this means that default
+Xcompletion is tried if no matches were found.
+X.LP
+X.PD 0
+X.PP
+XThe third form specifies extended completion for the commands given as
+X\fIarg\fP. Each \fIpattern\fP is examined in turn; when a match is found,
+Xthe corresponding \fIflags\fP, as described above for the ordinary case,
+Xare used to generate possible completions.  If no \fIpattern\fP matches,
+Xthe \fIflags\fP given before the \-\fBx\fP are used.  Note that each
+Xpattern should be supplied as a single argument and should be
+Xquoted to prevent expansion of metacharacters by the shell. A \fIpattern\fP
+Xis built of sub\-patterns separated by commas; it matches if at least one of 
+Xthese sub\-patterns matches (they are `or'ed'). These sub\-patterns are in
+Xturn composed of other sub\-patterns separated by white spaces which match
+Xif all of the sub\-patterns match (they are `and'ed'). 
+XAn element of the sub\-patterns is of the form 'c[...][...]', where
+Xthe pairs of brackets may be repeated as often as necessary, and matches
+Xif any of the sets of brackets match (an `or').  These elements may be
+Xany of the following:
+X.sp
+X.RS
+X.TP
+X.PD 0
+X\fBs\fP[\fIstring\fP] ...
+XThe pattern matches if the current word on the command line starts with
+Xone of the strings given in brackets.  The \fIstring\fP is not removed
+Xand is not part of the completion.
+X.TP
+X\fBS\fP[\fIstring\fP] ...
+XLike \fBs\fP[\fIstring\fP] but the \fIstring\fP is part of the completion.
+X.TP
+X\fBp\fP[\fIfrom\fP,\fIto\fP] ...
+XThe pattern matches if the number of the current word is between one of
+Xthe \fIfrom\fP and \fIto\fP pairs. The comma and \fIto\fP are optional;
+X\fIto\fP defaults to the same value as \fIfrom\fP. The numbers may be
+Xnegative: \fI\-n\fP refers to the \fIn\fP'th last word on the line.
+X.TP
+X\fBc\fP[\fIoffset\fP,\fIstring\fP] ...
+XThe pattern matches if one of the \fIstring\fPs matches the word offset by
+X\fIoffset\fP from the current word position.
+X.TP
+X\fBC\fP[\fIoffset\fP,\fIpattern\fP] ...
+XThis is like \fBc\fP but uses pattern matching instead.
+X.TP
+X\fBw\fP[\fIindex\fP,\fIstring\fP] ...
+XThe pattern matches if the word in position \fIindex\fP is equal
+Xto the corresponding \fIstring\fP.  Note that the word count is made
+Xafter alias expansion.
+X.TP
+X\fBW\fP[\fIindex\fP,\fIpattern\fP] ...
+XLike \fBw\fP but using pattern matching instead.
+X.TP
+X\fBn\fP[\fIindex\fP,\fIstring\fP] ...
+XMatches if the current word contains \fIstring\fP. Anything up to and
+Xincluding the
+X\fIindex\fP'th occurrence of this string will not be considered part of
+Xthe completion, but the rest will.
+X.TP
+X\fBN\fP[\fIindex\fP,\fIstring\fP] ...
+XLike \fBn\fP[\fIindex\fP,\fIstring\fP] but the string will be taken as
+Xa character class (anything up to and including the \fIindex\fP'th
+Xoccurrence of any 
+Xof the characters in \fIstring\fP will not be considered part of the
+Xcompletion).
+X.TP
+X\fBm\fP[\fImin\fP,\fImax\fP] ...
+XMatches if the total number of words lies between \fImin\fP and
+X\fImax\fP (inclusive).
+X.TP
+X\fBr\fP[\fIstr1\fP,\fIstr2\fP]...
+XMatches if the cursor is after a word with prefix \fIstr1\fP. If there
+Xis also a word with prefix \fIstr2\fP on the command line it matches
+Xonly if the cursor is before this word.
+X.TP
+X\fBR\fP[\fIstr1\fP,\fIstr2\fP]...
+XLike \fBr\fP but using pattern matching instead.
+X.RE
+X.sp
+X.PD
+XExample:
+X.RS
+X.PP
+X.nf
+Xcompctl -u -x 's[+] c[-1,-f],s[-f+]' -g '~/Mail/*(:t)' \e
+X- 's[-f],c[-1,-f]' -f -- mail
+X.fi
+X.RE
+X.PP
+XComplete users by default.  After a -f with an optional space, complete
+Xfile names; if a + follows the -f, whether or not there is a space in
+Xbetween, complete with the non-directory part of files in the directory
+X~/Mail.
+X.PD
+X.RE
+X.TP
+X\fBcontinue\fP [ \fInum\fP ]
+XResume the next iteration of the enclosing
+X\fBfor\fP, \fBwhile\fP, \fBuntil\fP, \fBselect\fP, or
+X\fBrepeat\fP loop.  If \fIn\fP is specified, break out of
+X\fIn\fP \- 1 loops and resume at the \fIn\fPth enclosing loop.
+X.TP
+X\fBdeclare\fP [ \fIarg\fP ... ]
+XSame as \fBtypeset\fP.
+X.TP
+X\fBdirs\fP [ \-\fBv\fP ] [ \fIarg\fP ... ]
+XWith no arguments, print the contents of the directory stack.
+XIf the \-\fBv\fP option is given, number the directories
+Xin the stack when printing.
+XDirectories are added to this stack with the \fBpushd\fP command,
+Xand removed with the \fBcd\fP or \fBpopd\fP commands.
+XIf arguments are specified, load them onto the directory stack,
+Xreplacing anything that was there, and push the current directory
+Xonto the stack.
+X.TP
+X\fBdisable\fP [ \-\fBm\fP ] \fIarg\fP ...
+XDisable the builtin \fIarg\fP temporarily.  This allows you to use
+Xan external command with the same name as a shell builtin.
+XWithout arguments all disabled builtins are printed, with the
+X\-\fBm\fP flag the arguments are taken as patterns (should be quoted
+Xto preserve them from being taken as glob patterns) and all builtins
+Xmatching these patterns are disabled.
+XActually the same as \fBunhash\fP.
+XBuiltins can be enabled with the \fBenable\fP command.
+X.TP
+X\fBdisown\fP \fIjob\fP ...
+XRemove the specified jobs from the job table; the shell will
+Xno longer report their status, and will not complain if you
+Xtry to exit an interactive shell with them running or stopped.
+X.TP
+X\fBecho\fP [ \-\fBn\fP ] [ \fIarg\fP ... ]
+XWrite each \fIarg\fP on the standard output, with a space separating
+Xeach one.
+XIf the \-\fBn\fP flag is not present, print a newline at the end.
+X\fBecho\fP recognizes the following escape sequences:
+X.RS
+X.PD 0
+X.TP
+X.B \ea
+Xbell character
+X.TP
+X.B \eb
+Xbackspace
+X.TP
+X.B \ec
+Xdon't print an ending newline
+X.TP
+X.B \ee
+Xescape
+X.TP
+X.B \ef
+Xform feed
+X.TP
+X.B \en
+Xnewline
+X.TP
+X.B \er
+Xcarriage return
+X.TP
+X.B \et
+Xhorizontal tab
+X.TP
+X.B \ev
+Xvertical tab
+X.TP
+X.B \e\e
+Xbackslash
+X.TP
+X.B \e0NNN
+Xcharacter code in octal, with a maximum of three digits after the
+Xzero; a non-octal digit terminates the number
+X.TP
+X.B \exNN
+Xcharacter code in hexadecimal, with a maximum of two digits after the
+X`x'; a non-hexadecimal digit terminates the number.
+X.PD
+X.RE
+X.TP
+X\fBechotc\fP \fIcap\fP [ \fIarg\fP ... ]
+XOutput the termcap string corresponding to the capability
+X\fIcap\fP, with optional arguments.
+X.TP
+X\fBenable\fP [ \-\fBm\fP ] \fIarg\fP ...
+XEnable the specified builtin commands, presumably disabled earlier
+Xwith \fBdisable\fP.
+XWithout arguments the enabled builtins are printed and with the
+X\-\fBm\fP flag the arguments are taken as patterns (should be quoted)
+Xand all builtins matching these patterns are enabled.
+X.TP
+X\fBeval\fP [ \fIarg\fP ... ]
+XRead the arguments as input to the shell and execute the resulting
+Xcommand(s) in the current shell process.
+X.TP
+X\fBexit\fP [ \fIn\fP ]
+XExit the shell with the exit code specified by \fIn\fP; if none
+Xis specified, use the exit code from the last command executed.
+XAn EOF condition will also cause the shell to exit, unless
+Xthe \fBIGNOREEOF\fP option is set.
+X.TP
+X\fBexport\fP [ \fIname\fP[=\fIvalue\fP] ... ]
+XThe specified \fIname\fPs are marked for automatic export
+Xto the environment of subsequently executed commands.
+X.TP
+X\fBfalse\fP
+XDo nothing and return an exit code of 1.
+X.TP
+X.PD 0
+X\fBfc\fP [ \-\fBe\fP \fIename\fP ] [ \-\fBnlrdDfEm\fP ] [ \fIold\fP=\fInew\fP ... ] [ \fIfirst\fP [ \fIlast\fP ] ]
+X.TP
+X\fBfc\fP \-\fBARWI\fP [ \fIfilename\fP ]
+X.PD
+XSelect a range of commands from \fIfirst\fP to \fIlast\fP from the
+Xhistory list.
+XThe arguments \fIfirst\fP and \fIlast\fP may be specified as a
+Xnumber or as a string.  A negative number is used as an offset
+Xto the current history event number.
+XA string specifies the most recent event
+Xbeginning with the given string.
+XAll substitutions \fIold\fP=\fInew\fP, if any, are then performed
+Xon the commands.
+XIf the \-\fBl\fP flag is given, the resulting commands are listed on
+Xstandard output.
+XIf the \-\fBm\fP flag is also given the first argument is taken as a
+Xpattern (should be quoted) and only the history events matching this
+Xpattern will be shown.
+XOtherwise the editor program \fIename\fP is invoked on a file containing
+Xthese history events.  If \fIename\fP is not given, the value
+Xof the parameter \fBFCEDIT\fP is used.  If \fIename\fP is "\-",
+Xno editor is invoked.  When editing is complete, the edited
+Xcommand(s) is executed.  
+XIf \fIfirst\fP is not specified, it will be set to \-1 (the most recent
+Xevent), or to -16 if the \-\fBl\fP flag is given.
+XIf \fIlast\fP is not specified, it will be set to \fIfirst\fP,
+Xor to \-1 if the \-\fBl\fP flag is given.
+XThe flag \-\fBr\fP reverses the order of the commands and the
+Xflag \-\fBn\fP suppresses command numbers when listing.
+XAlso when listing, \-\fBd\fP prints timestamps for each command, and
+X\-\fBf\fP prints full time-date stamps. Adding the \-\fBE\fP flag
+Xcauses the dates to be printed as `dd.mm.yyyy'.
+XWith the \-\fBD\fP flag, \fBfc\fP prints elapsed times.
+X.RS
+X.PP
+X\fBfc\fP \-\fBR\fP reads the history from the given file,
+X\fBfc\fP \-\fBW\fP writes the history out to the given file,
+Xand \fBfc\fP \-\fBA\fP appends the history out to the given file.
+X\fBfc\fP \-\fBAI\fP (\-\fBWI\fP) appends (writes) only those
+Xevents that are new since last incremental append (write) to
+Xthe history file. In any case the file will have no more than SAVEHIST
+Xentries.
+X.RE
+X.TP
+X.PD 0
+X\fBfg\fP [ \fIjob\fP ... ]
+X.TP
+X\fIjob\fP ...
+X.PD
+XBring the specified \fIjob\fPs to the foreground.
+XIf no \fIjob\fP is specified, use the current job.
+X.TP
+X\fBfunctions\fP [ \(+-\fBtum\fP ] [ \fIname\fP ... ]
+XEquivalent to \fBtypeset\fP \-\fBf\fP.
+X.TP
+X\fBgetln\fP \fIname\fP ...
+XRead the top value from the buffer stack and put it in
+Xthe shell parameter \fIname\fP.  Equivalent to
+X\fBread\fP \-\fBzr\fP. The flags \-\fBc\fP, \-\fBl\fP, \-\fBA\fP,
+X\-\fBe\fP, \-\fBE\fP, and \-\fBn\fP are supported, too.
+X.TP
+X\fBgetopts\fP \fIoptstring\fP \fIname\fP [ \fIarg\fP ... ]
+XChecks \fBarg\fP for legal options.  If \fIarg\fP is omitted,
+Xuse the positional parameters.  A valid option argument
+Xbegins with a + or a \-.  An argument not beginning with
+Xa + or a \-, or the argument \-\-, ends the options.
+X\fIoptstring\fP contains the letters that \fBgetopts\fP
+Xrecognizes.  If a letter is followed by a `:', that option
+Xis expected to have an argument.  The options can be
+Xseparated from the argument by blanks.
+X.RS
+X.PP
+XEach time it is invoked, \fBgetopts\fP places the option letter it finds
+Xin the shell parameter \fIname\fP, prepended with a + when
+X\fIarg\fP begins with a +.  The index of the next \fIarg\fP
+Xis stored in \fBOPTIND\fP.  The option argument, if any,
+Xis stored in \fBOPTARG\fP.
+X.PP
+XA leading : in \fIoptstring\fP causes \fBgetopts\fP to store the
+Xletter of the invalid option in \fBOPTARG\fP, and to set \fIname\fP
+Xto `?' for an unknown option and to `:' when a required option
+Xis missing.  Otherwise, \fBgetopts\fP prints an error
+Xmessage.  The exit status is nonzero when there are no more options.
+X.RE
+X.TP
+X\fBhash\fP \fIname\fP \fIpath\fP
+XPuts \fIname\fP in the command hash table, associating it with
+Xthe pathname \fIpath\fP.  Whenever \fIname\fP is used as a command
+Xargument, the shell will try to execute the file given by \fIpath\fP.
+X.TP
+X\fBhistory\fP [ \-\fBnrdDfEm\fP ] [ \fIfirst\fP [ \fIlast\fP ] ]
+XSame as \fBfc\fP \-\fBl\fP.
+X.TP
+X\fBinteger\fP [ \(+-\fBlrtux\fP ] [ \fIname\fP[=\fIvalue\fP] ] ...
+XSame as \fBtypeset\fP \-\fBi\fP, except that options irrelevant to
+Xintegers are not permitted.
+X.TP
+X\fBjobs\fP [ \-\fBlprs\fP ] [ \fIjob\fP ... ]
+XLists information about each given job, or all jobs
+Xif \fIjob\fP is omitted.  The \-\fBl\fP flag lists process
+Xids, and the \-\fBp\fP flag lists process groups.
+XIf the \-\fBr\fP flag is specified only running jobs will be listed
+Xand if the \-\fBs\fP flag is given only stopped jobs are shown.
+X.TP
+X.PD 0
+X\fBkill\fP [ \-\fIsig\fP ] \fIjob\fP ...
+X.TP
+X\fBkill\fP \-\fBl\fP
+X.PD
+XSends either SIGTERM or the specified signal to the given
+Xjobs or processes.
+XSignals are given by number or by names
+X(with the prefix "SIG" removed).
+XIf the signal being sent is not KILL or CONT, then the job
+Xwill be sent a CONT signal if it is stopped.
+XThe argument \fIjob\fP can be the process id of a job
+Xnot in the job list.
+XIn the second form, \fBkill\fP \-\fBl\fP, the signal names
+Xare listed.
+X.TP
+X\fBlet\fP \fIarg\fP ...
+XEvaluate each \fIarg\fP as an arithmetic expression.
+XSee \fBARITHMETIC EVALUATION\fP above for a description
+Xof arithmetic expressions.  The exit status is 0 if the
+Xvalue of the last expression is nonzero, and 1 otherwise.
+X.TP
+X.PD 0
+X\fBlimit\fP [ \-\fBh\fP ] [ \fIresource\fP [ \fIlimit\fP ] ] ...
+X.TP
+X\fBlimit\fP \-\fBs\fP
+X.PD
+XLimit the resource consumption of the current shell and its children.
+XIf \fIlimit\fP is not specified, print the current limit placed
+Xon \fIresource\fP; otherwise
+Xset the limit to the specified value.  If the \-\fBh\fP flag
+Xis given, use hard limits instead of soft limits.
+XIf no \fIresource\fP is given, print all limits.
+X.RS
+X.PP
+X\fIresource\fP is one of:
+X.PP
+X.PD 0
+X.TP
+X.B cputime
+XMaximum CPU seconds per process.
+X.TP
+X.B filesize
+XLargest single file allowed.
+X.TP
+X.B datasize
+XMaximum data size (including stack) for each process.
+X.TP
+X.B stacksize
+XMaximum stack size for each process.
+X.TP
+X.B coredumpsize
+XMaximum size of a core dump.
+X.TP
+X.B resident
+XMaximum resident set size.
+X.TP
+X.B memoryuse
+XThe same as resident.
+X.TP
+X.B memorylocked
+XMaximum amount of memory locked in RAM.
+X.TP
+X.B descriptors
+XMaximum value for a file descriptor.
+X.TP
+X.B openfiles
+XMaximum number of open files.
+X.TP
+X.B vmemorysize
+XMaximum amount of virtual memory.
+X.PD
+X.PP
+XWhich of these resource limits are available depends on the system.
+X\fIlimit\fP is a number, with an optional scaling factor, as follows:
+X.PP
+X.PD 0
+X.TP
+X\fIn\fPh
+Xhours.
+X.TP
+X\fIn\fPk
+Xkilobytes. 
+XThis is the default for all but cputime.
+X.TP
+X\fIn\fPm
+Xmegabytes or minutes.
+X.TP
+X\fImm\fP:\fIss\fP
+Xminutes and seconds.
+X.PD
+X.RE
+X.TP
+X\fBlocal\fP [ \(+-\fBLRZilrtu [\fIn\fP]] [ \fIname\fP[=\fIvalue\fP] ] ...
+XSame as \fBtypeset\fP, except that the options \-\fBx\fP and
+X\-\fBf\fP are not permitted.
+X.TP
+X\fBlog\fP
+XList all users currently logged in who are affected by
+Xthe current setting of the \fBwatch\fP parameter.
+X.TP
+X\fBlogout\fP
+XExit the shell, if this is a login shell.
+X.TP
+X\fBpopd\fP [ \(+-\fIn\fP ]
+XRemoves entries from the directory stack.  With no arguments,
+Xremoves the top directory from the stack, and performs a \fBcd\fP
+Xto the new top directory.  With an argument of the form +\fIn\fP,
+Xremove the \fIn\fPth entry counting from the left of the list
+Xshown by the \fBdirs\fP command, starting with zero, and change
+Xto that directory.  With an argument of the form \-\fIn\fP,
+Xremove the \fIn\fPth entry counting from the right.
+XIf the \fBPUSHD_MINUS\fP option is set, the meanings of +
+Xand \- in this context are swapped.
+X.TP
+X\fBprint\fP [ \-\fBRnrslzpNDPoOic\fP ] [ \-\fBu\fP\fIn\fP ] [ \fIarg\fP ... ]
+XWith no flags or with flag \-, the arguments are printed on
+Xthe standard output as described by \fBecho\fP, with the following differences:
+Xthe escape sequence \eM\-x metafies the character \fBx\fP (sets the highest
+Xbit), \eC\-x produces a control character (\eC\-@ and \eC-? give the
+Xcharacters NULL and delete) and \eE is a synonym for \ee.
+XFinally, if not in an escape
+Xsequence, \e escapes the following character and is not printed.
+X.RS
+X.PD 0
+X.TP
+X\-\fBR\fP, \-\fBr\fP
+Xignore the escape conventions of \fBecho\fP.
+XThe \-\fBR\fP option will print all subsequent
+Xarguments and options.
+X.TP
+X\-\fBs\fP
+Xplace the results in the history list instead of on the standard output.
+X.TP
+X\-\fBn\fP
+Xdo not add a newline to the output.
+X.TP
+X\-\fBl\fP
+Xprint the arguments separated by newlines instead of spaces.
+X.TP
+X\-\fBN\fP
+Xprint the arguments separated and terminated by nulls.
+X.TP
+X\-\fBo\fP
+Xprint the arguments sorted in ascending order.
+X.TP
+X\-\fBO\fP
+Xprint the arguments sorted in descending order.
+X.TP
+X\-\fBi\fP
+Xif given together with \-\fBo\fP or \-\fBO\fP makes them work case
+Xindependently
+X.TP
+X\-\fBc\fP
+Xprint the arguments in columns
+X.TP
+X\-\fBu\fP\fIn\fP
+Xprint the arguments to file descriptor \fIn\fP.
+X.TP
+X\-\fBp\fP
+Xprint the arguments to the input of the coprocess.
+X.TP
+X\-\fBz\fP
+Xpush the arguments onto the editing buffer stack, separated by spaces;
+Xno escape sequences are recognized.
+X.TP
+X\-\fBD\fP
+Xtreat the arguments as directory names, replacing prefixes with ~
+Xexpressions, as appropriate.
+X.TP
+X\-\fBP\fP
+Xrecognize the same escape sequences as in the \fBPROMPT\fP parameter.
+X.PD
+X.RE
+X.TP
+X.PD 0
+X\fBpushd\fP [ \fIarg\fP ]
+X.TP
+X\fBpushd\fP \fIold\fP \fInew\fP
+X.TP
+X\fBpushd\fP \(+-\fBn\fP
+X.PD
+XChange the current directory, and push the old current directory
+Xonto the directory stack.  In the first form, change the
+Xcurrent directory to \fIarg\fP.
+XIf \fIarg\fP is not specified, change to the second directory
+Xon the stack (that is, exchange the top two entries), or
+Xchange to the value of \fBHOME\fP if the \fBPUSHD_TO_HOME\fP
+Xoption is set or if there is only one entry on the stack.
+XIf \fIarg\fP is \-, change to the
+Xvalue of \fBOLDPWD\fP, the previous directory.
+XIf a directory named \fIarg\fP is not found in the current directory
+Xand \fIarg\fP does not contain a slash,
+Xsearch each component of the shell parameter \fBcdpath\fP.
+XIf the option \fBCDABLEVARS\fP is set, and a parameter named \fIarg\fP
+Xexists whose value begins with a slash, treat its value as
+Xthe directory.
+XIf the option \fBPUSHD_SILENT\fP is not set, the directory
+Xstack will be printed after a \fBpushd\fP is performed.
+X.RS
+X.PP
+XThe second form of \fBpushd\fP substitutes the string \fInew\fP
+Xfor the string \fIold\fP in the name of the current directory,
+Xand tries to change to this new directory.
+X.PP
+XThe third form of \fBpushd\fP is equivalent to \fBpopd\fP.
+X.RE
+X.TP
+X\fBpushln\fP
+XEquivalent to \fBprint \-nZ\fP.
+X.TP
+X\fBpwd\fP
+XEquivalent to \fBprint \-R $PWD\fP.
+X.TP
+X\fBr\fP
+XEquivalent to \fBfc \-e \-\fP.
+X.TP
+X\fBread\fP [ \-\fBrzpqAclneE\fP ] [ -k [ \fInum\fP ] ] [ \-\fBu\fIn\fR ] [ \fIname\fP?\fIprompt\fP ] [ \fIname\fP ...  ]
+XRead one line and break it into fields using the characters
+Xin \fBIFS\fP as separators.  In raw mode, \-\fBr\fP, a \e
+Xat the end of a line does not signify line continuation.
+XWith the \-\fBq\fP flag read only one character and set \fIname\fP to
+X`y' if this character was `y' or `Y' and to `n' otherwise.  With this
+Xflag set the return value is zero only if the character was `y' or `Y'.
+XIf the \-\fBk\fP flag is given read only one (or \fInum\fP) characters.
+XIf the \-\fBz\fP flag is set, read from the editor buffer stack.
+XThe first field is assigned to the first \fIname\fP, the second field
+Xto the second \fIname\fP, etc., with leftover
+Xfields assigned to the last \fIname\fP.
+XIf the \-\fBe\fP or the \-\fBE\fP flag is given, the words read are
+Xprinted after the whole line is read. If the \-\fBe\fP flag is set,
+Xthe words are not assigned to the parameters.
+XIf the \-\fBA\fP flag is set, the first \fIname\fP is taken as the
+Xname of an array and all words are assigned to it.
+XThe \-\fBc\fP and \-\fBl\fP flags are allowed only if called inside a
+Xfunction used for completion (specified with the \-\fBK\fP flag to
+X\fBcompctl\fP). If the \-\fBc\fP flag is given, the words of the
+Xcurrent command are read. If the \-\fBl\fP flag is given, the whole
+Xline is assigned as a scalar. Together with the \-\fBn\fP flag these
+Xoptions give the number of the word the cursor is on and the index of
+Xthe character the cursor is on respectively.
+XIf \fIname\fP is omitted then \fBREPLY\fP is used for scalars and
+X\fBreply\fP for arrays.
+XIf \-\fBu\fIn\fR is specified, then input is read from file
+Xdescriptor \fIn\fP; if \-\fBp\fP is specified, then input is
+Xread from the coprocess.
+XIf the first argument contains a \fB?\fP, the remainder of this
+Xword is used as a \fIprompt\fP on standard error when the shell
+Xis interactive.  The exit status is 0 unless an end-of-file
+Xis encountered.
+X.TP
+X\fBreadonly\fP [ \fIname\fP[=\fIvalue\fP] ] ...
+XThe given \fInames\fP are marked readonly; these names
+Xcannot be changed by subsequent assignment.
+X.TP
+X\fBrehash\fP [ \-\fBf\fP ]
+XThrow out the command hash table and start over.
+XIf the \-\fBf\fP option is set, rescan the command path
+Ximmediately, instead of rebuilding the hash table incrementally.
+X.TP
+X\fBreturn\fP [ \fIn\fP ]
+XCauses a shell function or \fB\&.\fP script to return to
+Xthe invoking script
+Xwith the return status specified by \fIn\fP.  If \fIn\fP
+Xis omitted then the return status is that of the last command
+Xexecuted.
+X.RS
+X.PP
+XIf \fBreturn\fP was executed from a trap, whether set by the \fBtrap\fP
+Xbuiltin or by defining a \fBTRAPxxx\fP function, the effect is different
+Xfor zero and non-zero return status.  With zero status (or after an
+Ximplicit return at the end of the trap), the shell will return to
+Xwhatever it was previously processing; with a non-zero status, the shell
+Xwill behave as interrupted except that the return status of the trap is
+Xretained.  Note that the signal which caused the trap is passed as the
+Xfirst argument, so the statement `\fBreturn $[128+$1]\fP' will return
+Xthe same status as if the signal had not been trapped.
+X.RE
+X.TP
+X.PD 0
+X\fBsched\fP [+]\fIhh\fP:\fImm\fP \fIcommand\fP ...
+X.TP
+X\fBsched\fP [ \-\fIitem\fP ]
+X.PD
+XMake an entry in the scheduled list of commands to execute.
+XThe time may be specified in either absolute or relative time.
+XWith no arguments, prints the list of scheduled commands.
+XWith the argument \-\fIitem\fP, removes the given item
+Xfrom the list.
+X.TP
+X\fBset\fP [ \(+-\fIoptions\fP ] [ \(+-\fBo\fP \fIoption name\fP ] ... [ \-\fBA\fP [\fIname\fP] ] [ \fIarg\fP ] ...
+XSet the options for the shell and/or set the positional parameters, or
+Xdeclare an array.  For the meaning of the flags, see
+X\fBOPTIONS\fP above.
+XFlags may be specified by name using the \-\fBo\fP option.
+XIf the \-\fBA\fP flag is specified, \fIname\fP is set to an
+Xarray containing the given \fIarg\fPs; if no \fIname\fP is specified,
+Xall arrays are printed. Otherwise the positional parameters are set.
+XIf no arguments are given, then the names and values
+Xof all parameters are printed on the standard output.
+XIf the only argument is +, the names of all parameters are printed.
+X.TP
+X\fBsetopt\fP [ \(+-\fIoptions\fP ] [ \fIname\fP ... ]
+XSet the options for the shell.  All options specified either
+Xwith flags or by name are set.  If no arguments are supplied,
+Xthe names of all options currently set are printed.
+XIn option names, case is insignificant, and all underscore
+Xcharacters are ignored.
+XIf the \-\fBm\fP flag is given the arguments are taken as patterns
+X(should be quoted to preserve them from being interpreted as glob
+Xpatterns) and all options with names matching these patterns are set.
+X.TP
+X\fBshift\fP [ \fIn\fP ] [ \fIname\fP ... ]
+XThe positional parameters from $\fIn\fP+\fB1\fP ... are renamed
+X$\fB1\fP, where \fIn\fP is an arithmetic expression that
+Xdefaults to 1.
+XIf any \fIname\fPs are given then the arrays with these names are
+Xshifted instead of the positional parameters.
+X.TP
+X\fBsource\fP
+XSame as \fB.\fP, except that the current directory is always searched and
+Xis always searched first, before directories in \fBpath\fP.
+X.TP
+X\fBsuspend\fP [ \-\fBf\fP ]
+XSuspend the execution of the shell (send it a \fBSIGTSTP\fP)
+Xuntil it receives a \fBSIGCONT\fP.
+XIf the \-\fBf\fP option is not given, complain if this is a login shell.
+X.TP
+X.PD 0
+X\fBtest\fP \fIarg\fP ...
+X.TP
+X\fB[\fP \fIarg\fP ... \fB]\fP
+X.PD
+XLike the system version of \fBtest\fP.  Added for compatibility;
+Xuse conditional expressions instead.
+X.TP
+X\fBtimes\fP
+XPrint the accumulated user and system times for the shell
+Xand for processes run from the shell.
+X.TP
+X\fBtrap\fP [ \fIarg\fP ] [ \fIsig\fP ] ...
+X\fIarg\fP is a command to be read and executed when the shell
+Xreceives \fIsig\fP.  Each \fIsig\fP can be given as a number
+Xor as the name of a signal.  Inside the command, $1 refers to the number
+Xof the signal which caused the trap.
+XIf \fIarg\fP is \-, then all traps \fIsig\fP are reset to their
+Xdefault values.  If \fIarg\fP is the null string, then this signal
+Xis ignored by the shell and by the commands it invokes.
+XIf \fIsig\fP is \fBZERR\fP then \fIarg\fP will be executed
+Xafter each command with a nonzero exit status.
+XIf \fIsig\fP is \fBDEBUG\fP then \fIarg\fP will be executed
+Xafter each command.
+XIf \fIsig\fP is \fB0\fP or \fBEXIT\fP
+Xand the \fBtrap\fP statement is executed inside the body of a function,
+Xthen the command \fIarg\fP is executed after the function completes.
+XIf \fIsig\fP is \fB0\fP or \fBEXIT\fP
+Xand the \fBtrap\fP statement is not executed inside the body of a function,
+Xthen the command \fIarg\fP is executed when the shell terminates.
+XThe \fBtrap\fP command with no arguments prints a list of commands
+Xassociated with each signal.
+X.TP
+X\fBtrue\fP
+XDo nothing and return an exit code of 0.
+X.TP
+X\fBttyctl\fP \-\fBfu\fP
+XThe \-\fBf\fP option freezes the tty, and \-\fBu\fP unfreezes it.
+XWhen the tty is frozen, no changes made to the tty settings by
+Xexternal programs will be honored by the shell, except for changes in the
+Xsize of the screen; the shell will
+Xsimply reset the settings to their previous values as soon as each
+Xcommand exits or is suspended.  Thus, \fBstty\fP and similar programs have
+Xno effect when the tty is frozen. Without options it reports whether the
+Xterminal is frozen or not.
+X.TP
+X\fBtype\fP
+XSame as \fBwhence\fP \-\fBv\fP.
+X.TP
+X\fBtypeset\fP [ \(+-\fBLRZfilrtuxm [\fIn\fP]] [ \fIname\fP[=\fIvalue\fP] ] ...
+XSet attributes and values for shell parameters.
+XWhen invoked inside a function a new parameter is created which will be
+Xunset when the function completes.  The new parameter will not be
+Xexported unless ALLEXPORT is set, in which case the parameter will be
+Xexported provided no parameter of that name already exists.
+XThe following attributes are valid:
+X.RS
+X.PD 0
+X.TP
+X\-\fBL\fP
+XLeft justify and remove leading blanks from \fIvalue\fP.
+XIf \fIn\fP is nonzero, it defines the width of the field;
+Xotherwise it is determined by the width of the value of the first
+Xassignment.
+XWhen the parameter is printed, it is filled on the right with
+Xblanks or truncated if necessary to fit the field.
+XLeading zeros are removed if the \-\fBZ\fP flag is also set.
+X.TP
+X\-\fBR\fP
+XRight justify and fill with leading blanks.  If \fIn\fP is nonzero
+Xif defines the width of the field;
+Xotherwise it is determined by the width of the value of the first
+Xassignment.
+XWhen the parameter is printed, the field is left filled with
+Xblanks or truncated from the end.
+X.TP
+X\-\fBZ\fP
+XRight justify and fill with leading zeros if the first non-blank
+Xcharacter is a digit and the \-\fBL\fP flag has not been set.
+XIf \fIn\fP is nonzero it defines the width of the field;
+Xotherwise it is determined by the width of the value of the
+Xfirst assignment.
+X.TP
+X\-\fBf\fP
+XThe names refer to functions rather than parameters.  No assignments
+Xcan be made, and the only other valid flags are \-\fBt\fP
+Xand \-\fBu\fP.  The flag \-\fBt\fP turns on execution tracing for this
+Xfunction.  The flag \-\fBu\fP causes this function to be marked
+Xfor autoloading.  The \fBfpath\fP parameter will be searched to find the
+Xfunction definition when the function is first referenced.
+X.TP
+X\-\fBi\fP
+XUse an internal integer representation.  If \fIn\fP is nonzero
+Xit defines the output arithmetic base, otherwise it is determined by the first
+Xassignment.
+X.TP
+X\-\fBl\fP
+XConvert to lower case.
+X.TP
+X\-\fBr\fP
+XThe given \fIname\fPs are marked readonly.
+X.TP
+X\-\fBt\fP
+XTags the named parameters.  Tags have no special meaning to the shell.
+X.TP
+X\-\fBu\fP
+XConvert to upper case.
+X.TP
+X\-\fBx\fP
+XMark for automatic export to the environment of subsequently
+Xexecuted commands.
+X.TP
+X.RE
+X.PD
+X.PP
+XUsing + rather than \- causes these flags to be turned off.
+XIf no arguments are given but flags are specified,
+Xa list of named parameters which have these flags set is printed.
+XUsing + instead of \- keeps their values from being printed.
+XIf no arguments or options are given, the names and attributes
+Xof all parameters are printed. If only the \-\fBm\fP flag is given the
+Xarguments are taken as patterns (should be quoted) and all parameters
+Xor functions (with the \-\fBf\fP flag) with matching names are printed.
+X.TP
+X\fBulimit\fP [ \-\fBHacdflmnopstv\fP ] [ \fIlimit\fP ]
+XSet or display a resource limit. When setting a limit it will apply to the
+Xchildren of the shell but not to the shell itself. The value of limit can be a
+Xnumber in the unit specified below or the value \fBunlimited\fP.  If the
+X\fBH\fP flag is given use hard limits instead of soft limits.
+X.RS
+X.PD 0
+X.TP
+X\-\fBa\fP
+XLists all of the current resource limits.
+X.TP
+X\-\fBc\fP
+XThe number of 512-byte blocks on the size of core dumps.
+X.TP
+X\-\fBd\fP
+XThe number of K-bytes on the size of the data segment.
+X.TP
+X\-\fBf\fP
+XThe number of 512-byte blocks on the size of files written.
+X.TP
+X\-\fBl\fP
+XThe number of K-bytes on the size of locked-in memory.
+X.TP
+X\-\fBm\fP
+XThe number of K-bytes on the size of physical memory.
+X.TP
+X\-\fBn\fP
+XThe number of file descriptors.
+X.TP
+X\-\fBo\fP
+XThe number of open files.
+X.TP
+X\-\fBp\fP
+XThe number of processes.
+X.TP
+X\-\fBs\fP
+XThe number of K-bytes on the size of the stack.
+X.TP
+X\-\fBt\fP
+XThe number of CPU seconds to be used.
+X.TP
+X\-\fBv\fP
+XThe number of K-bytes on the size of virtual memory.
+X.RE
+X.PD
+X.TP
+X\fBumask\fP [ \fImask\fP ]
+XThe umask is set to \fImask\fP.  \fImask\fP can be either
+Xan octal number or a symbolic value as described in \fBchmod\fP(1).
+XIf \fImask\fP is omitted, the current value is printed.  Note that in
+Xthe symbolic form the permissions you specify are those which are to be
+Xallowed (not denied) to the users specified.
+X.TP
+X\fBunalias\fP [ \-\fBm\fP ] \fIname\fP ...
+XThe alias definition, if any, for each \fIname\fP is removed.
+XWith the \-\fBm\fP flag the arguments are taken as patterns (should be
+Xquoted) and all aliases with matching names are removed.
+X.TP
+X\fBunfunction\fP [ \-\fBm\fP ] \fIname\fP ...
+XThe function definition, if any, for each \fIname\fP is removed.
+XIf the \-\fBm\fP flag is specified the arguments are taken as patterns
+X(should be quoted) and all functions with matching names are removed.
+X.TP
+X\fBunhash\fP [ \-\fBm\fP ] \fIname\fP ...
+XThe entry in the command hash table, if any, for each \fIname\fP
+Xis removed. If the \-\fBm\fP flag is given the arguments are taken as
+Xpatterns (should be quoted) and all entries for commands with matching
+Xnames will be removed.
+X.TP
+X\fBunlimit\fP [ \-\fBh\fP ] \fIresource\fP ...
+XThe resource limit for each \fIresource\fP is set to the hard limit.
+XIf the \-\fBh\fP flag is given and the shell is running as root,
+Xthe hard resource limit for each \fIresource\fP is removed.
+X.TP
+X\fBunset\fP [ \-\fBm\fP ] \fIname\fP ...
+XEach named parameter is unset. If the \-\fBm\fP flag is specified the
+Xarguments are taken as patterns (should be quoted) and all parameters
+Xwith matching names are unset.
+X.TP
+X\fBunsetopt\fP [ \(+-\fIoptions\fP ] [ \fIname\fP ... ]
+XUnset the options for the shell.  All options specified either
+Xwith flags or by name are unset. If the \-\fBm\fP flag is given the
+Xarguments are considered to be patterns (don't forget to quote them)
+Xand all options with names matching these patterns are unset.
+X.TP
+X\fBvared\fP [ \-\fBc\fP ] [ \-\fBp\fP \fIprompt\fP ] [ \-\fBr\fP \fIrprompt\fP ] \fIname\fP
+XThe value of the parameter \fIname\fP is loaded into the edit
+Xbuffer, and the line editor is invoked.  When the editor exits,
+X\fIname\fP is set to the string value returned by the editor.
+XIf the \-\fBc\fP flag is given the parameter is created if it doesn't
+Xalready exist.
+XIf the \-\fBp\fP flag is given the following string will be taken as
+Xthe prompt to display at the left and if the \-\fBr\fP flag is given
+Xthe following string gives the prompt to display at the right.
+X.TP
+X\fBwait\fP [ \fIjob\fP ... ]
+XWait for the specified jobs or processes.  If \fIjob\fP is not given
+Xthen all currently active child processes are waited for.
+XEach \fIjob\fP can be either a job specification or the process-id
+Xof a job in the job table.
+XThe exit status from this command is that of the job waited for.
+X.TP
+X\fBwhence\fP [ \-\fBacpvm\fP ] \fIname\fP ...
+XFor each name, indicate how it would be interpreted if used
+Xas a command name.  The \-\fBv\fP flag produces a more verbose
+Xreport.  The \-\fBp\fP flag does a path search for \fIname\fP
+Xeven if it is a shell function, alias, or reserved word.
+XThe \-\fBc\fP flag prints the results in a csh-like format.
+XThe \-\fBa\fP flag does a search for all occurrences of \fIname\fP
+Xthroughout the command path.
+XWith the \-\fBm\fP flag the arguments are taken as patterns (should be
+Xquoted) and the information is displayed for each command matching one
+Xof these patterns.
+X.TP
+X\fBwhich\fP
+XSame as \fBwhence \-c\fP.
+X.RE
+X.SH INVOCATION
+XCommands are first read from /etc/zshenv.
+XIf the \-\fBf\fP flag is present or if the \fBNO_RCS\fP option is set
+Xwithin /etc/zshenv, all other
+Xinitialization files are skipped.
+XOtherwise, commands are read
+Xfrom $ZDOTDIR/.zshenv.
+X(If \fBZDOTDIR\fP is unset, \fBHOME\fP is used instead).
+XIf the first character of argument zero passed to the shell
+Xis \-, or if the \-\fBl\fP flag is present, then the shell is
+Xassumed to be a login shell, and commands
+Xare read from /etc/zprofile and then $ZDOTDIR/.zprofile.
+XThen, if the shell is interactive,
+Xcommands are read from /etc/zshrc and then $ZDOTDIR/.zshrc.
+XFinally, if the shell is a login shell, /etc/zlogin and $ZDOTDIR/.zlogin
+Xare read.
+X.PP
+XIf the \-\fBs\fP flag is not present and an argument is given,
+Xthe first argument is taken to be the pathname of a script to
+Xexecute.  The remaining arguments are assigned to the positional
+Xparameters.  The following flags are interpreted by the shell
+Xwhen invoked:
+X.TP
+X.PD 0
+X\-\fBc\fP \fIstring\fP
+XRead commands from \fIstring\fP.
+X.TP
+X\-\fBs\fP
+XRead command from the standard input.
+X.TP
+X\-\fBi\fP
+XIf this flag is present or the shell input and output
+Xare attached to a terminal, this shell is interactive.
+X.PD
+X.SH "SEE ALSO"
+Xsh(1),
+Xcsh(1),
+Xtcsh(1),
+Xitcsh(1),
+Xrc(1),
+Xbash(1),
+Xash(1),
+Xksh(1),
+Xclam(1),
+Xstrftime(3).
+X.SH FILES
+X$ZDOTDIR/.zshenv
+X.br
+X$ZDOTDIR/.zprofile
+X.br
+X$ZDOTDIR/.zshrc
+X.br
+X$ZDOTDIR/.zlogin
+X.br
+X$ZDOTDIR/.zlogout
+X.br
+X/tmp/zsh*
+X.br
+X/etc/zshenv
+X.br
+X/etc/zprofile
+X.br
+X/etc/zshrc
+X.br
+X/etc/zlogin
+X.SH AUTHOR
+XPaul Falstad (pf@z-code.com)
+X.br
+XProgrammable completion was implemented by Sven Wischnowsky
+X(oberon@cs.tu-berlin.de) and Peter Stephenson (pws@s-a.amtp.liv.ac.uk).
+X.SH AVAILABILITY
+XThe latest official release of zsh is available via anonymous ftp at
+Xftp.sterling.com:/zsh (US) and carlo.phys.uva.nl:/pub/bas/zsh
+X(Europe).
+X.SH "UNDOCUMENTED FEATURES"
+XKnown only to the recipients of the zsh mailing list,
+Xzsh-list@sterling.com.  If you run into problems, please send your
+Xquestions and patches to the mailing list. To subscribe to zsh-list,
+Xsend an email message with body "subscribe zsh-list" to the address
+X"Majordomo@sterling.com".
+END_OF_FILE
+  if test 83377 -ne `wc -c <'zsh-2.5.0/man/zsh.1.B'`; then
+    echo shar: \"'zsh-2.5.0/man/zsh.1.B'\" unpacked with wrong size!
+  elif test -f 'zsh-2.5.0/man/zsh.1.A'; then
+    echo shar: Combining  \"'zsh-2.5.0/man/zsh.1'\" \(155263 characters\)
+    cat 'zsh-2.5.0/man/zsh.1.A' 'zsh-2.5.0/man/zsh.1.B' > 'zsh-2.5.0/man/zsh.1'
+    if test 155263 -ne `wc -c <'zsh-2.5.0/man/zsh.1'`; then
+      echo shar: \"'zsh-2.5.0/man/zsh.1'\" combined with wrong size!
+    else
+      rm zsh-2.5.0/man/zsh.1.A zsh-2.5.0/man/zsh.1.B 
+    fi
+  fi
+  # end of 'zsh-2.5.0/man/zsh.1.B'
+fi
+echo shar: End of archive 2 \(of 18\).
+cp /dev/null ark2isdone
+MISSING=""
+for I in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 ; do
+    if test ! -f ark${I}isdone ; then
+	MISSING="${MISSING} ${I}"
+    fi
+done
+if test "${MISSING}" = "" ; then
+    echo You have unpacked all 18 archives.
+    rm -f ark[1-9]isdone ark[1-9][0-9]isdone
+else
+    echo You still must unpack the following archives:
+    echo "        " ${MISSING}
+fi
+exit 0
+exit 0 # Just in case...

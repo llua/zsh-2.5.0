@@ -1,0 +1,65 @@
+# -- finale
+
+if test -z "$B_nomake"
+then
+
+# configure the needed variables
+
+test -z "$make_probe_done" && . ./config/bz.makeprobe
+
+# ---
+
+makeit="$makeprecmd$C_MAKE"
+
+if test -z "$F_bld_eq_src"
+then
+  if test -n "$make_groks_VPATH"
+  then
+    if test -z "$B_makeatbld"
+    then
+      makeit="$makeit VPATH=$C_BLDDIR"
+    else
+      makeit="$makeit VPATH=`pwd`"	
+    fi
+  fi
+fi
+
+
+if test -z "$B_justmake"
+then
+
+cat <<foo
+
+You may want to look at the file(s) I just created:
+
+foo
+test -n "$B_config_h"  && echo "	${C_BLDDIR}config.h"
+test -n "$B_signals_h" && echo "	${C_BLDDIR}signals.h"
+test -n "$B_Makefile"  && echo "	$MAKEFILE"
+
+cat <<foo
+
+to make sure they are correct.	Or you may just want
+to go ahead and try running $C_MAKE to see what happens.
+
+foo
+echo "Shall I execute \"$makeit\" now? " | tr -d '\012' 
+read reply
+echo
+
+else
+  # justmake
+  reply=yep
+fi
+
+case "$reply" in
+[yY]*) echo $makeit ; eval $makeit ; exit 0 ;;
+esac
+cat <<foo
+In that case you will have to call the following yourself:
+
+	$makeit
+
+foo
+
+fi

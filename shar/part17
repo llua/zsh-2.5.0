@@ -1,0 +1,3229 @@
+Path: news.csc.fi!news.eunet.fi!EU.net!uunet!sparky!not-for-mail
+From: zsh-list@sterling.com (Bas de Bakker)
+Newsgroups: comp.sources.misc
+Subject: v43i106:  zsh - The Z shell, version 2.5.0, Part17/18
+Followup-To: comp.sources.d
+Date: 13 Jul 1994 23:08:13 -0500
+Organization: Sterling Software
+Lines: 3214
+Sender: kent@sparky.sterling.com
+Approved: kent@sparky.sterling.com
+Message-ID: <302dnd$a1@sparky.sterling.com>
+References: <csm-v43i089=zsh.230017@sparky.sterling.com>
+NNTP-Posting-Host: sparky.sterling.com
+X-Md4-Signature: df841c425e00041efb9db390b6935f6f
+
+Submitted-by: zsh-list@sterling.com (Bas de Bakker)
+Posting-number: Volume 43, Issue 106
+Archive-name: zsh/part17
+Environment: UNIX
+Supersedes: zsh: Volume 35, Issue 51-72
+
+#! /bin/sh
+# This is a shell archive.  Remove anything before this line, then feed it
+# into a shell via "sh file" or similar.  To overwrite existing files,
+# type "sh file -c".
+# Contents:  zsh-2.5.0/BUGS zsh-2.5.0/FEATURES zsh-2.5.0/dots/zshrc
+#   zsh-2.5.0/func/multicomp zsh-2.5.0/help/declare zsh-2.5.0/help/fc
+#   zsh-2.5.0/help/limit zsh-2.5.0/help/print zsh-2.5.0/help/read
+#   zsh-2.5.0/scripts/c2z zsh-2.5.0/src/Makefile.sample
+#   zsh-2.5.0/src/config/bz.defaults zsh-2.5.0/src/config/bz.define
+#   zsh-2.5.0/src/config/bz.hosttype zsh-2.5.0/src/config/bz.ifdef
+#   zsh-2.5.0/src/config/bz.sanity zsh-2.5.0/src/config/bz.signals.h
+#   zsh-2.5.0/src/funcs.h zsh-2.5.0/src/loop.c
+#   zsh-2.5.0/src/zle_move.c zsh-2.5.0/src/zle_utils.c
+#   zsh-2.5.0/src/zle_vi.c
+# Wrapped by kent@sparky on Tue Jul 12 16:47:28 1994
+PATH=/bin:/usr/bin:/usr/ucb:/usr/local/bin:/usr/lbin:$PATH ; export PATH
+echo If this archive is complete, you will see the following message:
+echo '          "shar: End of archive 17 (of 18)."'
+if test -f 'zsh-2.5.0/BUGS' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/BUGS'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/BUGS'\" \(1219 characters\)
+  sed "s/^X//" >'zsh-2.5.0/BUGS' <<'END_OF_FILE'
+X-*- text -*-
+X------------------------------------------------------------------------
+X% ( echo foo ; echo bar 1>& 2 ) 2>&1 1>/dev/null | cat
+Xbar
+Xfoo
+X% ksh
+X$ ( echo foo ; echo bar 1>& 2 ) 2>&1 1>/dev/null | cat
+Xbar
+X
+XThis is not exactly a bug, but an effect of the multiple IO
+Xredirection.  It is a (k)sh incompatibility, though.
+X------------------------------------------------------------------------
+XIf you do
+X% foo =(bar)
+Xand hit ^Z before bar is finished, bar is suspended but nothing
+Xhappens, i.e. no prompt appears and zsh keeps waiting.
+X------------------------------------------------------------------------
+XCompletion has a habit of doing the wrong thing after a
+Xbackslash/newline.
+X------------------------------------------------------------------------
+X~% (sleep 100 ; echo foo)
+X			# Hit ^Z here
+X
+Xzsh: suspended  ( sleep 100; echo foo )
+X~% fg
+X[1]  + continued  ( sleep 100; echo foo )
+Xfoo			# This is wrong!
+X~% ps
+X  PID TTY STAT  TIME COMMAND
+X 2092 v02 S     0:00 sleep 100
+X------------------------------------------------------------------------
+XIf you suspend "man", zle seems to get into cooked mode.  It works ok
+Xfor plain "less".
+X------------------------------------------------------------------------
+END_OF_FILE
+  if test 1219 -ne `wc -c <'zsh-2.5.0/BUGS'`; then
+    echo shar: \"'zsh-2.5.0/BUGS'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/BUGS'
+fi
+if test -f 'zsh-2.5.0/FEATURES' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/FEATURES'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/FEATURES'\" \(2719 characters\)
+  sed "s/^X//" >'zsh-2.5.0/FEATURES' <<'END_OF_FILE'
+Xvery close to ksh/sh grammar, with csh additions
+Xmost features of ksh, bash, and tcsh
+X75 builtins, 89 options, 154 key bindings
+Xshort for loops, ex: for i (*.c) echo $i
+Xselect
+Xshell functions
+Xconditional expressions (test builtin, [ ... ], and ksh-style [[ ... ]])
+Xglobal aliases (may be expanded anywhere on the line)
+Xdirectory stack access with =num
+Xprocess substitution (vi =(cmd) edits the output of cmd)
+Xgeneralized pipes (ls foo >>(cmd1) 2>>(cmd2) pipes stdout to cmd1
+X  and stderr to cmd2)
+Xarithmetic expressions
+Xadvanced globbing:
+X  ls **/file  searches recursively for "file" in subdirectories
+X  ls file<20->  matches file20, file30, file100, etc.
+X  ls *.(c|pro)  matches *.c and *.pro
+X  ls *(R)  matches only world-readable files
+X  ls *.c~lex.c  matches all .c files except lex.c
+Xnull command shorthands:
+X  "< file" is same as "more <file"
+X  "> file" is same as "cat >file"
+X  ">> file" is same as "cat >>file"
+Xksh-style coprocesses
+Xautomatic file stream teeing (ls >foo >bar puts output in two places)
+Xchpwd() function run every time you change directory (useful for
+X  updating the status line)
+Xjob control
+Xcsh-style history
+Xfull vi line editing, including "c2w" and "y$" and such things
+Xfull emacs line editing
+Xincremental history search
+Xmagic-space history
+Xspelling correction
+Xarray parameters
+X$HOSTTYPE, $LINENO, $RANDOM, $SECONDS, $cdpath, $COLUMNS, $fignore,
+X  $HISTCHARS, $mailpath
+Xwith autocd option, typing a directory name by itself is the same as
+X  typing "cd dirname"
+Xmenu completion: pressing TAB repeatedly cycles through the possible matches
+Xincremental path hashing
+Xautomatic process time reporting for commands that run over a certain limit
+Xfull tcsh-style prompt substitution
+Xutmp login/logout reporting
+Xwith histverify option, performing csh-style history expansions causes the
+X  input line to be brought up for editing instead of being executed
+Xwith sunkeyboardhack option, accidently typed trailing ` characters
+X  are removed from the input line (for those of you with Sun keyboards :-) )
+Xautoloaded functions (loaded from a file when they are first referenced)
+X"cd old new" replaces "old" with "new" in directory string
+Xgeneralized argument completion, including:
+X  - command name completion
+X  - filename and path completion
+X  - hostname completion
+X  - key binding completion
+X  - option completion
+X  - variable name completion
+X  - user-specified keyword completion
+X  - anything else you can think of
+Xprompt on right side of screen
+Xdirectory stacks
+Xhistory datestamps and execution time records
+Xcommand scheduling (like at(1), but in the shell's context)
+Xtty mode freezing
+Xup to 9 startup files (but you only need 1 or 2)
+X8-bit clean
+Xwhich -a cmd lists all occurences of "cmd" in the path
+END_OF_FILE
+  if test 2719 -ne `wc -c <'zsh-2.5.0/FEATURES'`; then
+    echo shar: \"'zsh-2.5.0/FEATURES'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/FEATURES'
+fi
+if test -f 'zsh-2.5.0/dots/zshrc' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/dots/zshrc'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/dots/zshrc'\" \(2291 characters\)
+  sed "s/^X//" >'zsh-2.5.0/dots/zshrc' <<'END_OF_FILE'
+X#
+X# my rc file for zsh 2.2
+X# all this runs in interactive shells only
+X#
+X
+X# search path for the cd command
+Xcdpath=(. ~ ~/src/cs320 ~/src)
+X
+X# where to look for function definitions
+X# fpath=(~/func)
+X
+X# useful directory
+Xcsrc=/usr/princeton/common/src
+X
+X# use hard limits, except for a smaller stack and no core dumps
+Xunlimit
+Xlimit stack 8192
+Xlimit core 0
+Xlimit -s
+X
+Xumask 022
+X
+X# define some aliases
+Xalias a=alias
+Xa a.out=./a.out sendmail=/usr/lib/sendmail c=cp 0=vi 09='vi -t' 00=r
+Xa d=dirs en='enscript -2rGh' fm='finger -m' grep=egrep h=history
+Xa hinfo='host -t hinfo' j=jobs l='ls -AF' lock='lock -p -60000'
+Xa lsd='ls -d */' m=make mm=less
+Xa nrable='ls -AFltrd *(^R)' sz='ls -l | sort -n +3 | tail -20'
+Xa sn='sed -n' nw='l -ltr | tail' pd=pushd pop=popd mroe=more
+Xa rable='ls -AFltrd *(R)' strings='strings -' t=cat
+Xa v=mv where='hostname; echo >/dev/null' k9='kill -9' whoami='echo root'
+Xa find='noglob find' bindkey='noglob bindkey' dh='dirs -v'
+Xa mv='nocorrect mv' z=suspend
+X
+X# global aliases
+Xa -g 'GF'='| fgrep -f ~/.friends' G='| grep' M='| less' cex='/u/pup/centrex'
+X
+X# setenv for csh junkies (including tset)
+Xsetenv() { export $1=$2 }
+X
+Xmanpath=(/usr/man /usr/princeton/man /u/cad/man /usr/lang/man)
+Xexport MANPATH
+X
+X# filename completion suffixes to ignore
+Xfignore=(.o .pro .old)
+X
+X# hosts to use for completion
+Xhosts=(uunet.uu.net `hostname` wuarchive.wustl.edu quiche.cs.mcgill.ca)
+X
+XPROMPT='%l %T %m[%h] '
+X
+X# prompt on the right side of the screen
+XRPROMPT=' %~'
+X
+X# some environment variables
+Xexport MAILCALL='NEW MAIL! '
+Xexport YOUSAID='In %C you wrote:'
+Xexport ATTRIBUTION='%f wrote:'
+X
+X# functions to autoload
+X# autoload cx acx mere yu yp randline proto namedir ilogin
+X
+XMAILCHECK=30
+XHISTSIZE=600
+XDIRSTACKSIZE=50
+X
+X# lots of options
+Xsetopt notify globdots correct pushdtohome cdablevars autolist \
+X	sunkeyboardhack correctall autocd recexact longlistjobs mailwarning \
+X	autoresume histignoredups pushdsilent noclobber \
+X	autopushd pushdminus extendedglob rcquotes
+Xunsetopt bgnice
+X
+X# watch for my friends
+Xwatch=($(cat ~/.friends))
+XWATCHFMT='%n %a %l from %m at %t.'
+XLOGCHECK=0
+X
+Xexport LESS=-ainx3
+Xunhash p
+X
+X# some nice bindings
+Xbindkey '^X^Z' universal-argument ' ' magic-space
+Xbindkey '^X^A' vi-find-prev-char-skip
+Xbindkey '^Z' accept-and-hold
+Xbindkey -s '\M-/' \\\\
+Xbindkey -s '\M-=' \|
+END_OF_FILE
+  if test 2291 -ne `wc -c <'zsh-2.5.0/dots/zshrc'`; then
+    echo shar: \"'zsh-2.5.0/dots/zshrc'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/dots/zshrc'
+fi
+if test -f 'zsh-2.5.0/func/multicomp' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/func/multicomp'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/func/multicomp'\" \(2636 characters\)
+  sed "s/^X//" >'zsh-2.5.0/func/multicomp' <<'END_OF_FILE'
+X# multicomp() {
+X# Completes all manner of files given prefixes for each path segment.
+X# e.g. s/z/s -> src/zsh-2.4/src
+X#
+X# Usage: e.g.
+X# compctl -D -f + -U -K multicomp
+X#
+X# Note that exactly matched directories are not expanded, e.g.
+X# s/zsh-2.4/s<TAB> will not expand to src/zsh-2.4old/src.
+X# Will expand glob patterns already in the word, but use complete-word,
+X# not TAB (expand-or-complete), or you will get ordinary glob expansion.
+X# Requires the -U option to compctl.
+X# Menucompletion is highly recommended for ambiguous matches.
+X# Liable to screw up escaped metacharacters royally.
+X# $fignore is not used: feel free to add your own bit.
+X
+Xlocal pref head rceptrue ngtrue sofar origtop newtop globdir="(-/)" wild
+X
+X# No point using the toggle for rcexpandparam,
+X# since we don't know if the option is set already.
+X# (This is always the case, so what's the point in the toggle?)
+X# This stuff is going to be superceded by `setopt localopts' eventually.
+X[[ -o rcexpandparam ]] && rceptrue=1
+X[[ -o nullglob ]] && ngtrue=1
+Xsetopt rcexpandparam nullglob
+X
+Xpref=${1}$2
+X# Hack to allow programmable completion to select multicomp after a :
+X# (e.g.
+X# compctl -D -f -x 's[:]' -U -K multicomp
+X# )
+X[[ $pref = :* ]] && pref=$pref[2,-1]
+X
+Xsofar=('')
+Xreply=('')
+X
+Xif [[ $pref[1] = '~' ]]; then
+X  # If the string started with ~, save the head and what it will become.
+X  origtop=${pref%%/*}
+X  [[ $origtop = */ ]] && origtop[-1]=
+X  # Next line assumes cshjunkietilde was not set.  See note on toggles above.
+X  newtop=${~origtop}
+X  # Save the expansion as the bit matched already
+X  sofar=($newtop)
+X  pref=$pref[$#origtop+1,-1]
+Xfi
+X
+Xwhile [[ -n $pref ]]; do
+X  [[ $pref = /* ]] && sofar=(${sofar}/) && pref=$pref[2,-1]
+X  head=${pref%%/*}
+X  [[ $head = */ ]] && head[-1]=
+X  pref=$pref[$#head+1,-1]
+X  if [[ $pref = /* && -z $sofar[2] && -d ${sofar}$head ]]; then
+X    # Exactly matched directory: don't try to glob
+X    reply=("${sofar}$head")
+X  else
+X    [[ $pref = /* ]] || globdir=
+X    # if path segment contains wildcards, don't add another.
+X    if [[ $head = *[\*\?]* ]]; then
+X      wild=
+X    else
+X      wild='*'
+X    fi
+X    # $sofar must be expanded with rcexpandparam here, in such a way
+X    # that metacharacters are expanded in the eval step.
+X    reply=(${sofar}"${head}${wild}${globdir}")
+X    eval "reply=($reply)"
+X  fi
+X
+X  [[ -z $reply[1] ]] && reply=() && break
+X  [[ -n $pref ]] && sofar=($reply)
+Xdone
+X
+X# Restore ~'s in front if there were any.
+X# There had better not be anything funny in $newtop.
+X[[ -n $origtop ]] && eval "reply=(\$reply:gs?$newtop?\\$origtop?)"
+X
+X[[ rceptrue = 1 ]] || unsetopt rcexpandparam
+X[[ ngtrue = 1 ]] || unsetopt nullglob
+X
+X# }
+END_OF_FILE
+  if test 2636 -ne `wc -c <'zsh-2.5.0/func/multicomp'`; then
+    echo shar: \"'zsh-2.5.0/func/multicomp'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/func/multicomp'
+fi
+if test -f 'zsh-2.5.0/help/declare' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/declare'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/declare'\" \(4234 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/declare' <<'END_OF_FILE'
+X       declare [ arg ... ]
+X              Same as typeset.
+X
+X       functions [ +-tum ] [ name ... ]
+X              Equivalent to typeset -f.
+X
+X       integer [ +-FBlrtux ] [ name[=value] ] ...
+X              Same as typeset -i, except that options  irrelevant
+X              to integers are not permitted.
+X
+X       local [ +-LRZilrtu [n]] [ name[=value] ] ...
+X              Same as typeset, except that the options -x and  -f
+X              are not permitted.
+X
+X       typeset [ +-LRZfilrtuxm [n]] [ name[=value] ] ...
+X              Set  attributes  and  values  for shell parameters.
+X              When invoked inside a function a new  parameter  is
+X              created  which will be unset when the function com-
+X              pletes.  The new parameter  will  not  be  exported
+X              unless  ALLEXPORT is set, in which case the parame-
+X              ter will be exported provided no parameter of  that
+X              name  already exists.  The following attributes are
+X              valid:
+X              -L     Left justify and remove leading blanks  from
+X                     value.   If  n  is  nonzero,  it defines the
+X                     width of the field; otherwise it  is  deter-
+X                     mined by the width of the value of the first
+X                     assignment.  When the parameter is  printed,
+X                     it  is  filled  on  the right with blanks or
+X                     truncated if necessary  to  fit  the  field.
+X                     Leading  zeros are removed if the -Z flag is
+X                     also set.
+X              -R     Right justify and fill with leading  blanks.
+X                     If  n is nonzero if defines the width of the
+X                     field; otherwise it  is  determined  by  the
+X                     width  of the value of the first assignment.
+X                     When the parameter is printed, the field  is
+X                     left  filled  with  blanks or truncated from
+X                     the end.
+X              -Z     Right justify and fill with leading zeros if
+X                     the first non-blank character is a digit and
+X                     the -L flag has  not  been  set.   If  n  is
+X                     nonzero  it  defines the width of the field;
+X                     otherwise it is determined by the  width  of
+X                     the value of the first assignment.
+X              -f     The  names  refer  to  functions rather than
+X                     parameters.  No assignments can be made, and
+X                     the  only  other  valid flags are -t and -u.
+X                     The flag -t turns on execution  tracing  for
+X                     this  function.   The  flag  -u  causes this
+X                     function to be marked for autoloading.   The
+X                     fpath parameter will be searched to find the
+X                     function definition  when  the  function  is
+X                     first referenced.
+X              -i     Use  an internal integer representation.  If
+X                     n is nonzero it defines  the  output  arith-
+X                     metic  base,  otherwise  it is determined by
+X                     the first assignment.
+X              -l     Convert to lower case.
+X              -r     The given names are marked readonly.
+X              -t     Tags the named  parameters.   Tags  have  no
+X                     special meaning to the shell.
+X              -u     Convert to upper case.
+X              -x     Mark for automatic export to the environment
+X                     of subsequently executed commands.
+X
+X              Using + rather than - causes these flags to be
+X              turned off.
+X              If no arguments are given but flags are  specified,
+X              a  list  of named parameters which have these flags
+X              set is printed.  Using + instead of -  keeps  their
+X              values  from  being  printed.   If  no arguments or
+X              options are given, the names and attributes of  all
+X              parameters  are  printed.  If  only  the -m flag is
+X              given the arguments are taken as  patterns  (should
+X              be  quoted)  and  all parameters or functions (with
+X              the -f flag) with matching names are printed.
+END_OF_FILE
+  if test 4234 -ne `wc -c <'zsh-2.5.0/help/declare'`; then
+    echo shar: \"'zsh-2.5.0/help/declare'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/declare'
+fi
+if test -f 'zsh-2.5.0/help/fc' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/fc'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/fc'\" \(2480 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/fc' <<'END_OF_FILE'
+X       fc [ -e ename ] [ -nlrdDfEm ] [ old=new ... ] [ first [
+X              last ] ]
+X       fc -ARWI [ filename ]
+X              Select  a range of commands from first to last from
+X              the history list.  The arguments first and last may
+X              be  specified  as a number or as a string.  A nega-
+X              tive number is used as an  offset  to  the  current
+X              history  event number.  A string specifies the most
+X              recent event beginning with the given string.   All
+X              substitutions  old=new,  if any, are then performed
+X              on the commands.  If the  -l  flag  is  given,  the
+X              resulting  commands  are listed on standard output.
+X              If the -m flag is also given the first argument  is
+X              taken  as a pattern (should be quoted) and only the
+X              history events matching this pattern will be shown.
+X              Otherwise  the editor program ename is invoked on a
+X              file containing these history events.  If ename  is
+X              not  given,  the  value  of the parameter FCEDIT is
+X              used.  If ename is "-", no editor is invoked.  When
+X              editing  is complete, the edited command(s) is exe-
+X              cuted.  If first is not specified, it will  be  set
+X              to  -1 (the most recent event), or to -16 if the -l
+X              flag is given.  If last is not specified,  it  will
+X              be  set to first, or to -1 if the -l flag is given.
+X              The flag -r reverses the order of the commands  and
+X              the  flag  -n suppresses command numbers when list-
+X              ing.  Also when listing, -d prints  timestamps  for
+X              each  command, and -f prints full time-date stamps.
+X              Adding the -E flag causes the dates to  be  printed
+X              as  `dd.mm.yyyy'.   With  the  -D  flag,  fc prints
+X              elapsed times.
+X
+X              fc -R reads the history from the given file, fc  -W
+X              writes the history out to the given file, and fc -A
+X              appends the history out to the given file.  fc  -AI
+X              (-WI)  appends  (writes) only those events that are
+X              new since last incremental append  (write)  to  the
+X              history  file.  In  any  case the file will have no
+X              more than SAVEHIST entries.
+X
+X       history [ -nrdDfEm ] [ first [ last ] ]
+X              Same as fc -l.
+X
+X       r      Equivalent to fc -e -.
+END_OF_FILE
+  if test 2480 -ne `wc -c <'zsh-2.5.0/help/fc'`; then
+    echo shar: \"'zsh-2.5.0/help/fc'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/fc'
+fi
+if test -f 'zsh-2.5.0/help/limit' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/limit'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/limit'\" \(1773 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/limit' <<'END_OF_FILE'
+X       limit [ -h ] [ resource [ limit ] ] ...
+X       limit -s
+X              Limit the resource consumption of the current shell
+X              and its children.  If limit is not specified, print
+X              the current limit placed on resource; otherwise set
+X              the limit to the specified value.  If the  -h  flag
+X              is  given,  use hard limits instead of soft limits.
+X              If no resource is given, print all limits.
+X
+X              resource is one of:
+X
+X              cputime
+X                     Maximum CPU seconds per process.
+X              filesize
+X                     Largest single file allowed.
+X              datasize
+X                     Maximum data size (including stack) for each
+X                     process.
+X              stacksize
+X                     Maximum stack size for each process.
+X              coredumpsize
+X                     Maximum size of a core dump.
+X              resident
+X                     Maximum resident set size.
+X              memoryuse
+X                     The same as resident.
+X              memorylocked
+X                     Maximum amount of memory locked in RAM.
+X              descriptors
+X                     Maximum value for a file descriptor.
+X              openfiles
+X                     Maximum number of open files.
+X              vmemorysize
+X                     Maximum amount of virtual memory.
+X
+X              Which   of  these  resource  limits  are  available
+X              depends on the system.  limit is a number, with  an
+X              optional scaling factor, as follows:
+X
+X              nh     hours.
+X              nk     kilobytes.   This is the default for all but
+X                     cputime.
+X              nm     megabytes or minutes.
+X              mm:ss  minutes and seconds.
+END_OF_FILE
+  if test 1773 -ne `wc -c <'zsh-2.5.0/help/limit'`; then
+    echo shar: \"'zsh-2.5.0/help/limit'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/limit'
+fi
+if test -f 'zsh-2.5.0/help/print' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/print'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/print'\" \(2179 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/print' <<'END_OF_FILE'
+X       print [ -RnrslzpNDPoOic ] [ -un ] [ arg ... ]
+X              With  no  flags  or  with flag -, the arguments are
+X              printed on the  standard  output  as  described  by
+X              echo,  with  the  following differences: the escape
+X              sequence \M-x metafies the character  x  (sets  the
+X              highest  bit),  \C-x  produces  a control character
+X              (\C-@ and \C-? give the characters NULL and delete)
+X              and  \E is a synonym for \e.  Finally, if not in an
+X              escape sequence, \ escapes the following  character
+X              and is not printed.
+X              -R, -r ignore  the escape conventions of echo.  The
+X                     -R option will print  all  subsequent  argu-
+X                     ments and options.
+X              -s     place   the  results  in  the  history  list
+X                     instead of on the standard output.
+X              -n     do not add a newline to the output.
+X              -l     print the arguments  separated  by  newlines
+X                     instead of spaces.
+X              -N     print the arguments separated and terminated
+X                     by nulls.
+X              -o     print  the  arguments  sorted  in  ascending
+X                     order.
+X              -O     print  the  arguments  sorted  in descending
+X                     order.
+X              -i     if given together with -o or -O  makes  them
+X                     work case independently
+X              -c     print the arguments in columns
+X              -un    print the arguments to file descriptor n.
+X              -p     print  the  arguments  to  the  input of the
+X                     coprocess.
+X              -z     push the arguments onto the  editing  buffer
+X                     stack,   separated   by  spaces;  no  escape
+X                     sequences are recognized.
+X              -D     treat  the  arguments  as  directory  names,
+X                     replacing  prefixes  with  ~ expressions, as
+X                     appropriate.
+X              -P     recognize the same escape  sequences  as  in
+X                     the PROMPT parameter.
+X
+X       pwd    Equivalent to print -R $PWD.
+END_OF_FILE
+  if test 2179 -ne `wc -c <'zsh-2.5.0/help/print'`; then
+    echo shar: \"'zsh-2.5.0/help/print'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/print'
+fi
+if test -f 'zsh-2.5.0/help/read' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/read'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/read'\" \(2208 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/read' <<'END_OF_FILE'
+X       read [ -rzpqAclneE ] [ -k [ num ] ] [ -un ]  [
+X              name?prompt  ]  [ name ...  ]
+X              Read one line and break it into  fields  using  the
+X              characters  in IFS as separators.  In raw mode, -r,
+X              a \ at the end of a line does not signify line con-
+X              tinuation.   With the -q flag read only one charac-
+X              ter and set name to `y' if this character  was  `y'
+X              or  `Y'  and  to  `n' otherwise.  If the -k flag is
+X              given read only one (or num) characters.  If the -z
+X              flag  is  set,  read  from the editor buffer stack.
+X              The first field is assigned to the first name,  the
+X              second  field  to the second name, etc., with left-
+X              over fields assigned to the last name.  If  the  -e
+X              or the -E flag is given, the words read are printed
+X              after the whole line is read. If  the  -e  flag  is
+X              set,  the words are not assigned to the parameters.
+X              If the -A flag is set, the first name is  taken  as
+X              the  name of an array and all words are assigned to
+X              it.  The -c and -l flags are allowed only if called
+X              inside  a  function  used for completion (specified
+X              with the -K flag to compctl). If  the  -c  flag  is
+X              given,  the  words of the current command are read.
+X              If the -l flag is given, the whole line is assigned
+X              as  a  scalar.  Together  with  the  -n  flag these
+X              options give the number of the word the  cursor  is
+X              on  and the index of the character the cursor is on
+X              respectively.  If name is  omitted  then  REPLY  is
+X              used  for  scalars and reply for arrays.  If -un is
+X              specified, then input is read from file  descriptor
+X              n;  if -p is specified, then input is read from the
+X              coprocess.  If the first argument contains a ?, the
+X              remainder of this word is used as a prompt on stan-
+X              dard error when the shell is interactive.  The exit
+X              status is 0 unless an end-of-file is encountered.
+END_OF_FILE
+  if test 2208 -ne `wc -c <'zsh-2.5.0/help/read'`; then
+    echo shar: \"'zsh-2.5.0/help/read'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/read'
+fi
+if test -f 'zsh-2.5.0/scripts/c2z' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/scripts/c2z'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/scripts/c2z'\" \(3299 characters\)
+  sed "s/^X//" >'zsh-2.5.0/scripts/c2z' <<'END_OF_FILE'
+X#! /bin/sh
+X#
+X# c2z - environment conversion tool
+X# Contributed by Bart Schaefer
+X# (Tweaked a bit by Paul Falstad)
+X#
+X# This is a quick script to convert csh aliases to zsh aliases/functions.
+X# It also converts the csh environment and local variables to zsh.  c2z
+X# uses the csh to parse its own dot-files, then processes csh output to
+X# convert the csh settings to zsh.
+X#
+X# When run as a zsh fuction, c2z runs csh as if it were an interactive
+X# shell whenever the parent zsh is interactive.  When run as a shell
+X# script, the -i switch can be used to force this behavior.
+X#
+X# The -l (login) switch causes csh to run as if it were a login shell.
+X# This is done "properly" if c2z is used as a zsh function, otherwise
+X# it's faked by explicitly sourcing .login.  Use with caution if your
+X# .login initializes an X server or does other one-time-only startup
+X# procedures.
+X#
+X# usage:
+X#	c2z [-i] [-l]
+X#
+X# You can use this script in your .zshrc or .zlogin files to load your
+X# regular csh environment into zsh; for example, in .zlogin:
+X#
+X#	. =(c2z -l)
+X#
+X# This is not perfect, but it gets most common aliases and variables.
+X# It's also rather time-consuming to do this every time you log in.
+X# However, if you're moving from csh to zsh for the first time, this
+X# can get you started with a familiar environment right away.
+X#
+X# In case your mailer eats tabs, $T is set to expand to a tab.
+X#
+XT="`echo x | tr x '\011'`"
+X
+X# If we're zsh, we can run "- csh" to get the complete environment.
+X#
+XMINUS=""
+XLOGIN=""
+XINTERACT=""
+Xcase "$VERSION" in
+Xzsh*)
+X    case $1 in
+X    -l*) MINUS="-" ;;
+X    -i*) INTERACT="-i" ;;
+X    esac
+X    if [[ -o INTERACTIVE ]]; then INTERACT="-i"; fi
+X    setopt nobanghist
+X    ;;
+X*)
+X    case $1 in
+X    -l*) LOGIN="source ~/.login" ;;
+X    -i*) INTERACT="-i" ;;
+X    esac
+X    ;;
+Xesac
+X
+X( eval $MINUS csh $INTERACT ) <<EOF 2>&1 >/dev/null
+X$LOGIN
+Xalias >! /tmp/cz$$.a
+Xsetenv >! /tmp/cz$$.e
+Xset >! /tmp/cz$$.v
+XEOF
+X
+X# save stdin
+Xexec 9<&0
+X
+X# First convert aliases
+Xexec < /tmp/cz$$.a
+X
+X# Taken straight from ctoz except for $T and "alias --"
+Xsed -e 's/'"$T"'(\(.*\))/'"$T"'\1/' >/tmp/cz$$.1
+Xgrep ! /tmp/cz$$.1 >/tmp/cz$$.2
+Xgrep -v ! /tmp/cz$$.1 >/tmp/cz$$.3
+Xsed -e "s/'/'"\\\\"''"/g \
+X    -e 's/^\([^'"$T"']*\)'"$T"'\(.*\)$/alias -- \1='"'\2'/" \
+X    /tmp/cz$$.3
+Xsed -e 's/![:#]*/$/g' \
+X    -e 's/^\([^'"$T"']*\)'"$T"'\(.*\)$/\1 () { \2 }/' \
+X    /tmp/cz$$.2
+X
+X# Next, convert environment variables
+Xexec < /tmp/cz$$.e
+X
+X# Would be nice to deal with embedded newlines, e.g. in TERMCAP, but ...
+Xsed -e '/^SHLVL/d' \
+X    -e "s/'/'"\\\\"''"/g \
+X    -e "s/^\([A-Za-z0-9_]*=\)/export \1'/" \
+X    -e "s/$/'/"
+X
+X# Finally, convert local variables
+Xexec < /tmp/cz$$.v
+X
+Xsed -e 's/'"$T"'/=/' \
+X    -e "s/'/'"\\\\"''"/g \
+X    -e '/^[A-Za-z0-9_]*=[^(]/{
+X	s/=/='"'/"'
+X	s/$/'"'/"'
+X	}' |
+Xsed -e '/^argv=/d' -e '/^cwd=/d' -e '/^filec=/d' -e '/^status=/d' \
+X	 -e '/^histchars=/s//HISTCHARS=/' \
+X	 -e '/^history=/s//HISTSIZE=/' \
+X	 -e '/^home=/s//HOME=/' \
+X	 -e '/^ignoreeof=/s/.*/setopt ignoreeof/' \
+X	 -e '/^noclobber=/s/.*/setopt noclobber/' \
+X	 -e '/^notify=/d' \
+X	 -e '/^showdots=/s/.*/setopt globdots/' \
+X    -e '/^savehist=/s//HISTFILE=\~\/.zhistory SAVEHIST=/' \
+X	 -e '/^autolist=/s/.*/setopt autolist/' \
+X	 -e '/^correct=[cmd]*/s//setopt autocorrect/' \
+X	 -e '/^who=/s//WATCHFMT=/'
+X
+X
+Xexec 0<&9
+X
+Xrm /tmp/cz$$.?
+Xexit
+END_OF_FILE
+  if test 3299 -ne `wc -c <'zsh-2.5.0/scripts/c2z'`; then
+    echo shar: \"'zsh-2.5.0/scripts/c2z'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/scripts/c2z'
+fi
+if test -f 'zsh-2.5.0/src/Makefile.sample' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/Makefile.sample'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/Makefile.sample'\" \(1851 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/Makefile.sample' <<'END_OF_FILE'
+X#! /bin/make -f
+X# Makefile for zsh
+X# generated by buildzsh
+X
+XAUX=buildzsh
+X
+XSRC=builtin.c cond.c exec.c glob.c hist.c init.c jobs.c lex.c loop.c \
+Xmath.c mem.c params.c parse.c subst.c table.c text.c utils.c watch.c \
+Xzle_bindings.c zle_hist.c zle_main.c zle_misc.c zle_move.c zle_refresh.c \
+Xzle_tricky.c zle_utils.c zle_vi.c zle_word.c
+X
+XHEADER=funcs.h zle.h zsh.h ztype.h
+X
+XPROTO=builtin.pro cond.pro exec.pro glob.pro hist.pro init.pro jobs.pro \
+Xlex.pro loop.pro math.pro mem.pro params.pro parse.pro subst.pro table.pro \
+Xtext.pro utils.pro watch.pro zle_bindings.pro zle_hist.pro zle_main.pro \
+Xzle_misc.pro zle_move.pro zle_refresh.pro zle_tricky.pro zle_utils.pro \
+Xzle_vi.pro zle_word.pro
+X
+XOBJS=builtin.o cond.o exec.o glob.o hist.o init.o jobs.o lex.o loop.o \
+Xmath.o mem.o params.o parse.o subst.o table.o text.o utils.o watch.o \
+Xzle_bindings.o zle_hist.o zle_main.o zle_misc.o zle_move.o zle_refresh.o \
+Xzle_tricky.o zle_utils.o zle_vi.o zle_word.o
+X
+XBINDIR=/usr/local/bin
+XMANDIR=/usr/local/man/man1
+X
+X# Debugging flags
+XDFLAGS = # -DQDEBUG
+X
+X# For gcc 2.3.3
+X# CC=gcc -fpcc-struct-return
+X# CFLAGS= -O2 -g -Wall -Wno-implicit -Wno-parentheses -Wno-comment $(DFLAGS)
+X
+XCC=cc
+XCFLAGS= -O
+XLIBS= -ltermcap
+X
+XZSHPATH=zsh
+X
+X.SUFFIXES: .c .o .pro
+X
+X.c.o:
+X	$(CC) $(CFLAGS) $(DFLAGS) -c $<
+X
+X.c.pro:
+X	sed -n '/\/\*\*\/$$/{N;s/^\([^(]*\).*\/\*\*\/.\(.*\)/\1 DCLPROTO((\2))/p;}' $< | sed -e 's/;/,/g' -e 's/,))$$/));/' -e 's/(({))$$/((void));/' >$@
+X
+Xall: $(PROTO) $(ZSHPATH)
+X
+X$(ZSHPATH): $(OBJS)
+X	$(CC) -o $(ZSHPATH) $(OBJS) $(LIBS) $(LFLAGS)
+X	
+Xtags: /tmp
+X	ctags *.[cy]
+X
+X# I hate this next line
+X$(OBJS): config.h zsh.h zle.h signals.h ztype.h funcs.h
+X
+Xparams.o: version.h
+X
+Xclean:
+X	rm -f *.o *.pro zsh core 
+X
+Xcleanall:
+X	rm -f *.o *.pro zsh core Makefile signals.h config.h
+X
+Xinstall: zsh
+X	install -s -m 755 zsh $(BINDIR)
+X	install -m 444 ../man/man1/zsh.1 $(MANDIR)
+END_OF_FILE
+  if test 1851 -ne `wc -c <'zsh-2.5.0/src/Makefile.sample'`; then
+    echo shar: \"'zsh-2.5.0/src/Makefile.sample'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/Makefile.sample'
+fi
+if test -f 'zsh-2.5.0/src/config/bz.defaults' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/config/bz.defaults'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/config/bz.defaults'\" \(3268 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/config/bz.defaults' <<'END_OF_FILE'
+X# The configurable parameters
+XCONFIG_PARMS="CC CFLAGS CFLAGS_D CFLAGS_W CFLAGS_X CFLAGS_M CFLAGS_O CFLAGS_g CFLAGS_z LDFLAGS LIBS SRCDIR BLDDIR ARCH ARCHPATT INSTDIR BINDIR MANDIR MAKE ETCDIR"
+X# The boolean parameters
+XBOOL_PARMS="config.h signals.h hs Makefile makefile mf gcc mediumgcc strictgcc ksh help query auto noopt nodebug nozshdebug nomake justmake"
+X# The parameters that can contain $ARCHPATT
+X# $ARCHPATT will be substituted with $HOSTTYPE unless ARCH is specified
+XARCH_PARMS="BINDIR BLDDIR"
+X
+XGCC_BASE0_W='-Wall -Wno-implicit -Winline'
+XGCC_BASE1_W="$GCC_BASE0_W -Wmissing-prototypes"
+XGCC_MEDIUM_W='-Wimplicit -pedantic'
+XGCC_STRICT_W='-Wshadow -Wtraditional -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wcast-qual -Wcast-align -Wconversion'
+X
+XDEFAULT_C_CC=cc
+X# The following is changed to -O2 in bz.Makefile for GCC
+XDEFAULT_C_CFLAGS_O=-O
+XDEFAULT_C_CFLAGS_g=-g
+XDEFAULT_C_LD='$(CC)'
+XDEFAULT_C_LIBS=
+XDEFAULT_C_SRCDIR=.
+XDEFAULT_C_BLDDIR=.
+XDEFAULT_C_ARCHPATT="%(ARCH)"
+XDEFAULT_C_INSTDIR=
+XDEFAULT_C_BINDIR=/usr/local/bin
+XDEFAULT_C_MANDIR=/usr/local/man/man1
+XDEFAULT_C_ETCDIR=/etc
+XDEFAULT_C_MAKE=make
+X
+XDEFAULT_B_config_h=yep
+XDEFAULT_B_signals_h=yep
+XDEFAULT_B_hs=yep
+XDEFAULT_B_mf=yep
+XDEFAULT_B_gcc=
+XDEFAULT_B_mediumgcc=
+XDEFAULT_B_strictgcc=
+XDEFAULT_B_ksh=
+XDEFAULT_B_help=
+XDEFAULT_B_query=
+XDEFAULT_B_probe=yep
+XDEFAULT_B_auto=
+XDEFAULT_B_noopt=
+XDEFAULT_B_debug=
+XDEFAULT_B_zshdebug=
+XDEFAULT_B_install=yep
+XDEFAULT_B_nomake=
+XDEFAULT_B_justmake=
+XDEFAULT_B_makeatbld=
+X
+XPAGER_PROGS="less more pg cat"
+XPAGER_PATH="/usr/local/bin /usr/ucb /usr/bsd /usr/bin /bin"
+X
+X# Which variables mean when non-empty that $CC groks simultaneous -c and -o ?
+XCC_GROK_c_o="AIX CONVEX GCC HPUX CC_MIPS_STYLE SUNOS"
+X# Which variables mean when non-empty that $CC fouls simultaneous -c and -o ?
+XCC_LOSE_c_o="UNICOS DGUX"
+X# Which variables mean when non-empty that $CC groks simultaneous -g and -O ?
+X# variables like test:foo:bar mean testing for variable "test",
+X# if that succeeds, setting CC_gFLAGS to "foo" and CC_OFLAGS to "bar"
+X# use 'quotes' to protect whitespace
+XCC_GROK_g_O="GCC:-g:-O6 AIX CC_MIPS_STYLE:-g3:'-O -Olimit 1000'"
+X# Which variables mean when non-empty that $CC fouls simultaneous -g and -O ?
+XCC_LOSE_g_O="HPUX"
+X# How many users is lots of? (enough to justify username caching)
+XLOTSA_USERS=150
+X
+X# VPATHTMP: VPATH temporary top test directory
+XVPATHTMP=/tmp/vpath.$$
+XVPATHTMPa=$VPATHTMP/a
+XVPATHTMPb=$VPATHTMP/b
+X
+X# TRASHF: known temporary files
+X#	ARGV set in bz.saveargv
+X#	ARGH in bz.argh
+X#	/tmp/sh/sh[0-9][0-9]* are sh temporary files
+X#		(used for example by <<here documents)
+XTRASHF="$ARGV $ARGH $VPATHTMPa/foo.c $VPATHTMPb/Makefile $VPATHTMPa/foo.o /tmp/sh[0-9][0-9]*"
+X
+X# TRASHF: known temporary directories
+X#	VPATHTMP...	used for VPATH testing
+XTRASHD="$VPATHTMP $VPATHTMPa $VPATHTMPb"
+X
+X# TRAPN: the last thing to do when trapped
+XTRAPN="echo '[Cleaning up]';test -n '$TRASHF' && rm -f $TRASHF 2>/dev/null;test -n '$TRASHD' && rm -rf '$TRASHD' 2>/dev/null;exit 9"
+X
+X# the signals to trap
+XTRAPSIGS="1 2 3 15"
+X
+X# the text pager to use
+Xif [ -z "$PAGER" ]
+Xthen
+X    set PAGER "$PAGER_PROGS" "$PAGER_PATH" cat
+X    . ./config/bz.walk
+Xfi
+Xexport PAGER
+Xcase "$PAGER" in
+X*pg) PAGER_quit='q and Enter/Newline/Return' ;;
+X  *) PAGER_quit=q ;;	# more, less, hopefully everything else
+Xesac
+END_OF_FILE
+  if test 3268 -ne `wc -c <'zsh-2.5.0/src/config/bz.defaults'`; then
+    echo shar: \"'zsh-2.5.0/src/config/bz.defaults'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/config/bz.defaults'
+fi
+if test -f 'zsh-2.5.0/src/config/bz.define' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/config/bz.define'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/config/bz.define'\" \(1694 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/config/bz.define' <<'END_OF_FILE'
+X_sym_="$1"
+X_dfl_="$2"
+X_des_="$3"
+X_emp_="$4"
+X_quo_="$5"
+X
+X_ans_=
+Xwhile test Z"$_ans_" != Zok
+Xdo
+X  if test -n "$B_query"
+X  then
+X     if test -z "$F_define_warned"
+X     then
+X     {
+X       cat <<foo
+X	* to accept the default (which is inside [brackets]), just press
+X          Enter/Newline/Return.
+X	* some questions accept empty answers, they are indicated by
+X          "(empty ok)" text.
+X	* to give an empty answer, answer just "none" (but without ""s)
+X	* do not worry about possible missing "quotes" around your answers,
+X          they will automagically be added.
+Xfoo
+X     } >&2
+X       F_define_warned=yep
+X     fi
+X     test -z "$B_query"
+X     {
+X       echo
+X       echo "Define $_des_:"
+X       echo "$_sym_ [$_dfl_] "                | tr -d '\012'
+X       test -n "$_emp_" && echo "(empty ok) " | tr -d '\012'
+X       echo "? "                              | tr -d '\012'
+X     } >&2
+X     read _ans_
+X  else
+X     _ans_=$_dfl_
+X  fi
+X  _val_=
+X  case $_ans_ in
+X  none ) _val_=
+X         test -n "$_emp_" && _ans_=ok || _ans_=
+X         _msg_="$_sym_ is undefined"
+X	 eval $_sym_=
+X         _ans_=ok
+X         ;;
+X  *   )  test -n "$_ans_" && _val_=$_ans_ || _val_=$_dfl_
+X	 if test -z "$_dfl_" -a -z "$_val_"
+X	 then
+X           _msg_="$_sym_ is empty"
+X	 else
+X         test Z"$_quo_" = Z'"' && _val_=\"$_val_\"
+X         test Z"$_quo_" = Z"'" && _val_=\'$_val_\'
+X           _msg_="$_sym_ is \"$_val_\""
+X         fi
+X	 eval $_sym_=\"$_val_\"
+X         _ans_=ok
+X         ;;
+X  esac
+Xdone
+X
+Xtest -n "$F_define" && echo "/* $_des_ */"
+Xif test -n "$_val_"
+Xthen
+X  test -n "$F_define" && echo "#define $_sym_ $_val_"
+Xelse
+X  test -n "$F_define" && echo "#undef $_sym_"
+Xfi
+X{
+X  echo "	$_msg_..."
+X  test -n "$B_query" && echo
+X} >&2
+END_OF_FILE
+  if test 1694 -ne `wc -c <'zsh-2.5.0/src/config/bz.define'`; then
+    echo shar: \"'zsh-2.5.0/src/config/bz.define'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/config/bz.define'
+fi
+if test -f 'zsh-2.5.0/src/config/bz.hosttype' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/config/bz.hosttype'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/config/bz.hosttype'\" \(4776 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/config/bz.hosttype' <<'END_OF_FILE'
+X# --- (host type determination)
+X
+Xecho
+Xecho '	determining host type...'
+X
+Xheaderdir=/usr/include
+Xarch=`(uname) 2>/dev/null`
+Xmotd=`(head -2 /etc/motd) 2>/dev/null`
+Xcase "$arch" in
+X"")	case "$motd" in
+X	*"HP-UX"*)	HPUX=yep; machid=hp9000;;
+X	*"Iris"*)	IRIX=yep; host=iris4d;;
+X	*"Ultrix"*)	ULTRIX=yep; host=vax;;
+X	*"RISC iX"*)	ARM=yep; host=arm;;
+X	*"Umax 4.2"*)	ENCORE=yep; host=encore;;
+X	*"Alliant Concentrix"*) ALLIANT=yep; host=alliant;;
+X	*"FPS Model 500"*) FPS=yep; host=fps500;;
+X	*"HCX/UX"*)	HARRIS=yep; host=harris;;
+X        "DYNIX/ptx"*)   SEQUENTPTX=yep; host=sequentptx;;
+X	*"nX Operating System"*)	BBN=yep; host=`arch`;;
+X	*"NEWS-OS"*)	NEWS=yep; host=news;;
+X	*)
+X		if test -d ${headerdir}/caif
+X		then AIX=yep; host=ibm032
+X		elif test -d /sys/node_data
+X		then APOLLO=yep; host=apollo-$ISP
+X		elif test -f /bin/pyr && /bin/pyr
+X		then PYR=yep; host=pyr
+X		elif test -d /NextApps
+X		then host=next
+X		      if test -d /NextDeveloper/Headers/bsd
+X		      then NEXT=3.x; headerdir=${headerdir}/bsd
+X		      else NEXT=2.x
+X		      fi
+X		elif test -f /etc/comply
+X		then SUNOS=yep; host=sun3
+X		elif test -f /bin/hinv
+X		then IRIX=yep; host=iris4d
+X		elif grep ULTRIX ${headerdir}/stdio.h >/dev/null 2>&1
+X		then ULTRIX=yep; host=vax
+X		elif grep 'Property of IBM' ${headerdir}/stdio.h >/dev/null 2>&1
+X		then AIX=yep
+X		else host=`(tcsh -fc 'echo $HOSTTYPE' || arch || machine || mach || echo $machine) 2>/dev/null`
+X		fi;;
+X	esac;;
+XHP-UX)	HPUX=`uname -r 2>/dev/null || echo yep`; machid=`uname -m`
+X	case "$machid" in
+X 	9000/7*)	host=hp9000s700;;
+X 	9000/8*)	host=hp9000s800;;
+X 	9000/[34]*)	host=hp9000s300;;
+X 	9000/2*)	host=hp9000s200;;
+X 	"")		host=hp9000;;
+X 	*)		host=hp-unknown;;
+X	esac;;
+XAIX*)	AIX=yep; machid=`uname -m`
+X	case "$machid" in
+X	00*) host=rs6000;;
+X	10*) host=ibm032;;
+X	20*) host=ibm032;;
+X	esac;;
+XA/UX)	MAC=yep; host=macII;;
+Xdgux)	DGUX=yep; machid=`uname -m`
+X	case "$machid" in
+X	AViiON) host=aviion;;
+X	esac;;
+XSunOS)	machid=`uname -m`
+X	if test -n "`uname -r|egrep '^5'`"
+X	then
+X		SOLARIS=yep
+X	fi
+X	SUNOS=yep; case "$machid" in
+X	sun3*) host=sun3;;
+X	sun4*) host=sun4;;
+X	*) host=$machid;;
+X	esac;;
+XULTRIX)	machid=`uname -m`
+X	ULTRIX=yep; case "$machid" in
+X	VAX) host=vax;;
+X	RISC) host=decstation ; MIPS_ULTRIX=yep;;
+X	*) host=$machid;;
+X	esac;;
+XIRIX)	IRIX=yep;
+X	host=iris4d
+X        osvers=`uname -r`
+X        case "$osvers" in
+X        5.*) IRIX5=yep;;
+X        esac
+X	;;
+XConvexOS)CONVEX=yep; host=convex;;
+XOSF1)	OSF1=yep; 
+X	host=`uname -m`
+X	case "$host" in
+X	hp*) HPOSF=yep; host=hposf;;
+X	mips) MIPSOSF=yep; host=mipsosf;;
+X	esac
+X	;;
+XLinux)	LINUX=yep; host=`uname -m`;;
+XNetBSD)	NETBSD=yep; host=NetBSD;;
+XFreeBSD)FreeBSD=yep; host=`uname -m`;;
+XTitanOS)TITAN=yep; host=titan;;
+X*)	machid=`uname -m`
+X	case "$machid" in
+X	mips|IP6|IP7) MIPS=yep; host=mips;;
+X	CRAY*) UNICOS=yep; host=$machid;;
+X	i[34]86)
+X	    if test -f /etc/copyrights/01.sco
+X	    then SCO=yep host=`uname -m`
+X	    else
+X		# This doesn't work above because the PTX 1.4 and 2.0
+X		# return the hostname from uname which is deceptive.
+X		case "$motd" in
+X		"DYNIX/ptx"*)   SEQUENTPTX=yep; host=sequentptx;;
+X		esac
+X	    fi
+X	;;
+X	*) host=`(tcsh -fc 'echo $HOSTTYPE' || arch || machine || mach || echo $machine || echo $machid) 2>/dev/null`
+X	esac;;
+Xesac
+Xif test -n "$host"
+Xthen 
+X	# not foolproof but nice crome, though :-)
+X	a=a"`echo $host|egrep '^[aeiouy]' > /dev/null 2>&1 && echo n`"
+X	echo "	...looks like $a $host "
+X	case $host in
+X	mips) test -d /usr/include/bsd43 && headerdir=/usr/include/bsd43 ;;
+X	titan) test -d /usr/include/bsd && headerdir=/usr/include/bsd ;;
+X	esac
+Xelse
+Xwhile test -z "$host"
+Xdo
+X	echo 1>&2 '
+X
+XI cannot figure out what sort of host this is.	Please enter one
+Xshort alphanumeric string describing this host (e.g. sun, vax, hp)
+X(This will be used to set the $HOSTTYPE variable, so '"you don't
+Xhave to be very accurate if you're not in a multivendor environment.)
+X"
+X	 echo "? " | tr -d '\012' 1>&2
+X	 read host
+X	 echo ' ' 1>&2
+Xdone
+Xfi
+X
+X# --- we can deduce some things about ARCH
+X
+Xif test -n "$MIPS_ULTRIX" -o -n "$OSF1" -o -n "$IRIX" \
+X     -o -n "$MIPS" -o -n "$RISC" -o -n "$NEWS"
+Xthen
+X  CC_MIPS_STYLE=yep
+Xfi
+X
+X# --- (ARCH substitution)
+X
+Xtest -n "$ARCH" && arch=$ARCH || arch=$host
+X
+Xif test -n "`echo $arch|egrep '[ /]'`"
+Xthen
+X   echo "Architecture name $ARCH contains either"
+X   echo "troublesome characters (' ') or"
+X   echo "illegal characters ('/')"
+X   echo "(considering using ARCH for pathnames)"
+X   echo "Will substitute them with '_' and '-'"
+X   arch="`echo $arch|tr ' ' '_'|tr '/' '-'|tr -s _- _-`"
+X   echo "yielding $arch (only for use in pathnames)"
+X   echo
+Xfi
+X
+Xfor ap in $ARCH_PARMS
+Xdo
+X  ape="`eval echo '$'$ap`"
+X  if test -n "`echo \"$ape\"|grep \"$C_ARCHPATT\"`"
+X  then
+X     eval "$ap=`echo \"$ape\"|sed \"s/$C_ARCHPATT/$arch/g\"`"
+X  fi
+Xdone
+X
+Xif test -n "$C_BLDDIR"
+Xthen
+Xecho
+Xecho Building directory is $C_BLDDIR
+Xfi
+X
+END_OF_FILE
+  if test 4776 -ne `wc -c <'zsh-2.5.0/src/config/bz.hosttype'`; then
+    echo shar: \"'zsh-2.5.0/src/config/bz.hosttype'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/config/bz.hosttype'
+fi
+if test -f 'zsh-2.5.0/src/config/bz.ifdef' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/config/bz.ifdef'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/config/bz.ifdef'\" \(2727 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/config/bz.ifdef' <<'END_OF_FILE'
+X_tst_="$1"
+X_sym_="$2"
+X_val_="$3"
+X_yea_="$4"
+X_nay_="$5"
+Xtest -n "$6" && _fea_="$6" || _fea_="$4"
+X_yea_fea_="$7"
+X_nay_fea_="$8"
+Xtest -n "$F_define" -a -n "$_sym_" && echo "/* define this if you use $_fea_ */"
+X
+X_auto=
+X
+Xif test -n "$B_query"
+Xthen
+X  _ans_=
+X  while test Z"$_ans_" != Zok
+X  do
+X    if test -n "$F_define" -a -z "$F_ifdef_warned"
+X    then 
+X      echo "	* 'Do you have' means 'Do you have _a working_ version of'" >&2
+X      F_ifdef_warned=yep
+X    fi
+X    if test -n "$B_query"
+X    then
+X      eval "$_tst_" && _dfl_='Y n' || _dfl_='N y'
+X      {
+X        echo
+X        test -n "$G_verb1_" && _verb1_="$G_verb1_" || _verb1_=Do
+X        test -n "$G_subj_"  && _subj_="$G_subj_"   || _subj_=you
+X        test -n "$G_verb2_" && _verb2_="$G_verb2_" || _verb2_=use
+X        echo "$_verb1_ $_subj_ $_verb2_ $_fea_? [${_dfl_}aq?] " | tr -d '\012'
+X      } >&2
+X    fi
+X    read _ans_
+X    case $_ans_ in
+X    [Yy]* )
+X      _tst_=true
+X      _ans_=ok
+X      _yea=yep
+X      _nay=
+X      ;;
+X    [Nn]* )
+X      _tst_=false
+X      _ans_=ok
+X      _yea=
+X      _nay=nope
+X      ;;
+X    [Aa]* )
+X      {
+X        echo
+X        echo "	OK, will autoproceed..."
+X	echo
+X      } >&2
+X      _ans_=ok
+X      _auto=yep
+X      ;;
+X   [?]*  )
+X      {
+Xcat <<__eoh__
+X  
+X  The default will be selected by simply pressing Return/Newline/Enter.
+X  The default is probed out from the system by buildzsh, the probing
+X  can take sometimes couple of seconds.
+X  Inside the [brackets] the default is shown Capitalized, as the first
+X  option and separated from the other options by a space.
+X  
+X  y (or Y)  yep
+X  n (or N)  no
+X  a         auto: proceed until end without querying
+X  q         quit configuring this file, this file will be left unfinished;
+X            to quit altogether, use Ctrl-C or your respective
+X            interrupt key
+X__eoh__
+X      } >&2
+X      _ans_=
+X      ;;
+X    [Qq]* )
+X      exit 1
+X      ;;
+X    ''    )
+X      case "$_dfl_" in
+X      Y* ) _tst_=true  ;;
+X      N* ) _tst_=false ;;
+X      esac
+X      _ans_=ok
+X      ;;
+X    esac
+X  done
+Xfi
+X
+Xtest -n "$G_verb3a_" && _verb3a_="$G_verb3a_" || _verb3a_=using
+Xtest -n "$G_verb3b_" && _verb3b_="$G_verb3b_" || _verb3b_=using
+X  
+Xif eval "$_tst_" && test -z "$_auto"
+Xthen
+X  if test -n "$F_define"
+X  then
+X    test -n "$_sym_" && echo "#define $_sym_ $_val_" || echo "$_yea_fea_"
+X  fi
+X  test -n "$F_using" && echo "	$_verb3a_ $_yea_..." >&2
+X  _yea=yep
+X  _nay=
+Xelse
+X  if test -n "$F_define"
+X  then
+X    test -n "$_sym_" && echo "/*#define $_sym_*/" || echo "$_nay_fea_"
+X  fi
+X  if test -n "$F_using"
+X  then
+X    test -n "$_nay_" && echo "	$_verb3b_ $_nay_..." >&2 || echo "	not $_verb3a_ $_yea_..." >&2
+X  fi
+X  _yea=
+X  _nay=nope
+Xfi
+X
+X_res="${_yea}${_nay}"
+Xtest -n "$F_define" && echo
+X
+XG_verb1_=
+XG_subj_=
+XG_verb2_=
+XG_verb3a_=
+XG_verb3b_=
+END_OF_FILE
+  if test 2727 -ne `wc -c <'zsh-2.5.0/src/config/bz.ifdef'`; then
+    echo shar: \"'zsh-2.5.0/src/config/bz.ifdef'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/config/bz.ifdef'
+fi
+if test -f 'zsh-2.5.0/src/config/bz.sanity' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/config/bz.sanity'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/config/bz.sanity'\" \(2405 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/config/bz.sanity' <<'END_OF_FILE'
+X# --- INSTDIR sanity checking
+Xif test -n "$INSTDIR"
+Xthen
+X  if test -n "$BINDIR" -o -n "$MANDIR"
+X  then
+X    echo 'When INSTDIR is defined, neither BINDIR or MANDIR can be defined'
+X    echo 'Aborting.'
+X  else
+X    BINDIR="$INSTDIR/bin"
+X    MANDIR="$INSTDIR/man/man1"
+X  fi
+Xfi
+X# --- default: do all the files
+Xif test -z "$B_Makefile" -a -z "$B_signals_h" -a -z "$B_config_h"
+Xthen
+X  B_Makefile=1
+X  B_signals_h=1
+X  B_config_h=1
+Xfi
+X
+X# --- (defaults handling)
+X
+Xfor cp in $CONFIG_PARMS
+Xdo
+X  if test -z "`eval echo '$'C_$cp`"
+X  then
+X    case "$cp" in
+X    INSTDIR)	;;
+X    BINDIR)	C_BINDIR=$DEFAULT_C_BINDIR ;;
+X    MANDIR)	C_MANDIR=$DEFAULT_C_MANDIR ;;
+X    ETCDIR)	C_ETCDIR=$DEFAULT_C_ETCDIR ;;
+X    CC)		;;
+X    CFLAGS)	;;
+X    CFLAGS_D)	;;
+X    CFLAGS_M)	;;
+X    CFLAGS_W)	;;
+X    CFLAGS_X)	;;
+X    CFLAGS_O)	;;
+X    CFLAGS_g)	;;
+X    CFLAGS_z)	;;
+X    LDFLAGS)	;;
+X    DFLAGS)	C_DFLAGS=$DEFAULT_C_DFLAGS ;;
+X    LIBS)	C_LIBS=$DEFAULT_C_LIBS;;
+X    SRCDIR)	C_SRCDIR=$DEFAULT_C_SRCDIR ;;
+X    BLDDIR)	C_BLDDIR=$DEFAULT_C_BLDDIR ;;
+X    ARCH)	;;
+X    ARCHPATT)	C_ARCHPATT="$DEFAULT_C_ARCHPATT" ;;
+X    MAKE)	C_MAKE=$DEFAULT_C_MAKE ;;
+X    *)	echo 'Unrecognized configurable parameter "'$cp'"'
+X	echo 'Recognized configurable paramaters : '$CONFIG_PARMS
+X	echo 'Aborting.'
+X	exit 1
+X	;;
+X    esac
+X  fi
+Xdone
+X
+Xfor cp in $BOOL_PARMS
+Xdo
+X  if test -z "`eval echo '$B_'$cp`" -a -n "`eval echo '$DEFAULT_B_'$cp`"
+X  then
+X    eval "B_$cp=\"`eval echo '$DEFAULT_B_'$cp`\""
+X  fi
+Xdone
+X
+X# *both* "auto" *and* "query" do not make sense
+Xif test -n "$B_auto" -a -n "$B_query"
+Xthen
+X  echo
+X  echo 'Options "auto" and "query" simultaneously do not make sense.'
+X  echo 'Dropping option "auto".'
+X  B_auto=
+Xfi
+X
+X# add the debug / optimization flags if necessary
+Xtest -n "$B_debug"    && DEFAULT_C_CFLAGS="$DEFAULT_C_FLAGS "'$(CFLAGS_g)'
+Xtest -z "$B_noopt"    && DEFAULT_C_CFLAGS="$DEFAULT_C_FLAGS "'$(CFLAGS_O)'
+Xtest -n "$B_zshdebug" && DEFAULT_C_DFLAGS="$DEFAULT_C_FLAGS "'$(CFLAGS_D)'
+X
+X# SRCDIR and BLDDIR sanity check
+X# (sanity = empty if just ".",_one_ trailing "/" if non-empty )
+X
+Xtest Z"$C_SRCDIR" = Z"." && C_SRCDIR=
+Xtest -n "$C_SRCDIR" && SRCDIR="`echo $C_SRCDIR/ | sed 's%//*$%/%'`"
+Xtest Z"$C_BLDDIR" = Z"." && C_BLDDIR=
+Xtest -n "$C_BLDDIR" && BLDDIR="`echo $C_BLDDIR/ | sed 's%//*$%/%'`"
+X
+X# whether the building and the source directory are the same
+Xtest Z"`(cd $C_BLDDIR;pwd)`" = Z"`(cd $C_SRCDIR;pwd)`" && F_bld_eq_src=yep
+X
+XMAKEFILE=${C_BLDDIR}Makefile
+END_OF_FILE
+  if test 2405 -ne `wc -c <'zsh-2.5.0/src/config/bz.sanity'`; then
+    echo shar: \"'zsh-2.5.0/src/config/bz.sanity'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/config/bz.sanity'
+fi
+if test -f 'zsh-2.5.0/src/config/bz.signals.h' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/config/bz.signals.h'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/config/bz.signals.h'\" \(2967 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/config/bz.signals.h' <<'END_OF_FILE'
+X# --- ${BLDDIR}signals.h
+X
+Xif test -n "$B_signals_h"
+Xthen
+X
+XF_define=yep
+X
+Xecho
+Xecho Building ${BLDDIR}signals.h... | tr -d '\012'
+Xif test -n "$LINUX" -o -n "$UNICOS" -o -n "$AIX" -o -n "$SCO"
+X# Awk script taken from Larry Wall's perl Configure script
+Xthen 
+Xif test -n "$LINUX"
+Xthen sigfile=/usr/include/linux/signal.h
+Xelse sigfile=/usr/include/sys/signal.h
+Xfi
+Xecho `cat $sigfile 2>&1 | awk '
+X$1 ~ /^#define$/ && $2 ~ /^SIG[A-Z0-9]*$/ && $3 ~ /^[1-9][0-9]*$/ {
+X	if (sig[$3] == "") {
+X	sig[$3] = substr($2,4,20)
+X    if (max < $3 && $3 < 60) {
+X	max = $3
+X	}
+X	}
+X}
+X# next case handles "# define SIGx y"
+X$1 ~ /^#$/ && $2 ~ /^define$/ && $3 ~ /^SIG[A-Z0-9]*$/ && $4 ~ /^[1-9][0-9]*$/ {
+X	if (sig[$4] == "") {
+X    sig[$4] = substr($3,4,20)
+X    if (max < $4 && $4 < 60) {
+X	max = $4
+X	}
+X    }
+X}
+XEND {
+X    for (i=1; i<=max; i++) {
+X	if (sig[i] == "")
+X	    printf "%d", i
+X	else
+X	    printf "%s", sig[i]
+X	if (i < max)
+X	    printf " "
+X    }
+X    printf "\n"
+X}
+X'` | tr ' ' '\012' > ${BLDDIR}signals.h
+Xelse echo `csh -fc 'kill -l'` | tr ' ' '\012' >${BLDDIR}signals.h
+Xfi
+Xlct=`wc -l < ${BLDDIR}signals.h`
+Xcp ${BLDDIR}signals.h ${BLDDIR}signams.h
+X(
+Xcat <<foo
+X/* signals.h */
+X/* architecture-customized signals.h for $VERSION
+X * for architecture "$arch",
+X * automagically generated by buildzsh -- do not edit */
+X/* if all this is wrong, blame csh ;-) */
+X
+X#define SIGCOUNT $lct
+X
+X#ifdef GLOBALS
+X
+Xchar *sigmsg[SIGCOUNT+2] = {
+X	"done",
+Xfoo
+X
+Xsed -e 's/^/SIG/' -e '/SIGHUP/s//hangup/
+X/SIGINT/s//interrupt/
+X/SIGQUIT/s//quit/
+X/SIGILL/s//illegal instruction/
+X/SIGTRAP/s//trace trap/
+X/SIGIOT/s//IOT instruction/
+X/SIGABRT/s//abort/
+X/SIGEMT/s//EMT instruction/
+X/SIGFPE/s//floating point exception/
+X/SIGKILL/s//killed/
+X/SIGBUS/s//bus error/
+X/SIGSEGV/s//segmentation fault/
+X/SIGSYS/s//bad system call/
+X/SIGPIPE/s//broken pipe/
+X/SIGTERM/s//terminated/
+X/SIGPWR/s//power fail/
+X/SIGVTALRM/s//virtual time alarm/
+X/SIGCONT/s//continued/
+X/SIGALRM/s//alarm/
+X/SIGUSR1/s//user signal 1/
+X/SIGUSR2/s//user signal 2/
+X/SIGCHLD/s//death of child/
+X/SIGIO/s//i\/o ready/
+X/SIGPROF/s//profile signal/
+X/SIGWINCH/s//window size changed/
+X/SIGXCPU/s//cpu limit exceeded/
+X/SIGXFSZ/s//filesize limit exceeded/' -e 's/.*/	"&",/' ${BLDDIR}signals.h
+Xecho '	NULL
+X};
+X
+Xchar *sigs[SIGCOUNT+4] = {
+X	"EXIT",' ) >${BLDDIR}sigtmp.h
+Xmv ${BLDDIR}sigtmp.h ${BLDDIR}signals.h
+Xif grep SIGSTOP ${BLDDIR}signals.h >/dev/null
+Xthen ed ${BLDDIR}signals.h <<'foo' >/dev/null 2>&1
+X/SIGSTOP/c
+X#ifdef USE_SUSPENDED
+X	"suspended (signal)",
+X#else
+X	"stopped (signal)",
+X#endif
+X.
+X/SIGTSTP/c
+X#ifdef USE_SUSPENDED
+X	"suspended",
+X#else
+X	"stopped",
+X#endif
+X.
+X/SIGTTIN/c
+X#ifdef USE_SUSPENDED
+X	"suspended (tty input)",
+X#else
+X	"stopped (tty input)",
+X#endif
+X.
+X/SIGTTOU/c
+X#ifdef USE_SUSPENDED
+X	"suspended (tty output)",
+X#else
+X	"stopped (tty output)",
+X#endif
+X.
+Xw
+Xq
+Xfoo
+Xfi
+X(sed 's/.*/	"&",/' ${BLDDIR}signams.h
+Xecho '	"ZERR",'
+Xecho '	"DEBUG",
+X	NULL
+X};
+X
+X#else
+X
+Xextern char *sigs[SIGCOUNT+4],*sigmsg[SIGCOUNT+2];
+X
+X#endif') >>${BLDDIR}signals.h
+Xrm ${BLDDIR}signams.h
+Xecho done
+Xfi
+END_OF_FILE
+  if test 2967 -ne `wc -c <'zsh-2.5.0/src/config/bz.signals.h'`; then
+    echo shar: \"'zsh-2.5.0/src/config/bz.signals.h'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/config/bz.signals.h'
+fi
+if test -f 'zsh-2.5.0/src/funcs.h' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/funcs.h'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/funcs.h'\" \(6332 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/funcs.h' <<'END_OF_FILE'
+X/* structure for foo=bar assignments */
+Xstruct asgment {
+X    struct asgment *next;
+X    char *name, *value;
+X};
+X
+X#include "builtin.pro"
+X#include "cond.pro"
+X#include "exec.pro"
+X#include "glob.pro"
+X#include "hist.pro"
+X#include "init.pro"
+X#include "jobs.pro"
+X#include "lex.pro"
+X#include "loop.pro"
+X#include "math.pro"
+X#include "mem.pro"
+X#include "params.pro"
+X#include "parse.pro"
+X#include "subst.pro"
+X#include "table.pro"
+X#include "text.pro"
+X#include "utils.pro"
+X#include "watch.pro"
+X#include "zle_hist.pro"
+X#include "zle_main.pro"
+X#include "zle_misc.pro"
+X#include "zle_move.pro"
+X#include "zle_refresh.pro"
+X#include "zle_tricky.pro"
+X#include "zle_utils.pro"
+X#include "zle_vi.pro"
+X#include "zle_word.pro"
+X
+Xchar *mktemp DCLPROTO((char *));
+X
+X#ifndef HAS_STDLIB
+Xchar *malloc DCLPROTO((int));
+Xchar *realloc DCLPROTO((char *, int));
+Xchar *calloc DCLPROTO((int, int));
+X
+X#endif
+Xchar *ttyname DCLPROTO((int));
+X
+Xextern char PC, *BC, *UP;
+Xextern short ospeed;
+Xextern int tgetent DCLPROTO((char *bp, char *name));
+Xextern int tgetnum DCLPROTO((char *id));
+Xextern int tgetflag DCLPROTO((char *id));
+Xextern char *tgetstr DCLPROTO((char *id, char **area));
+Xextern char *tgoto DCLPROTO((char *cm, int destcol, int destline));
+Xextern int tputs DCLPROTO((char *cp, int affcnt, int (*outc) (int)));
+X
+X/* missing prototypes for various C compilers */
+X
+X#if defined(SOLARIS)
+X#include <setjmp.h>
+X/* Solaris does not seem to have prototype for these under /usr/include */
+Xextern char *getdomainname DCLPROTO((char *name, int namelen));
+Xextern FILE *fdopen(int, const char *);
+Xextern int kill(pid_t, int);
+Xextern int sigaction(int, const struct sigaction *, struct sigaction *);
+Xextern int sighold(int);
+Xextern int sigrelse(int);
+Xextern int sigpause(int);
+Xextern int gettimeofday(struct timeval *tp, struct timezone *tzp);
+X
+X#endif
+X
+X#if defined(__convexc__)
+X/* ConvexOS does not seem to have prototypes for these under /usr/include */
+Xextern int bzero(char *b, int length);
+Xextern int gethostname(char *name, int namelen);
+Xextern int getrlimit(int resource, struct rlimit *rlp);
+Xextern int getrusage(int, struct rusage *);
+Xextern int gettimeofday(struct timeval *tp, struct timezone *tzp);
+Xextern int mknod(char *path, int mode, int dev);
+Xextern int nice(int incr);
+Xextern int readlink(char *path, char *buf, int bufsize);
+Xextern int select(int nfds, fd_set * readfds, fd_set * writefds, fd_set * expectfds, struct timeval *timeout);
+Xextern int setrlimit(int resource, struct rlimit *rlp);
+Xextern int sigblock(int mask);
+Xextern int sigpause(int sigmask);
+Xextern int sigsetmask(int mask);
+Xextern int sigvec(int sig, struct sigvec *vec, struct sigvec *ovec);
+Xextern int wait3(int *status, int options, struct rusage *rusage);
+X
+X#endif
+X
+X/* HP/UX 9 c89 */
+X#if defined(__hpux) && defined(_XPG3) && !defined(_POSIX1_1988)
+X#define WRITE_ARG_2_T void *
+X#else
+X#define WRITE_ARG_2_T char *
+X#endif
+X
+X#if defined(__hpux) && defined(_HPUX_SOURCE)
+X#define SELECT_ARG_2_T int *
+X#else
+X#define SELECT_ARG_2_T fd_set *
+X#endif
+X
+X#if defined(__sgi)
+X#if defined(_POSIX_SOURCE)
+X/* cc -ansiposix pretends not to see these, maybe too BSDish? */
+Xextern void setpwent(void);
+Xextern void endpwent(void);
+Xextern struct passwd *getpwent(void);
+X
+X#endif
+X/* cc -ansi/-ansiposix pretends not to see these, maybe too BSDish/SYSVish? */
+X#if defined(__STDC__)
+X#ifdef IRIX5
+X#ifdef _POSIX_SOURCE
+Xextern int BSDgettimeofday(struct timeval *tp, struct timezone *tzp);
+Xextern int getrusage(int rwho, struct rusage *rusage);
+Xextern int lstat(const char *path, struct stat *buf);
+Xextern int readlink(const char *path, void *buf, size_t bufsiz);
+X
+X#endif
+Xextern int wait3(union wait *statptr, int options, struct rusage *rusage);
+X
+X#else
+Xextern int (*BSDsignal(int, int (*)())) ();
+Xextern int kill(pid_t pid, int sig);
+Xextern int readlink(const char *pathname, char *buf, int bufsiz);
+X
+X#endif
+Xextern void bzero(void *b, int length);
+Xextern int gethostname(char *name, int namelen);
+Xextern int ioctl(int fildes, int request,...);
+Xextern int mknod(const char *pathname, mode_t mode, dev_t dev);
+Xextern int nice(int incr);
+Xextern void seekdir(DIR * dirp, long loc);
+Xextern int select(int nfds, fd_set * readfds, fd_set * writefds, fd_set * exceptfds, struct timeval *timeout);
+Xextern int sighold(int sig);
+Xextern int sigrelse(int sig);
+Xextern int sigpause(int sig);
+X
+X#endif
+X#endif
+X
+X#if defined(_CRAY) && defined(__STDC__)
+Xextern FILE *fdopen(int fildes, char *type);
+X
+X#include <setjmp.h>
+Xtypedef int sigjmp_buf[_SJBLEN];
+Xextern int _Sigsetjmp __((sigjmp_buf _Env, int _Savemask));
+X
+X#define sigsetjmp(_Env, _Savemask)  _Sigsetjmp(_Env, _Savemask)
+Xextern void siglongjmp __((sigjmp_buf _Env, int _Val));
+X
+X#endif
+X
+X#if defined(__NeXT__)
+X#if defined(__STRICT_ANSI__)	/* -ansi does not see these */
+X#define bzero(b,len) memset(b,0,len)
+Xextern FILE *fdopen(int filedes, const char *mode);
+X
+X#endif
+X/* NeXT has almost everything in
+X * /usr/include/bsd/libc.h == <libc.h>
+X * (sort of <unistd.h>), except the following */
+Xextern int getppid(void);
+X
+X#endif
+X
+X#if defined(__osf__) && defined(__alpha)
+X/* Digital cc does not need these prototypes, gcc does need them */
+Xvoid bzero(char *string, int length);
+Xint gethostname(char *address, int address_len);
+Xint ioctl(int d, unsigned long request, char *argp);
+Xint mknod(const char *pathname, int mode, dev_t device);
+Xint nice(int increment);
+Xint select(int nfds, fd_set * readfds, fd_set * writefds, fd_set * exceptfds, struct timeval *timeout);
+X
+X#endif
+X
+X#if defined(DGUX) && defined(__STDC__)
+X/* Just plain missing. */
+Xextern int getrlimit(int resource, struct rlimit *rlp);
+Xextern int setrlimit(int resource, const struct rlimit *rlp);
+Xextern int getrusage(int who, struct rusage *rusage);
+Xextern int gettimeofday(struct timeval *time_value,
+X			struct timezone *time_zone);
+Xextern int wait3(union wait *wait_status, int options, struct rusage *rusage);
+Xextern int gethostname(char *nameptr, int maxlength);
+Xextern int getdomainname(char *name, int maxlength);
+Xextern int bzero(char *ptr, int length);
+Xextern int select(int nfds, fd_set * readfds, fd_set * writefds,
+X		  fd_set * exceptfds, struct timeval *timeout);
+X
+X#endif
+X
+X#if defined(SCO)
+Xstruct timezone {
+X    short minutes;
+X};
+Xextern void gettimeofday(struct timeval *tv, struct timezone *tz);
+Xextern int nice(int incr);
+Xextern int mknod(char *path, int mode, int dev);
+Xextern int ioctl(int fildes, int request,...);
+X
+X#endif
+END_OF_FILE
+  if test 6332 -ne `wc -c <'zsh-2.5.0/src/funcs.h'`; then
+    echo shar: \"'zsh-2.5.0/src/funcs.h'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/funcs.h'
+fi
+if test -f 'zsh-2.5.0/src/loop.c' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/loop.c'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/loop.c'\" \(5402 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/loop.c' <<'END_OF_FILE'
+X/*
+X *
+X * loop.c - loop execution
+X *
+X * This file is part of zsh, the Z shell.
+X *
+X * This software is Copyright 1992 by Paul Falstad
+X *
+X * Permission is hereby granted to copy, reproduce, redistribute or otherwise
+X * use this software as long as: there is no monetary profit gained
+X * specifically from the use or reproduction of this software, it is not
+X * sold, rented, traded or otherwise marketed, and this copyright notice is
+X * included prominently in any copy made.
+X *
+X * The author make no claims as to the fitness or correctness of this software
+X * for any use whatsoever, and it is provided as is. Any use of this software
+X * is at the user's own risk.
+X *
+X */
+X
+X#include "zsh.h"
+X
+Xint execfor(cmd)		/**/
+XCmd cmd;
+X{
+X    List list;
+X    struct forcmd *node;
+X    char *str;
+X    Lklist args;
+X    int cj = thisjob;
+X
+X    loops++;
+X    exiting = lastval = 0;
+X    node = cmd->u.forcmd;
+X    args = cmd->args;
+X    if (!node->inflag) {
+X	char **x;
+X
+X	args = newlist();
+X	for (x = pparams; *x; x++)
+X	    addnode(args, ztrdup(*x));
+X    }
+X    pushheap();
+X    while ((str = (char *)ugetnode(args))) {
+X	setsparam(node->name, ztrdup(str));
+X	list = (List) dupstruct(node->list);
+X	execlist(list);
+X	if (breaks) {
+X	    breaks--;
+X	    if (breaks || !contflag)
+X		break;
+X	    contflag = 0;
+X	}
+X	if (errflag) {
+X	    lastval = 1;
+X	    break;
+X	}
+X	freeheap();
+X    }
+X    popheap();
+X    thisjob = cj;
+X    loops--;
+X    return lastval;
+X}
+X
+Xint execselect(cmd)		/**/
+XCmd cmd;
+X{
+X    List list;
+X    struct forcmd *node;
+X    char *str, *s;
+X    Lklist args;
+X    Lknode n;
+X    int cj = thisjob, t0;
+X    FILE *inp;
+X
+X    node = cmd->u.forcmd;
+X    args = cmd->args;
+X    if (!node->inflag) {
+X	char **x;
+X
+X	args = newlist();
+X	for (x = pparams; *x; x++)
+X	    addnode(args, ztrdup(*x));
+X    }
+X    if (empty(args))
+X	return 1;
+X    loops++;
+X    exiting = lastval = 0;
+X    pushheap();
+X    inp = fdopen(dup((SHTTY == -1) ? 0 : SHTTY), "r");
+X    for (;;) {
+X	do {
+X	    int pl;
+X
+X	    selectlist(args);
+X	    str = putprompt(prompt3, &pl, 0);
+X	    if (full(bufstack))
+X		str = (char *)getnode(bufstack);
+X	    else if (interact && SHTTY != -1 && isset(USEZLE)) {
+X		str = (char *)zleread((unsigned char *)str, NULL, pl, 0);
+X	    } else {
+X		fprintf(stderr, "%s", str);
+X		fflush(stderr);
+X		str = fgets(zalloc(256), 256, inp);
+X	    }
+X	    if (!str || errflag) {
+X		if (breaks)
+X		    breaks--;
+X		fprintf(stderr, "\n");
+X		fflush(stderr);
+X		goto done;
+X	    }
+X	    if ((s = strchr(str, '\n')))
+X		*s = '\0';
+X	}
+X	while (!*str);
+X	setsparam("REPLY", ztrdup(str));
+X	t0 = atoi(str);
+X	if (!t0)
+X	    str = "";
+X	else {
+X	    for (t0--, n = firstnode(args); n && t0; incnode(n), t0--);
+X	    if (n)
+X		str = (char *)getdata(n);
+X	    else
+X		str = "";
+X	}
+X	setsparam(node->name, ztrdup(str));
+X	list = (List) dupstruct(node->list);
+X	execlist(list);
+X	freeheap();
+X	if (breaks) {
+X	    breaks--;
+X	    if (breaks || !contflag)
+X		break;
+X	    contflag = 0;
+X	}
+X	if (errflag)
+X	    break;
+X    }
+X  done:
+X    popheap();
+X    fclose(inp);
+X    thisjob = cj;
+X    loops--;
+X    return lastval;
+X}
+X
+Xint execwhile(cmd)		/**/
+XCmd cmd;
+X{
+X    List list;
+X    struct whilecmd *node;
+X    int cj = thisjob, osl = sourcelevel;
+X
+X    node = cmd->u.whilecmd;
+X    exiting = lastval = 0;
+X    pushheap();
+X    loops++;
+X    for (;;) {
+X	int oldval = lastval;
+X
+X	list = (List) dupstruct(node->cont);
+X	sourcelevel |= 32768;
+X	execlist(list);
+X	sourcelevel = osl;
+X	if (!((lastval == 0) ^ node->cond)) {
+X	    if (breaks)
+X		breaks--;
+X	    lastval = oldval;
+X	    break;
+X	}
+X	list = (List) dupstruct(node->loop);
+X	execlist(list);
+X	if (breaks) {
+X	    breaks--;
+X	    if (breaks || !contflag)
+X		break;
+X	    contflag = 0;
+X	}
+X	freeheap();
+X	if (errflag) {
+X	    lastval = 1;
+X	    break;
+X	}
+X    }
+X    popheap();
+X    thisjob = cj;
+X    loops--;
+X    return lastval;
+X}
+X
+Xint execrepeat(cmd)		/**/
+XCmd cmd;
+X{
+X    List list;
+X    int cj = thisjob, count;
+X
+X    exiting = lastval = 0;
+X    if (empty(cmd->args) || nextnode(firstnode(cmd->args))) {
+X	zerr("bad argument for repeat", NULL, 0);
+X	return 1;
+X    }
+X    count = atoi(peekfirst(cmd->args));
+X    pushheap();
+X    loops++;
+X    while (count--) {
+X	list = (List) dupstruct(cmd->u.list);
+X	execlist(list);
+X	freeheap();
+X	if (breaks) {
+X	    breaks--;
+X	    if (breaks || !contflag)
+X		break;
+X	    contflag = 0;
+X	}
+X	if (errflag) {
+X	    lastval = 1;
+X	    break;
+X	}
+X    }
+X    popheap();
+X    thisjob = cj;
+X    loops--;
+X    return lastval;
+X}
+X
+Xint execif(cmd)			/**/
+XCmd cmd;
+X{
+X    struct ifcmd *node;
+X    int cj = thisjob, osl = sourcelevel;
+X    List *i, *t;
+X
+X    node = cmd->u.ifcmd;
+X    exiting = 0;
+X    i = node->ifls;
+X    t = node->thenls;
+X
+X    sourcelevel |= 32768;
+X    while (*i) {
+X	execlist(*i);
+X	if (!lastval)
+X	    break;
+X	i++;
+X	t++;
+X    }
+X    sourcelevel = osl;
+X
+X    if (*t)
+X	execlist(*t);
+X    else
+X	lastval = 0;
+X
+X    thisjob = cj;
+X    return lastval;
+X}
+X
+Xint execcase(cmd)		/**/
+XCmd cmd;
+X{
+X    struct casecmd *node;
+X    char *word;
+X    Lklist args;
+X    int cj = thisjob;
+X    List *l;
+X    char **p;
+X
+X    node = cmd->u.casecmd;
+X    args = cmd->args;
+X    l = node->lists;
+X    p = node->pats;
+X
+X    exiting = lastval = 0;
+X    if (firstnode(args) && nextnode(firstnode(args))) {
+X	zerr("too many arguments to case", NULL, 0);
+X	return 1;
+X    }
+X    if (empty(args))
+X	word = dupstring("");
+X    else
+X	word = (char *)peekfirst(args);
+X
+X    if (node) {
+X	while (*p) {
+X	    singsub(p);
+X	    if (matchpat(word, *p))
+X		break;
+X	    p++;
+X	    l++;
+X	}
+X	if (*l)
+X	    execlist(*l);
+X    }
+X    thisjob = cj;
+X    return lastval;
+X}
+END_OF_FILE
+  if test 5402 -ne `wc -c <'zsh-2.5.0/src/loop.c'`; then
+    echo shar: \"'zsh-2.5.0/src/loop.c'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/loop.c'
+fi
+if test -f 'zsh-2.5.0/src/zle_move.c' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/zle_move.c'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/zle_move.c'\" \(5690 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/zle_move.c' <<'END_OF_FILE'
+X/*
+X *
+X * zle_move.c - editor movement
+X *
+X * This file is part of zsh, the Z shell.
+X *
+X * This software is Copyright 1992 by Paul Falstad
+X *
+X * Permission is hereby granted to copy, reproduce, redistribute or otherwise
+X * use this software as long as: there is no monetary profit gained
+X * specifically from the use or reproduction of this software, it is not
+X * sold, rented, traded or otherwise marketed, and this copyright notice is
+X * included prominently in any copy made.
+X *
+X * The author make no claims as to the fitness or correctness of this software
+X * for any use whatsoever, and it is provided as is. Any use of this software
+X * is at the user's own risk.
+X *
+X */
+X
+X#define ZLE
+X#include "zsh.h"
+X
+Xstatic vimarkcs[27], vimarkline[27];
+X
+Xvoid beginningofline()
+X{				/**/
+X    if (mult < 0) {
+X	mult = -mult;
+X	endofline();
+X	return;
+X    }
+X    while (mult--) {
+X	if (cs == 0)
+X	    return;
+X	if (line[cs - 1] == '\n')
+X	    if (!--cs)
+X		return;
+X	while (cs && line[cs - 1] != '\n')
+X	    cs--;
+X    }
+X}
+X
+Xvoid endofline()
+X{				/**/
+X    if (mult < 0) {
+X	mult = -mult;
+X	beginningofline();
+X	return;
+X    }
+X    while (mult--) {
+X	if (cs >= ll) {
+X	    cs = ll;
+X	    return;
+X	}
+X	if (line[cs] == '\n')
+X	    if (++cs == ll)
+X		return;
+X	while (cs != ll && line[cs] != '\n')
+X	    cs++;
+X    }
+X}
+X
+Xvoid beginningoflinehist()
+X{				/**/
+X    if (mult < 0) {
+X	mult = -mult;
+X	endoflinehist();
+X	return;
+X    }
+X    while (mult) {
+X	if (cs == 0)
+X	    break;
+X	if (line[cs - 1] == '\n')
+X	    if (!--cs)
+X		break;
+X	while (cs && line[cs - 1] != '\n')
+X	    cs--;
+X	mult--;
+X    }
+X    if (mult) {
+X	uphistory();
+X	cs = 0;
+X    }
+X}
+X
+Xvoid endoflinehist()
+X{				/**/
+X    if (mult < 0) {
+X	mult = -mult;
+X	beginningoflinehist();
+X	return;
+X    }
+X    while (mult) {
+X	if (cs >= ll) {
+X	    cs = ll;
+X	    break;
+X	}
+X	if (line[cs] == '\n')
+X	    if (++cs == ll)
+X		break;
+X	while (cs != ll && line[cs] != '\n')
+X	    cs++;
+X	mult--;
+X    }
+X    if (mult)
+X	downhistory();
+X}
+X
+Xvoid forwardchar()
+X{				/**/
+X    cs += mult;
+X    if (cs > ll)
+X	cs = ll;
+X    if (cs < 0)
+X	cs = 0;
+X}
+X
+Xvoid backwardchar()
+X{				/**/
+X    cs -= mult;
+X    if (cs > ll)
+X	cs = ll;
+X    if (cs < 0)
+X	cs = 0;
+X}
+X
+Xvoid setmarkcommand()
+X{				/**/
+X    mark = cs;
+X}
+X
+Xvoid exchangepointandmark()
+X{				/**/
+X    int x;
+X
+X    x = mark;
+X    mark = cs;
+X    cs = x;
+X    if (cs > ll)
+X	cs = ll;
+X}
+X
+Xvoid vigotocolumn()
+X{				/**/
+X    int x, y, ocs = cs;
+X
+X    if (mult > 0)
+X	mult--;
+X    findline(&x, &y);
+X    if (mult >= 0)
+X	cs = x + mult;
+X    else
+X	cs = y + mult;
+X    if (cs < x || cs > y) {
+X	feep();
+X	cs = ocs;
+X    }
+X}
+X
+Xvoid vimatchbracket()
+X{				/**/
+X    int ocs = cs, dir, ct;
+X    unsigned char oth, me;
+X
+X  otog:
+X    if (cs == ll) {
+X	feep();
+X	cs = ocs;
+X	return;
+X    }
+X    switch (me = line[cs]) {
+X    case '{':
+X	dir = 1;
+X	oth = '}';
+X	break;
+X    case '}':
+X	dir = -1;
+X	oth = '{';
+X	break;
+X    case '(':
+X	dir = 1;
+X	oth = ')';
+X	break;
+X    case ')':
+X	dir = -1;
+X	oth = '(';
+X	break;
+X    case '[':
+X	dir = 1;
+X	oth = ']';
+X	break;
+X    case ']':
+X	dir = -1;
+X	oth = '[';
+X	break;
+X    default:
+X	cs++;
+X	goto otog;
+X    }
+X    ct = 1;
+X    while (cs >= 0 && cs < ll && ct) {
+X	cs += dir;
+X	if (line[cs] == oth)
+X	    ct--;
+X	else if (line[cs] == me)
+X	    ct++;
+X    }
+X    if (cs < 0 || cs >= ll) {
+X	feep();
+X	cs = ocs;
+X    }
+X}
+X
+Xvoid viforwardchar()
+X{				/**/
+X    if (mult < 0) {
+X	mult = -mult;
+X	vibackwardchar();
+X	return;
+X    }
+X    while (mult--) {
+X	cs++;
+X	if (cs >= ll || line[cs] == '\n') {
+X	    cs--;
+X	    break;
+X	}
+X    }
+X}
+X
+Xvoid vibackwardchar()
+X{				/**/
+X    if (mult < 0) {
+X	mult = -mult;
+X	viforwardchar();
+X	return;
+X    }
+X    while (mult--) {
+X	cs--;
+X	if (cs < 0 || line[cs] == '\n') {
+X	    cs++;
+X	    break;
+X	}
+X    }
+X}
+X
+Xvoid viendofline()
+X{				/**/
+X    cs = findeol();
+X    if (!virangeflag && cs != 0 && line[cs - 1] != '\n')
+X	cs--;
+X}
+X
+Xvoid vibeginningofline()
+X{				/**/
+X    cs = findbol();
+X}
+X
+Xstatic int vfindchar, vfinddir, tailadd;
+X
+Xvoid vifindnextchar()
+X{				/**/
+X    if ((vfindchar = vigetkey())) {
+X	vfinddir = 1;
+X	tailadd = 0;
+X	virepeatfind();
+X    }
+X}
+X
+Xvoid vifindprevchar()
+X{				/**/
+X    if ((vfindchar = vigetkey())) {
+X	vfinddir = -1;
+X	tailadd = 0;
+X	virepeatfind();
+X    }
+X}
+X
+Xvoid vifindnextcharskip()
+X{				/**/
+X    if ((vfindchar = vigetkey())) {
+X	vfinddir = 1;
+X	tailadd = -1;
+X	virepeatfind();
+X    }
+X}
+X
+Xvoid vifindprevcharskip()
+X{				/**/
+X    if ((vfindchar = vigetkey())) {
+X	vfinddir = -1;
+X	tailadd = 1;
+X	virepeatfind();
+X    }
+X}
+X
+Xvoid virepeatfind()
+X{				/**/
+X    int ocs = cs;
+X
+X    if (!vfinddir) {
+X	feep();
+X	return;
+X    }
+X    if (mult < 0) {
+X	mult = -mult;
+X	virevrepeatfind();
+X	return;
+X    }
+X    while (mult--) {
+X	do
+X	    cs += vfinddir;
+X	while (cs >= 0 && cs < ll && line[cs] != vfindchar && line[cs] != '\n');
+X	if (cs < 0 || cs >= ll || line[cs] == '\n') {
+X	    feep();
+X	    cs = ocs;
+X	    return;
+X	}
+X    }
+X    cs += tailadd;
+X    if (vfinddir == 1 && virangeflag)
+X	cs++;
+X}
+X
+Xvoid virevrepeatfind()
+X{				/**/
+X    if (mult < 0) {
+X	mult = -mult;
+X	virepeatfind();
+X	return;
+X    }
+X    vfinddir = -vfinddir;
+X    virepeatfind();
+X    vfinddir = -vfinddir;
+X}
+X
+Xvoid vifirstnonblank()
+X{				/**/
+X    cs = findbol();
+X    while (cs != ll && iblank(line[cs]))
+X	cs++;
+X}
+X
+Xvoid visetmark()
+X{				/**/
+X    int ch;
+X
+X    ch = getkey(0);
+X    if (ch < 'a' || ch > 'z') {
+X	feep();
+X	return;
+X    }
+X    ch -= 'a';
+X    vimarkcs[ch] = cs;
+X    vimarkline[ch] = histline;
+X}
+X
+Xvoid vigotomark()
+X{				/**/
+X    int ch;
+X
+X    ch = getkey(0);
+X    if (ch == c)
+X	ch = 26;
+X    else {
+X	if (ch < 'a' || ch > 'z') {
+X	    feep();
+X	    return;
+X	}
+X	ch -= 'a';
+X    }
+X    if (!vimarkline[ch]) {
+X	feep();
+X	return;
+X    }
+X    if (curhist != vimarkline[ch]) {
+X	mult = vimarkline[ch];
+X	lastcmd |= ZLE_ARG;
+X	vifetchhistory();
+X	if (histline != vimarkline[ch])
+X	    return;
+X    }
+X    cs = vimarkcs[ch];
+X}
+X
+Xvoid vigotomarkline()
+X{				/**/
+X    vigotomark();
+X    cs = findbol();
+X}
+END_OF_FILE
+  if test 5690 -ne `wc -c <'zsh-2.5.0/src/zle_move.c'`; then
+    echo shar: \"'zsh-2.5.0/src/zle_move.c'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/zle_move.c'
+fi
+if test -f 'zsh-2.5.0/src/zle_utils.c' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/zle_utils.c'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/zle_utils.c'\" \(4937 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/zle_utils.c' <<'END_OF_FILE'
+X
+X/*
+X *
+X * zle_utils.c - miscellaneous line editor utilities
+X *
+X * This file is part of zsh, the Z shell.
+X *
+X * This software is Copyright 1992 by Paul Falstad
+X *
+X * Permission is hereby granted to copy, reproduce, redistribute or otherwise
+X * use this software as long as: there is no monetary profit gained
+X * specifically from the use or reproduction of this software, it is not
+X * sold, rented, traded or otherwise marketed, and this copyright notice is
+X * included prominently in any copy made.
+X *
+X * The author make no claims as to the fitness or correctness of this software
+X * for any use whatsoever, and it is provided as is. Any use of this software
+X * is at the user's own risk.
+X *
+X */
+X
+X#define ZLE
+X#include "zsh.h"
+X
+X/* make sure that the line buffer has at least sz chars */
+X
+Xvoid sizeline(sz)		/**/
+Xint sz;
+X{
+X    while (sz > linesz)
+X	line = (unsigned char *)realloc(line, (linesz *= 4) + 1);
+X}
+X
+X/* insert space for ct chars at cursor position */
+X
+Xvoid spaceinline(ct)		/**/
+Xint ct;
+X{
+X    int i;
+X
+X    while (ct + ll > linesz)
+X	line = (unsigned char *)realloc(line, (linesz *= 4) + 1);
+X    for (i = ll; i >= cs; i--)
+X	line[i + ct] = line[i];
+X    ll += ct;
+X    line[ll] = '\0';
+X}
+X
+Xvoid backkill(ct, dir)		/**/
+Xint ct;
+Xint dir;
+X{
+X    int i = (cs -= ct);
+X
+X    cut(i, ct, dir);
+X    while ((line[i] = line[i + ct]))
+X	i++;
+X    ll -= ct;
+X}
+X
+Xvoid forekill(ct, dir)		/**/
+Xint ct;
+Xint dir;
+X{
+X    int i = cs;
+X
+X    cut(i, ct, dir);
+X    while ((line[i] = line[i + ct]))
+X	i++;
+X    ll -= ct;
+X}
+X
+Xextern owrite;
+X
+Xvoid cut(i, ct, dir)		/**/
+Xint i;
+Xint ct;
+Xint dir;
+X{
+X    if (vibufspec) {
+X	if (owrite || !vibuf[vibufspec]) {
+X	    if (vibuf[vibufspec])
+X		free(vibuf[vibufspec]);
+X	    vibuf[vibufspec] = (char *)zalloc(ct + 1);
+X	    ztrncpy(vibuf[vibufspec], UTOSCP(line + i), ct);
+X	} else {
+X	    int len = strlen(vibuf[vibufspec]);
+X
+X	    vibuf[vibufspec] = realloc(vibuf[vibufspec], ct + len);
+X	    ztrncpy(vibuf[vibufspec] + len, UTOSCP(line + i), ct);
+X	}
+X	vibufspec = 0;
+X	return;
+X    }
+X    if (!cutbuf)
+X	cutbuf = ztrdup("");
+X    else if (!(lastcmd & ZLE_KILL)) {
+X	kringnum = (kringnum + 1) & (KRINGCT - 1);
+X	if (kring[kringnum])
+X	    free(kring[kringnum]);
+X	kring[kringnum] = cutbuf;
+X	cutbuf = ztrdup("");
+X    }
+X    if (dir) {
+X	char *s = (char *)zalloc(strlen(cutbuf) + ct + 1);
+X
+X	strncpy(s, (char *)line + i, ct);
+X	strcpy(s + ct, cutbuf);
+X	free(cutbuf);
+X	cutbuf = s;
+X    } else {
+X	int x;
+X
+X	cutbuf = realloc(cutbuf, (x = strlen(cutbuf)) + ct + 1);
+X	ztrncpy(cutbuf + x, UTOSCP(line + i), ct);
+X    }
+X}
+X
+Xvoid backdel(ct)		/**/
+Xint ct;
+X{
+X    int i = (cs -= ct);
+X
+X    while ((line[i] = line[i + ct]))
+X	i++;
+X    ll -= ct;
+X}
+X
+Xvoid foredel(ct)		/**/
+Xint ct;
+X{
+X    int i = cs;
+X
+X    while ((line[i] = line[i + ct]))
+X	i++;
+X    ll -= ct;
+X}
+X
+Xvoid setline(s)			/**/
+Xchar *s;
+X{
+X    sizeline(strlen(s));
+X    strcpy((char *)line, s);
+X    cs = ll = strlen(s);
+X    if (cs && bindtab == altbindtab)
+X	cs--;
+X}
+X
+Xvoid sethistline(s)		/**/
+Xunsigned char *s;
+X{
+X    setline(UTOSCP(s));
+X    for (s = line; *s; s++)
+X	if (*s == STOUC(HISTSPACE))
+X	    *s = ' ';
+X}
+X
+Xint findbol()
+X{				/**/
+X    int x = cs;
+X
+X    while (x > 0 && line[x - 1] != '\n')
+X	x--;
+X    return x;
+X}
+X
+Xint findeol()
+X{				/**/
+X    int x = cs;
+X
+X    while (x != ll && line[x] != '\n')
+X	x++;
+X    return x;
+X}
+X
+Xvoid findline(a, b)		/**/
+Xint *a;
+Xint *b;
+X{
+X    *a = findbol();
+X    *b = findeol();
+X}
+X
+Xstatic int lastlinelen;
+X
+Xvoid initundo()
+X{				/**/
+X    int t0;
+X
+X    for (t0 = 0; t0 != UNDOCT; t0++)
+X	undos[t0].change = NULL;
+X    undoct = 0;
+X    lastline = (unsigned char *)zalloc(lastlinelen = (ll + 1 < 32) ? 32 : ll + 1);
+X    strcpy((char *)lastline, (char *)line);
+X    lastcs = cs;
+X}
+X
+Xvoid addundo()
+X{				/**/
+X    int pf, sf;
+X    unsigned char *s, *s2, *t, *t2;
+X    struct undoent *ue;
+X
+X    for (s = line, t = lastline; *s && *s == *t; s++, t++);
+X    if (!*s && !*t)
+X	return;
+X    pf = s - line;
+X    for (s2 = (unsigned char *)line + strlen((char *)line),
+X	 t2 = lastline + strlen((char *)lastline);
+X	 s2 > s && t > t2 && s2[-1] == t2[-1]; s2--, t2--);
+X    sf = strlen((char *)s2);
+X    ue = undos + (undoct = (UNDOCT - 1) & (undoct + 1));
+X    ue->pref = pf;
+X    ue->suff = sf;
+X    ue->len = t2 - t;
+X    ue->cs = lastcs;
+X    strncpy(ue->change = (char *)halloc(ue->len), (char *)t, ue->len);
+X    while (ll + 1 > lastlinelen) {
+X	free(lastline);
+X	lastline = (unsigned char *)zalloc(lastlinelen *= 2);
+X    }
+X    strcpy((char *)lastline, (char *)line);
+X    lastcs = cs;
+X}
+X
+Xint hstrncmp(s, t, len)		/**/
+Xchar *s;
+Xchar *t;
+Xint len;
+X{
+X    while (len && *s && (*s == *t || (*s == ' ' && *t == HISTSPACE) ||
+X			 (*s == HISTSPACE && *t == ' ')))
+X	s++, t++, len--;
+X    return len;
+X}
+X
+Xint hstrcmp(s, t)		/**/
+Xchar *s;
+Xchar *t;
+X{
+X    while (*s && (*s == *t || (*s == ' ' && *t == HISTSPACE) ||
+X		  (*s == HISTSPACE && *t == ' ')))
+X	s++, t++;
+X    return !(*s == '\0' && *t == '\0');
+X}
+X
+Xchar *hstrnstr(s, t, len)	/**/
+Xchar *s;
+Xchar *t;
+Xint len;
+X{
+X    for (; *s; s++)
+X	if (!hstrncmp(t, s, len))
+X	    return s;
+X    return NULL;
+X}
+END_OF_FILE
+  if test 4937 -ne `wc -c <'zsh-2.5.0/src/zle_utils.c'`; then
+    echo shar: \"'zsh-2.5.0/src/zle_utils.c'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/zle_utils.c'
+fi
+if test -f 'zsh-2.5.0/src/zle_vi.c' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/zle_vi.c'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/zle_vi.c'\" \(5891 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/zle_vi.c' <<'END_OF_FILE'
+X
+X/*
+X *
+X * zle_vi.c - vi-specific functions
+X *
+X * This file is part of zsh, the Z shell.
+X *
+X * This software is Copyright 1992 by Paul Falstad
+X *
+X * Permission is hereby granted to copy, reproduce, redistribute or otherwise
+X * use this software as long as: there is no monetary profit gained
+X * specifically from the use or reproduction of this software, it is not
+X * sold, rented, traded or otherwise marketed, and this copyright notice is
+X * included prominently in any copy made.
+X *
+X * The author make no claims as to the fitness or correctness of this software
+X * for any use whatsoever, and it is provided as is. Any use of this software
+X * is at the user's own risk.
+X *
+X */
+X
+X#define ZLE
+X#include "zsh.h"
+X
+XSPROTO(void startvichange, (int im));
+X
+Xstatic void startvichange(im)
+Xint im;
+X{
+X    insmode = im;
+X    if (vichgbuf)
+X	free(vichgbuf);
+X    vichgbuf = (char *)zalloc(vichgbufsz = 16);
+X    vichgbuf[0] = c;
+X    vichgbufptr = 1;
+X    vichgflag = 1;
+X    viinsbegin = cs;
+X}
+X
+XSPROTO(void startvitext, (int im));
+X
+Xstatic void startvitext(im)
+Xint im;
+X{
+X    startvichange(im);
+X    bindtab = mainbindtab;
+X    undoing = 0;
+X}
+X
+Xint vigetkey()
+X{				/**/
+X    int cmd;
+X
+X    if ((cmd = getkeycmd()) < 0 || cmd == z_sendbreak) {
+X	feep();
+X	return 0;
+X    }
+X    if (cmd == z_quotedinsert) {
+X	if ((c = getkey(0)) == EOF)
+X	    return 0;
+X	return c;
+X    } else if (cmd == z_vicmdmode)
+X	return 0;
+X    return c;
+X}
+X
+Xint getvirange(wf)		/**/
+Xint wf;
+X{
+X    int k2, t0, startline, endline;
+X
+X    startline = findbol();
+X    endline = findeol();
+X    for (;;) {
+X
+X	if ((k2 = getkeycmd()) < 0 || k2 == z_sendbreak) {
+X	    feep();
+X	    return -1;
+X	}
+X	if (zlecmds[k2].flags & ZLE_ARG)
+X	    (*zlecmds[k2].func) ();
+X	else
+X	    break;
+X    }
+X    if (k2 == bindk) {
+X	findline(&cs, &t0);
+X	return (t0 == ll) ? t0 : t0 + 1;
+X    }
+X    if (!(zlecmds[k2].flags & ZLE_MOVEMENT)) {
+X	feep();
+X	return -1;
+X    }
+X    t0 = cs;
+X
+X    virangeflag = 1;
+X    wordflag = wf;
+X    (*zlecmds[k2].func) ();
+X    wordflag = virangeflag = 0;
+X    if (cs == t0) {
+X	feep();
+X	return -1;
+X    }
+X    if (startline != findbol()) {
+X	if (zlecmds[k2].flags & ZLE_LINEMOVE) {
+X	    if (cs < t0) {
+X		cs = startline;
+X		t0 = findeol() + 1;
+X	    } else {
+X		t0 = startline;
+X		cs = findeol() + 1;
+X	    }
+X	} else {
+X	    if (cs < startline)
+X		cs = startline;
+X	    else if (cs >= endline)
+X		cs = endline - 1;
+X	}
+X    }
+X    if (cs > t0) {
+X	k2 = cs;
+X	cs = t0;
+X	t0 = k2;
+X    }
+X    return t0;
+X}
+X
+Xvoid viaddnext()
+X{				/**/
+X    if (cs != ll)
+X	cs++;
+X    startvitext(1);
+X}
+X
+Xvoid viaddeol()
+X{				/**/
+X    cs = findeol();
+X    startvitext(1);
+X}
+X
+Xvoid viinsert()
+X{				/**/
+X    startvitext(1);
+X}
+X
+Xvoid viinsertbol()
+X{				/**/
+X    cs = findbol();
+X    startvitext(1);
+X}
+X
+Xvoid videlete()
+X{				/**/
+X    int c2;
+X
+X    startvichange(1);
+X    if ((c2 = getvirange(0)) == -1) {
+X	vichgflag = 0;
+X	return;
+X    }
+X    forekill(c2 - cs, 0);
+X    vichgflag = 0;
+X}
+X
+Xvoid videletechar()
+X{				/**/
+X    if (mult < 0) {
+X	mult = -mult;
+X	vibackwarddeletechar();
+X	return;
+X    }
+X    if (!(cs + mult > ll || line[cs] == '\n')) {
+X	if (vichgbuf == NULL)
+X	    vichgbuf = (char *)zalloc(vichgbufsz = 16);
+X	vichgbufptr = 1;
+X	vichgbuf[0] = c;
+X	cs += mult;
+X	backkill(mult, 0);
+X	if (cs && (cs == ll || line[cs] == '\n'))
+X	    cs--;
+X    } else
+X	feep();
+X}
+X
+Xvoid vichange()
+X{				/**/
+X    int c2;
+X
+X    startvichange(1);
+X    if ((c2 = getvirange(1)) == -1) {
+X	vichgflag = 0;
+X	return;
+X    }
+X    forekill(c2 - cs, 0);
+X    bindtab = mainbindtab;
+X    undoing = 0;
+X}
+X
+Xvoid visubstitute()
+X{				/**/
+X    if (mult < 0)
+X	return;
+X    if (findeol() - cs < mult)
+X	mult = findeol() - cs;
+X    if (mult) {
+X	foredel(mult);
+X	startvitext(1);
+X    }
+X}
+X
+Xvoid vichangeeol()
+X{				/**/
+X    killline();
+X    startvitext(1);
+X}
+X
+Xvoid vichangewholeline()
+X{				/**/
+X    int cq;
+X
+X    findline(&cs, &cq);
+X    foredel(cq - cs);
+X    startvitext(1);
+X}
+X
+Xvoid viyank()
+X{				/**/
+X    int c2;
+X
+X    if ((c2 = getvirange(0)) == -1)
+X	return;
+X    cut(cs, c2 - cs, 0);
+X}
+X
+Xvoid viyankeol()
+X{				/**/
+X    int x = findeol();
+X
+X    if (x == cs)
+X	feep();
+X    else
+X	cut(cs, x - cs, 0);
+X}
+X
+Xvoid vireplace()
+X{				/**/
+X    startvitext(0);
+X}
+X
+Xvoid vireplacechars()
+X{				/**/
+X    int ch;
+X
+X    if (mult < 0)
+X	return;
+X    if (mult + cs > ll) {
+X	feep();
+X	return;
+X    }
+X    startvichange(1);
+X    if ((ch = vigetkey()))
+X	while (mult--)
+X	    line[cs++] = ch;
+X    vichgflag = 0;
+X    cs--;
+X}
+X
+Xvoid vicmdmode()
+X{				/**/
+X    if (bindtab == altbindtab)
+X	feep();
+X    else {
+X	bindtab = altbindtab;
+X	if (cs)
+X	    cs--;
+X	undoing = 1;
+X	if (vichgflag)
+X	    vichgflag = 0;
+X    }
+X}
+X
+Xvoid viopenlinebelow()
+X{				/**/
+X    cs = findeol();
+X    spaceinline(1);
+X    line[cs++] = '\n';
+X    startvitext(1);
+X}
+X
+Xvoid viopenlineabove()
+X{				/**/
+X    cs = findbol();
+X    spaceinline(1);
+X    line[cs] = '\n';
+X    startvitext(1);
+X}
+X
+Xvoid vioperswapcase()
+X{				/**/
+X    int c2;
+X
+X    if ((c2 = getvirange(0)) == -1)
+X	return;
+X    while (cs < c2) {
+X	int ch = line[cs];
+X
+X	if (islower(ch))
+X	    ch = tuupper(ch);
+X	else if (isupper(ch))
+X	    ch = tulower(ch);
+X	line[cs++] = ch;
+X    }
+X}
+X
+Xvoid virepeatchange()
+X{				/**/
+X    if (!vichgbuf || bindtab == mainbindtab || vichgflag)
+X	feep();
+X    else
+X	ungetkeys(vichgbuf, vichgbufptr);
+X}
+X
+Xvoid viindent()
+X{				/**/
+X    int c2, endcs, t0, rmult;
+X
+X    if (mult < 0) {
+X	mult = -mult;
+X	viunindent();
+X	return;
+X    }
+X    rmult = mult;
+X    if ((c2 = getvirange(0)) == -1)
+X	return;
+X    if (cs != findbol()) {
+X	feep();
+X	return;
+X    }
+X    endcs = cs + rmult;
+X    while (cs < c2) {
+X	spaceinline(rmult);
+X	for (t0 = 0; t0 != rmult; t0++)
+X	    line[cs++] = '\t';
+X	cs = findeol() + 1;
+X    }
+X    cs = endcs;
+X}
+X
+Xvoid viunindent()
+X{				/**/
+X    int c2, endcs, t0, rmult;
+X
+X    rmult = mult;
+X    if (mult < 0) {
+X	mult = -mult;
+X	viindent();
+X	return;
+X    }
+X    if ((c2 = getvirange(0)) == -1)
+X	return;
+X    if (cs != findbol()) {
+X	feep();
+X	return;
+X    }
+X    endcs = cs;
+X    while (cs < c2) {
+X	for (t0 = 0; t0 != rmult && line[cs] == '\t'; t0++)
+X	    foredel(1);
+X	cs = findeol() + 1;
+X    }
+X    cs = endcs;
+X}
+END_OF_FILE
+  if test 5891 -ne `wc -c <'zsh-2.5.0/src/zle_vi.c'`; then
+    echo shar: \"'zsh-2.5.0/src/zle_vi.c'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/zle_vi.c'
+fi
+echo shar: End of archive 17 \(of 18\).
+cp /dev/null ark17isdone
+MISSING=""
+for I in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 ; do
+    if test ! -f ark${I}isdone ; then
+	MISSING="${MISSING} ${I}"
+    fi
+done
+if test "${MISSING}" = "" ; then
+    echo You have unpacked all 18 archives.
+    rm -f ark[1-9]isdone ark[1-9][0-9]isdone
+else
+    echo You still must unpack the following archives:
+    echo "        " ${MISSING}
+fi
+exit 0
+exit 0 # Just in case...

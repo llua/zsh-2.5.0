@@ -1,0 +1,2879 @@
+Path: news.csc.fi!news.eunet.fi!EU.net!uunet!sparky!not-for-mail
+From: zsh-list@sterling.com (Bas de Bakker)
+Newsgroups: comp.sources.misc
+Subject: v43i090:  zsh - The Z shell, version 2.5.0, Part01/18
+Followup-To: comp.sources.d
+Date: 13 Jul 1994 23:01:23 -0500
+Organization: Sterling Software
+Lines: 2864
+Sender: kent@sparky.sterling.com
+Approved: kent@sparky.sterling.com
+Message-ID: <302daj$soo@sparky.sterling.com>
+References: <csm-v43i089=zsh.230017@sparky.sterling.com>
+NNTP-Posting-Host: sparky.sterling.com
+X-Md4-Signature: 49251aea85566f2cf1f7137a17a977e7
+
+Submitted-by: zsh-list@sterling.com (Bas de Bakker)
+Posting-number: Volume 43, Issue 90
+Archive-name: zsh/part01
+Environment: UNIX
+Supersedes: zsh: Volume 35, Issue 51-72
+
+#! /bin/sh
+# This is a shell archive.  Remove anything before this line, then feed it
+# into a shell via "sh file" or similar.  To overwrite existing files,
+# type "sh file -c".
+# Contents:  zsh-2.5.0 zsh-2.5.0/doc zsh-2.5.0/doc/intro.ms
+#   zsh-2.5.0/dots zsh-2.5.0/func zsh-2.5.0/help zsh-2.5.0/man
+#   zsh-2.5.0/scripts zsh-2.5.0/src zsh-2.5.0/src/config
+#   zsh-2.5.0/src/signals.h.sample
+# Wrapped by kent@sparky on Tue Jul 12 16:47:15 1994
+PATH=/bin:/usr/bin:/usr/ucb:/usr/local/bin:/usr/lbin:$PATH ; export PATH
+echo If this archive is complete, you will see the following message:
+echo '          "shar: End of archive 1 (of 18)."'
+if test ! -d 'zsh-2.5.0' ; then
+    echo shar: Creating directory \"'zsh-2.5.0'\"
+    mkdir 'zsh-2.5.0'
+fi
+if test ! -d 'zsh-2.5.0/doc' ; then
+    echo shar: Creating directory \"'zsh-2.5.0/doc'\"
+    mkdir 'zsh-2.5.0/doc'
+fi
+if test -f 'zsh-2.5.0/doc/intro.ms' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/doc/intro.ms'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/doc/intro.ms'\" \(78952 characters\)
+  sed "s/^X//" >'zsh-2.5.0/doc/intro.ms' <<'END_OF_FILE'
+X.nr PI 0
+X.de Ds
+X.LD
+X.ft C
+X..
+X.de De
+X.DE
+X.ft R
+X..
+X.de Sh
+X.SH
+X\\$1
+X.XS
+X\\$1
+X.XE
+X..
+X.TL
+XAn Introduction to the Z Shell
+X.AU
+XPaul Falstad
+Xpf@z-code.com
+X.AU
+XBas de Bakker
+Xbas@phys.uva.nl
+X.PP
+X.Sh "Introduction"
+X.PP
+X\fBzsh\fP is a shell designed for interactive use, although it is also
+Xa powerful scripting language.  Many of the useful features of bash,
+Xksh, and tcsh were incorporated into \fBzsh\fP; many original features were
+Xadded.  This document details some of the unique features of \fBzsh\fP.  It
+Xassumes basic knowledge of the standard UNIX shells; the intent is to
+Xshow a reader already familiar with one of the other major shells what
+Xmakes \fBzsh\fP more useful or more powerful.  This document is not at all
+Xcomprehensive; read the manual entry for a description of the shell
+Xthat is complete and concise, although somewhat overwhelming and
+Xdevoid of examples.
+X.PP
+XThe text will frequently mention options that you can set to change
+Xthe behaviour of \fBzsh\fP.  You can set these options with the
+Xcommand
+X.Ds
+X% setopt \fIoptionname\fC
+X.De
+Xand unset them again with
+X.Ds
+X% unsetopt \fIoptionname\fC
+X.De
+XCase is ignored in option names, as are embedded underscores.
+X.Sh "Filename Generation"
+X.PP
+XOtherwise known as \fIglobbing\fP, filename generation
+Xis quite extensive in \fBzsh\fP.  Of course, it has all the
+Xbasics:
+X.Ds
+X% ls
+XMakefile   file.pro   foo.o      main.o     q.c        run234     stuff
+Xbar.o      foo        link       morestuff  run123     run240     sub
+Xfile.h     foo.c      main.h     pipe       run2       run303
+X% ls *.c
+Xfoo.c  q.c
+X% ls *.[co]
+Xbar.o   foo.c   foo.o   main.o  q.c
+X% ls foo.?
+Xfoo.c  foo.o
+X% ls *.[^c]
+Xbar.o   file.h  foo.o   main.h  main.o
+X% ls *.[^oh]
+Xfoo.c  q.c
+X.De
+XAlso, if the \fIEXTENDEDGLOB\fP option is set,
+Xsome new features are activated.
+XFor example, the \fC^\fP character negates the pattern following it:
+X.Ds
+X% setopt extendedglob
+X% ls -d ^*.c
+XMakefile   file.pro   link       morestuff  run2       run303
+Xbar.o      foo        main.h     pipe       run234     stuff
+Xfile.h     foo.o      main.o     run123     run240     sub
+X% ls -d ^*.*
+XMakefile   link       pipe       run2       run240     stuff
+Xfoo        morestuff  run123     run234     run303     sub
+X% ls -d ^Makefile
+Xbar.o      foo        link       morestuff  run123     run240     sub
+Xfile.h     foo.c      main.h     pipe       run2       run303
+Xfile.pro   foo.o      main.o     q.c        run234     stuff
+X% ls -d *.^c
+X\&.rhosts   bar.o     file.h    file.pro  foo.o     main.h    main.o
+X.De
+XAn expression of the form
+X\fC<\fIx\fR\-\fIy\fC>\fR
+Xmatches a range of integers:
+X.Ds
+X% ls run<200-300>
+Xrun234  run240
+X% ls run<300-400>
+Xrun303
+X% ls run<-200>
+Xrun123  run2
+X% ls run<300->
+Xrun303
+X% ls run<>
+Xrun123  run2    run234  run240  run303
+X.De
+XThe \fINUMERICGLOBSORT\fP option will sort files with numbers
+Xaccording to the number.  This will not work with \fCls\fP as it
+Xresorts its arguments:
+X.Ds
+X% setopt numericglobsort
+X% echo run<>
+Xrun2 run123 run234 run240 run303
+X.De
+XGrouping is possible:
+X.Ds
+X% ls (foo|bar).*
+Xbar.o  foo.c  foo.o
+X% ls *.(c|o|pro)
+Xbar.o     file.pro  foo.c     foo.o     main.o    q.c
+X.De
+XAlso, the string \fC**/\fP forces a recursive search of
+Xsubdirectories:
+X.Ds
+X% ls -R
+XMakefile   file.pro   foo.o      main.o     q.c        run234     stuff
+Xbar.o      foo        link       morestuff  run123     run240     sub
+Xfile.h     foo.c      main.h     pipe       run2       run303
+X
+Xmorestuff:
+X
+Xstuff:
+Xfile  xxx   yyy
+X
+Xstuff/xxx:
+Xfoobar
+X
+Xstuff/yyy:
+Xfrobar
+X% ls **/*bar
+Xstuff/xxx/foobar  stuff/yyy/frobar
+X% ls **/f*
+Xfile.h            foo               foo.o             stuff/xxx/foobar
+Xfile.pro          foo.c             stuff/file        stuff/yyy/frobar
+X% ls *bar*
+Xbar.o
+X% ls **/*bar*
+Xbar.o             stuff/xxx/foobar  stuff/yyy/frobar
+X% ls stuff/**/*bar*
+Xstuff/xxx/foobar  stuff/yyy/frobar
+X.De
+X.PP
+XIt is possible to exclude certain files from the patterns using
+Xthe ~ character.  A pattern of the form \fC*.c~bar.c\fP lists all
+Xfiles matching \fC*.c\fP, except for the file \fCbar.c\fP.
+X.Ds
+X% ls *.c
+Xfoo.c    foob.c    bar.c
+X% ls *.c~bar.c
+Xfoo.c    foob.c
+X% ls *.c~f*
+Xbar.c
+X.De
+X.PP
+XOne can add a number of \fIqualifiers\fP to the end of
+Xany of these patterns, to restrict matches to certain
+Xfile types.  A qualified pattern is of the form
+X.DS
+X\fIpattern\fC(\fR...\fC)\fR
+X.De
+Xwith single-character qualifiers inside the parentheses.
+X.Ds
+X% alias l='ls -dF'
+X% l *
+XMakefile    foo*        main.h      q.c         run240
+Xbar.o       foo.c       main.o      run123      run303
+Xfile.h      foo.o       morestuff/  run2        stuff/
+Xfile.pro    link@       pipe        run234      sub
+X% l *(/)
+Xmorestuff/  stuff/
+X% l *(@)
+Xlink@
+X% l *(*)
+Xfoo*        link@       morestuff/  stuff/
+X% l *(x)
+Xfoo*        link@       morestuff/  stuff/
+X% l *(X)
+Xfoo*        link@       morestuff/  stuff/
+X% l *(R)
+Xbar.o       foo*        link@       morestuff/  run123      run240
+Xfile.h      foo.c       main.h      pipe        run2        run303
+Xfile.pro    foo.o       main.o      q.c         run234      stuff/
+X.De
+XNote that \fC*(x)\fP and \fC*(*)\fP both match executables.
+X\fC*(X)\fP matches files executable by others, as opposed to
+X\fC*(x)\fP, which matches files executable by the owner.
+X\fC*(R)\fP and \fC*(r)\fP match readable files;
+X\fC*(W)\fP and \fC*(w)\fP, which checks for writable files.
+X\fC*(W)\fP is especially important, since it checks for world-writable
+Xfiles:
+X.Ds
+X% l *(w)
+Xbar.o       foo*        link@       morestuff/  run123      run240
+Xfile.h      foo.c       main.h      pipe        run2        run303
+Xfile.pro    foo.o       main.o      q.c         run234      stuff/
+X% l *(W)
+Xlink@   run240
+X% l -l link run240
+Xlrwxrwxrwx  1 pfalstad       10 May 23 18:12 link -> /usr/bin/
+X-rw-rw-rw-  1 pfalstad        0 May 23 18:12 run240
+X.De
+XIf you want to have all the files of a certain type as well as all
+Xsymbolic links pointing to files of that type, prefix the qualifier
+Xwith a \fC-\fP:
+X.Ds
+X% l *(-/)
+Xlink@       morestuff/  stuff/
+X.De
+XYou can filter out the symbolic links with the \fC^\fP character:
+X.Ds
+X% l *(W^@)
+Xrun240
+X% l *(x)
+Xfoo*        link@       morestuff/  stuff/
+X% l *(x^@/)
+Xfoo*
+X.De
+XTo find all plain files, you can use \fC.\fP:
+X.Ds
+X% l *(.)
+XMakefile  file.h    foo*      foo.o     main.o    run123    run234    run303
+Xbar.o     file.pro  foo.c     main.h    q.c       run2      run240    sub
+X% l *(^.)
+Xlink@       morestuff/  pipe        stuff/
+X% l s*(.)
+Xstuff/   sub
+X% l *(p)
+Xpipe
+X% l -l *(p)
+Xprw-r--r--  1 pfalstad        0 May 23 18:12 pipe
+X.De
+X\fC*(U)\fP matches all files owned by you.
+XTo search for all files not owned by you, use \fC*(^U)\fP:
+X.Ds
+X% l -l *(^U)
+X-rw-------  1 subbarao       29 May 23 18:13 sub
+X.De
+XThis searches for setuid files:
+X.Ds
+X% l -l *(s)
+X-rwsr-xr-x  1 pfalstad       16 May 23 18:12 foo*
+X.De
+XThis checks for a certain user's files:
+X.Ds
+X% l -l *(u[subbarao])
+X-rw-------  1 subbarao       29 May 23 18:13 sub
+X.De
+X.Sh "Startup Files"
+X.PP
+XThere are five startup files that \fBzsh\fP will read commands from:
+X.Ds
+X$ZDOTDIR/.zshenv
+X$ZDOTDIR/.zprofile
+X$ZDOTDIR/.zshrc
+X$ZDOTDIR/.zlogin
+X$ZDOTDIR/.zlogout
+X.De
+XIf \fBZDOTDIR\fP is not set, then the value of \fBHOME\fP is used;
+Xthis is the usual case.
+X.\".KE    <--- missing .KS or .KF above
+X.PP
+X\&\fC.zshenv\fP is sourced on all invocations of the shell,
+Xunless the \fC-f\fP option is set.  It should contain commands to set
+Xthe command search path, plus other important environment
+Xvariables.
+X\&\fC.zshenv\fP should not contain commands that produce output
+Xor assume the shell is attached to a tty.
+X.PP
+X\&\fC.zshrc\fP is sourced in interactive shells.  It should contain
+Xcommands to set up aliases, functions, options, key bindings, etc.
+X.PP
+X\&\fC.zlogin\fP is sourced in login shells.  It should contain
+Xcommands that should be executed only in login shells.
+X\&\fC.zlogout\fP is sourced when login shells exit.
+X\&\fC.zprofile\fP is similar to \fC.zlogin\fP, except that it is sourced before
+X\&\fC.zshrc\fP.
+X\&\fC.zprofile\fP is meant as an alternative to \fC.zlogin\fP for
+Xksh fans;
+Xthe two are not intended to be used together, although this
+Xcould certainly be done if desired.
+X\&\fC.zlogin\fP is not the place for alias definitions, options, environment
+Xvariable settings, etc.;
+Xas a general rule, it should not change the shell environment
+Xat all.  Rather, it should be used to set the terminal type
+Xand run a series of external commands (\fCfortune\fP, \fCmsgs\fP, etc).
+X.Sh "Shell Functions"
+X.PP
+X\fBzsh\fP also allows you to create your own commands by defining shell
+Xfunctions.  For example:
+X.Ds
+X% yp () {
+X>       ypmatch $1 passwd.byname
+X> }
+X% yp pfalstad
+Xpfalstad:*:3564:35:Paul John Falstad:/u/pfalstad:/usr/princeton/bin/zsh
+X.De
+XThis function looks up a user in the NIS password map.
+XThe \fC$1\fP expands to the first argument to \fCyp\fP.
+XThe function could have been equivalently defined in one of the following
+Xways:
+X.Ds
+X% function yp {
+X>       ypmatch $1 passwd.byname
+X> }
+X% function yp () {
+X>       ypmatch $1 passwd.byname
+X> }
+X% function yp () ypmatch $1 passwd.byname
+X.De
+XNote that aliases are expanded when the function definition is
+Xparsed, not when the function is executed.  For example:
+X.Ds
+X% alias ypmatch=echo
+X% yp pfalstad
+Xpfalstad:*:3564:35:Paul John Falstad:/u/pfalstad:/usr/princeton/bin/zsh
+X.De
+XSince the alias was defined after the function was parsed, it has
+Xno effect on the function's execution.
+XHowever, if we define the function again with the alias in place:
+X.Ds
+X% function yp () { ypmatch $1 passwd.byname }
+X% yp pfalstad
+Xpfalstad passwd.byname
+X.De
+Xit is parsed with the new alias definition in place.
+XTherefore, in general you must define aliases before functions.
+X.\".KE    <--- missing .KS or .KF above
+X.PP
+XWe can make the function take multiple arguments:
+X.Ds
+X% unalias ypmatch
+X% yp () {
+X>       for i
+X>       do ypmatch $i passwd.byname
+X>       done
+X> }
+X% yp pfalstad subbarao sukthnkr
+Xpfalstad:*:3564:35:Paul John Falstad:/u/pfalstad:/usr/princeton/bin/zsh
+Xsubbarao:*:3338:35:Kartik Subbarao:/u/subbarao:/usr/princeton/bin/zsh
+Xsukthnkr:*:1267:35:Rahul Sukthankar:/u/sukthnkr:/usr/princeton/bin/tcsh
+X.De
+XThe \fCfor i\fP loops through each of the function's arguments,
+Xsetting \fCi\fP equal to each of them in turn.
+XWe can also make the function do something sensible
+Xif no arguments are given:
+X.Ds
+X% yp () {
+X>       if (( $# == 0 ))
+X>       then echo usage: yp name ...; fi
+X>       for i; do ypmatch $i passwd.byname; done
+X> }
+X% yp
+Xusage: yp name ...
+X% yp pfalstad sukthnkr
+Xpfalstad:*:3564:35:Paul John Falstad:/u/pfalstad:/usr/princeton/bin/zsh
+Xsukthnkr:*:1267:35:Rahul Sukthankar:/u/sukthnkr:/usr/princeton/bin/tcsh
+X.De
+X\fC$#\fP is the number of arguments supplied to the function.
+XIf it is equal to zero, we print a usage message; otherwise,
+Xwe loop through the arguments, and \fCypmatch\fP all of them.
+X.\".KE    <--- missing .KS or .KF above
+X.PP
+XHere's a function that selects a random line from a file:
+X.Ds
+X% randline () {
+X>       integer z=$(wc -l <$1)
+X>       sed -n $[RANDOM % z + 1]p $1
+X> }
+X% randline /etc/motd
+XPHOENIX WILL BE DOWN briefly Friday morning, 5/24/91 from 8 AM to
+X% randline /etc/motd
+XSunOS Release 4.1.1 (PHOENIX) #19: Tue May 14 19:03:15 EDT 1991
+X% randline /etc/motd
+X| Please use the "msgs" command to read announcements.  Refer to the   |
+X% echo $z
+X
+X%
+X.De
+X\fCrandline\fP has a local variable, \fCz\fP, that holds the number of
+Xlines in the file.  \fC$[RANDOM % z + 1]\fP expands to a random number
+Xbetween 1 and \fCz\fP.  An expression of the form \fC$[\fR...\fC]\fR
+Xexpands to the value of the arithmetic expression within the brackets,
+Xand the \fBRANDOM\fP variable returns a random number each time it
+Xis referenced.  \fC%\fP is the modulus operator, as in C.
+XTherefore, \fCsed -n $[RANDOM%z+1]p\fP picks a random line from its
+Xinput, from 1 to \fCz\fP.
+X.PP
+XFunction definitions can be viewed with the \fCfunctions\fP builtin:
+X.Ds
+X% functions randline
+Xrandline () {
+X        integer z=$(wc -l <$1)
+X        sed -n $[RANDOM % z + 1]p $1
+X
+X}
+X% functions
+Xyp () {
+X        if let $# == 0 
+X        
+X        then
+X                echo usage: yp name ...
+X        
+X        fi
+X        for i
+X        do
+X                ypmatch $i passwd.byname
+X        
+X                done
+X
+X}
+Xrandline () {
+X        integer z=$(wc -l <$1)
+X        sed -n $[RANDOM % z + 1]p $1
+X
+X}
+X.De
+XHere's another one:
+X.Ds
+X% cx () { chmod +x $* }
+X% ls -l foo bar
+X-rw-r--r--  1 pfalstad       29 May 24 04:38 bar
+X-rw-r--r--  1 pfalstad       29 May 24 04:38 foo
+X% cx foo bar
+X% ls -l foo bar
+X-rwxr-xr-x  1 pfalstad       29 May 24 04:38 bar
+X-rwxr-xr-x  1 pfalstad       29 May 24 04:38 foo
+X.De
+XNote that this could also have been implemented as an alias:
+X.Ds
+X% chmod 644 foo bar
+X% alias cx='chmod +x'
+X% cx foo bar
+X% ls -l foo bar
+X-rwxr-xr-x  1 pfalstad       29 May 24 04:38 bar
+X-rwxr-xr-x  1 pfalstad       29 May 24 04:38 foo
+X.De
+X.PP
+XInstead of defining a lot of functions in your \fC.zshrc\fP,
+Xall of which you may not use,
+Xit is often better to use the \fCautoload\fP builtin.
+XThe idea is, you create a directory where function
+Xdefinitions are stored, declare the names in
+Xyour \fC.zshrc\fP, and tell the shell where to look for them.
+XWhenever you reference a function, the shell
+Xwill automatically load it into memory.
+X.Ds
+X% mkdir /tmp/funs
+X% cat >/tmp/funs/yp
+Xypmatch $1 passwd.byname
+X^D
+X% cat >/tmp/funs/cx
+Xchmod +x $*
+X^D
+X% FPATH=/tmp/funs
+X% autoload cx yp
+X% functions cx yp
+Xundefined cx ()
+Xundefined yp ()
+X% chmod 755 /tmp/funs/{cx,yp}
+X% yp egsirer
+Xegsirer:*:3214:35:Emin Gun Sirer:/u/egsirer:/bin/sh
+X% functions yp
+Xyp () {
+X        ypmatch $1 passwd.byname
+X}
+X.De
+XThis idea has other benefits.  By adding a \fC#!\fP header
+Xto the files, you can make them double as shell scripts.
+X(Although it is faster to use them as functions, since a
+Xseparate process is not created.)
+X.Ds
+X% ed /tmp/funs/yp
+X25
+Xi
+X#! /usr/local/bin/zsh
+X.
+Xw
+X42
+Xq
+X% </tmp/funs/yp
+X#! /usr/local/bin/zsh
+Xypmatch $1 passwd.byname
+X% /tmp/funs/yp sukthnkr
+Xsukthnkr:*:1267:35:Rahul Sukthankar:/u/sukthnkr:/usr/princeton/bin/tcsh
+X.De
+XNow other people, who may not use \fBzsh\fP, or who don't want to
+Xcopy all of your \fC.zshrc\fP, may use these functions as shell
+Xscripts.
+X.Sh "Directories"
+X.PP
+XOne nice feature of \fBzsh\fP is the way it prints directories.
+XFor example, if we set the prompt like this:
+X.Ds
+Xphoenix% PROMPT='%~> '
+X~> cd src
+X~/src>
+X.De
+Xthe shell will print the current directory in the prompt,
+Xusing the \fC~\fP character.
+XHowever, \fBzsh\fP is smarter than most other shells in this respect:
+X.Ds
+X~/src> cd ~subbarao
+X~subbarao> cd ~maruchck
+X~maruchck> cd lib
+X~maruchck/lib> cd fun
+X~maruchck/lib/fun> foo=/usr/princeton/common/src
+X~maruchck/lib/fun> cd ~foo
+X~foo> cd ..
+X/usr/princeton/common> cd src
+X~foo> cd news/nntp
+X~foo/news/nntp> cd inews
+X~foo/news/nntp/inews>
+X.De
+XNote that \fBzsh\fP prints \fIother\fP users' directories 
+Xin the form \fC~user\fP.  Also note that you can
+Xset a parameter and use it as a directory name;
+X\fBzsh\fP will act as if \fCfoo\fP is a user
+Xwith the login directory \fC/usr/princeton/common/src\fP.
+XThis is convenient, especially if you're sick of seeing
+Xprompts like this:
+X.Ds
+Xphoenix:/usr/princeton/common/src/X.V11R4/contrib/clients/xv/docs>
+X.De
+XIf you get stuck in this position, you can give the current
+Xdirectory a short name, like this:
+X.Ds
+X/usr/princeton/common/src/news/nntp/inews> inews=$PWD
+X/usr/princeton/common/src/news/nntp/inews> echo ~inews
+X/usr/princeton/common/src/news/nntp/inews
+X~inews>
+X.De
+XWhen you reference a directory in the form \fC~inews\fP,
+Xthe shell assumes that you want the directory displayed
+Xin this form; thus simply typing \fCecho ~inews\fP or
+X\fCcd ~inews\fP causes the prompt to be shortened.
+XYou can define a shell function for this purpose:
+X.Ds
+X~inews> namedir () { $1=$PWD ;  : ~$1 }
+X~inews> cd /usr/princeton/bin
+X/usr/princeton/bin> namedir pbin
+X~pbin> cd /var/spool/mail
+X/var/spool/mail> namedir spool
+X~spool> cd .msgs
+X~spool/.msgs>
+X.De
+XYou may want to add this one-line function to your \fC.zshrc\fP.
+X
+X\fBzsh\fP can also put the current directory in your title bar,
+Xif you are using a windowing system.
+XOne way to do this is with the \fCchpwd\fP function, which is
+Xautomatically executed by the shell whenever you change
+Xdirectory.  If you are using xterm, this will work:
+X.Ds
+Xchpwd () { print -Pn '^[]2;%~^G' }
+X.De
+XThe \fC-P\fP option tells \fCprint\fP to treat its arguments like a prompt
+Xstring; otherwise the \fC%~\fP would not be expanded.
+XThe \fC-n\fP option suppresses the terminating newline, as with \fCecho\fP.
+X.PP
+XIf you are using an IRIS \fCwsh\fP, do this:
+X.Ds
+Xchpwd () { print -Pn '\e2201.y%~\e234' }
+X.De
+XThe \fCprint -D\fP command has other uses.  For example, to
+Xprint the current directory to standard output in short form,
+Xyou can do this:
+X.Ds
+X% print -D $PWD
+X~subbarao/src
+X.De
+Xand to print each component of the path in short form:
+X.Ds
+X% print -D $path
+X/bin /usr/bin ~locbin ~locbin/X11 ~/bin
+X.De
+X.Sh "Directory Stacks"
+X.PP
+XIf you use csh, you may know about directory stacks.
+XThe \fCpushd\fP command puts the current directory on the
+Xstack, and changes to a new directory; the \fCpopd\fP command
+Xpops a directory off the stack and changes to it.
+X.Ds
+Xphoenix% cd 
+Xphoenix% PROMPT='Z %~> '
+XZ ~> pushd /tmp
+X/tmp ~
+XZ /tmp> pushd /usr/etc
+X/usr/etc /tmp ~
+XZ /usr/etc> pushd /usr/bin
+X/usr/bin /usr/etc /tmp ~
+XZ /usr/bin> popd
+X/usr/etc /tmp ~
+XZ /usr/etc> popd
+X/tmp ~
+XZ /tmp> pushd /etc
+X/etc /tmp ~
+XZ /etc> popd 
+X/tmp ~
+X.De
+X\fBzsh\fP's directory stack commands work similarly.  One
+Xdifference is the way \fCpushd\fP is handled if no arguments
+Xare given.  As in csh, this exchanges the top two elements
+Xof the directory stack:
+X.Ds
+XZ /tmp> dirs
+X/tmp ~
+XZ /tmp> pushd
+X~ /tmp
+X.De
+Xunless the stack only has one entry:
+X.Ds
+XZ ~> popd
+X/tmp
+XZ /tmp> dirs
+X/tmp
+XZ /tmp> pushd
+X~ /tmp
+XZ ~>
+X.De
+Xor unless the \fIPUSHDTOHOME\fP option is set:
+X.Ds
+XZ ~> setopt pushdtohome
+XZ ~> pushd
+X~ ~ /tmp
+X.De
+X.PP
+XAs an alternative to using directory stacks in this manner,
+Xwe can get something like a \fIdirectory history\fP
+Xby setting a few more options and parameters:
+X.Ds
+X~> DIRSTACKSIZE=8
+X~> setopt autopushd pushdminus pushdsilent pushdtohome
+X~> alias dh='dirs -v'
+X~> cd /tmp
+X/tmp> cd /usr
+X/usr> cd bin
+X/usr/bin> cd ../pub
+X/usr/pub> dh
+X0       /usr/pub
+X1       /usr/bin
+X2       /usr
+X3       /tmp
+X4       ~
+X/usr/pub> cd -3
+X/tmp> dh
+X0       /tmp
+X1       /usr/pub
+X2       /usr/bin
+X3       /usr
+X4       ~
+X/tmp> ls =2/df
+X/usr/bin/df
+X/tmp> cd -4
+X~>
+X.De
+XNote that \fC=2\fP expanded to the second directory in the
+Xhistory list, and that \fCcd -3\fP recalled the third
+Xdirectory in the list.
+X.PP
+XYou may be wondering what all those options do.
+X\fIAUTOPUSHD\fP made \fCcd\fP act like \fCpushd\fP.
+X(\fCalias cd=pushd\fP is not sufficient, for various reasons.)
+X\fIPUSHDMINUS\fP swapped the meaning of \fCcd +1\fP and
+X\fCcd -1\fP; we want them to mean the opposite of what they mean in csh,
+Xbecause it makes more sense in this scheme, and it's easier to type:
+X.Ds
+X~> dh
+X0       ~
+X1       /tmp
+X2       /usr/pub
+X3       /usr/bin
+X4       /usr
+X~> unsetopt pushdminus
+X~> cd +1
+X/tmp> dh
+X0       /tmp
+X1       ~
+X2       /usr/pub
+X3       /usr/bin
+X4       /usr
+X/tmp> cd +2
+X/usr/pub>
+X.De
+X\fIPUSHDSILENT\fP keeps the shell from printing
+Xthe directory stack each time we do a \fCcd\fP,
+Xand \fIPUSHDTOHOME\fP we mentioned earlier:
+X.Ds
+X/usr/pub> unsetopt pushdsilent
+X/usr/pub> cd /etc
+X/etc /usr/pub /tmp ~ /usr/bin /usr
+X/etc> cd
+X~ /etc /usr/pub /tmp ~ /usr/bin /usr
+X~> unsetopt pushdtohome
+X~> cd
+X/etc ~ /usr/pub /tmp ~ /usr/bin /usr
+X/etc>
+X.De
+X\fBDIRSTACKSIZE\fP keeps the directory stack
+Xfrom getting too large, much like \fIHISTSIZE\fP:
+X.Ds
+X/etc> setopt pushdsilent
+X/etc> cd /
+X/> cd /
+X/> cd /
+X/> cd /
+X/> cd /
+X/> cd /
+X/> cd /
+X/> cd /
+X/> dh
+X0       /
+X1       /
+X2       /
+X3       /
+X4       /
+X5       /
+X6       /
+X7       /
+X.De
+X.Sh "Command/Process Substitution"
+X.PP
+XCommand substitution in \fBzsh\fP can take two forms.
+XIn the traditional form, a command enclosed in
+Xbackquotes (\fC`\fP...\fC`\fP) is replaced on the command line with its output.
+XThis is the form used by the older shells.
+XNewer shells (like \fBzsh\fP) also provide another form,
+X\fC$(\fR...\fC)\fR.  This form is much easier to nest.
+X.Ds
+X% ls -l `echo /vmunix`
+X-rwxr-xr-x  1 root      1209702 May 14 19:04 /vmunix
+X% ls -l $(echo /vmunix)
+X-rwxr-xr-x  1 root      1209702 May 14 19:04 /vmunix
+X% who | grep mad
+Xsubbarao ttyt7   May 23 15:02   (mad55sx15.Prince)
+Xpfalstad ttyu1   May 23 16:25   (mad55sx14.Prince)
+Xsubbarao ttyu6   May 23 15:04   (mad55sx15.Prince)
+Xpfalstad ttyv3   May 23 16:25   (mad55sx14.Prince)
+X% who | grep mad | awk '{print $2}'
+Xttyt7
+Xttyu1
+Xttyu6
+Xttyv3
+X% cd /dev; ls -l $(who |
+X> grep $(echo mad) |
+X> awk '{ print $2 }')
+Xcrwx-w----  1 subbarao  20,  71 May 23 18:35 ttyt7
+Xcrw--w----  1 pfalstad  20,  81 May 23 18:42 ttyu1
+Xcrwx-w----  1 subbarao  20,  86 May 23 18:38 ttyu6
+Xcrw--w----  1 pfalstad  20,  99 May 23 18:41 ttyv3
+X.De
+XMany common uses of command substitution, however, are
+Xsuperseded by other mechanisms of \fBzsh\fP:
+X.Ds
+X% ls -l `tty`
+Xcrw-rw-rw-  1 root      20,  28 May 23 18:35 /dev/ttyqc
+X% ls -l $TTY
+Xcrw-rw-rw-  1 root      20,  28 May 23 18:35 /dev/ttyqc
+X% ls -l `which rn`
+X-rwxr-xr-x  1 root       172032 Mar  6 18:40 /usr/princeton/bin/rn
+X% ls -l =rn
+X-rwxr-xr-x  1 root       172032 Mar  6 18:40 /usr/princeton/bin/rn
+X.De
+XA command name with a \fC=\fP prepended is replaced with its full
+Xpathname.  This can be very convenient.  If it's not convenient
+Xfor you, you can turn it off:
+X.Ds
+X% ls
+X=foo    =bar
+X% ls =foo =bar
+Xzsh: foo not found
+X% setopt noequals
+X% ls =foo =bar
+X=foo    =bar
+X.De
+X.PP
+XAnother nice feature is process substitution:
+X.Ds
+X% who | fgrep -f =(print -l root lemke shgchan subbarao)
+Xroot     console May 19 10:41
+Xlemke    ttyq0   May 22 10:05   (narnia:0.0)
+Xlemke    ttyr7   May 22 10:05   (narnia:0.0)
+Xlemke    ttyrd   May 22 10:05   (narnia:0.0)
+Xshgchan  ttys1   May 23 16:52   (gaudi.Princeton.)
+Xsubbarao ttyt7   May 23 15:02   (mad55sx15.Prince)
+Xsubbarao ttyu6   May 23 15:04   (mad55sx15.Prince)
+Xshgchan  ttyvb   May 23 16:51   (gaudi.Princeton.)
+X.De
+XA command of the form \fC=(\fR...\fC)\fR is replaced with the name of a \fIfile\fP
+Xcontaining its output.  (A command substitution, on the other
+Xhand, is replaced with the output itself.)
+X\fCprint -l\fP is like \fCecho\fP, excepts that it prints its arguments
+Xone per line, the way \fCfgrep\fP expects them:
+X.Ds
+X% print -l foo bar
+Xfoo
+Xbar
+X.De
+XWe could also have written:
+X.Ds
+X% who | fgrep -f =(echo 'root
+X> lemke
+X> shgchan
+X> subbarao')
+X.De
+XUsing process substitution,
+Xyou can edit the output of a command:
+X.Ds
+X% ed =(who | fgrep -f ~/.friends)
+X355
+Xg/lemke/d
+Xw /tmp/filbar
+X226
+Xq
+X% cat /tmp/filbar
+Xroot     console May 19 10:41
+Xshgchan  ttys1   May 23 16:52   (gaudi.Princeton.)
+Xsubbarao ttyt7   May 23 15:02   (mad55sx15.Prince)
+Xsubbarao ttyu6   May 23 15:04   (mad55sx15.Prince)
+Xshgchan  ttyvb   May 23 16:51   (gaudi.Princeton.)
+X.De
+Xor easily read archived mail:
+X.Ds
+X% mail -f =(zcat ~/mail/oldzshmail.Z)
+X"/tmp/zsha06024": 84 messages, 0 new, 43 unread
+X>  1  U  TO: pfalstad, zsh (10)
+X   2  U  nytim!tim@uunet.uu.net, Re: Zsh on Sparc1 /SunOS 4.0.3
+X   3  U  JAM%TPN@utrcgw.utc.com, zsh fix (15)
+X   4  U  djm@eng.umd.edu, way to find out if running zsh? (25)
+X   5  U  djm@eng.umd.edu, Re: way to find out if running zsh? (17)
+X   6   r djm@eng.umd.edu, Meta . (18)
+X   7  U  jack@cs.glasgow.ac.uk, Re: problem building zsh (147)
+X   8  U  nytim!tim@uunet.uu.net, Re: Zsh on Sparc1 /SunOS 4.0.3
+X   9     ursa!jmd, Another fix... (61)
+X  10  U  pplacewa@bbn.com, Re: v18i084: Zsh 2.00 - A small complaint (36)
+X  11  U  lubkin@cs.rochester.edu, POSIX job control (34)
+X  12  U  yale!bronson!tan@uunet.UU.NET
+X  13  U  brett@rpi.edu, zsh (36)
+X  14  S  subbarao, zsh sucks!!!! (286)
+X  15  U  snibru!d241s008!d241s013!ala@relay.EU.net, zsh (165)
+X  16  U  nytim!tim@uunet.UU.NET, Re: Zsh on Sparc1 /SunOS 4.0.3
+X  17  U  subbarao, zsh is a junk shell (43)
+X  18  U  amaranth@vela.acs.oakland.edu, zsh (33)
+X43u/84 1: x
+X% ls -l /tmp/zsha06024
+X/tmp/zsha06024 not found
+X.De
+XNote that the shell creates a temporary file, and deletes it
+Xwhen the command is finished.
+X.Ds
+X% diff =(ls) =(ls -F)
+X3c3
+X< fortune
+X---
+X> fortune*
+X10c10
+X< strfile
+X---
+X> strfile*
+X.De
+XIf you read \fBzsh\fP's man page, you may notice that \fC<(\fR...\fC)\fR
+Xis another form of process substitution which is similar to
+X\fC=(\fR...\fC)\fR.
+XThere is an important difference between the two.
+XIn the \fC<(\fR...\fC)\fR case, the shell creates a named pipe (FIFO)
+Xinstead of a file.  This is better, since it does not
+Xfill up the file system; but it does not work in all cases.
+XIn fact, if we had replaced \fC=(\fR...\fC)\fR with \fC<(\fR...\fC)\fR in 
+Xthe examples above, all of them would have stopped working
+Xexcept for \fCfgrep -f <(\fR...\fC)\fR.
+XYou can not edit a pipe, or open it as a mail folder;
+X\fCfgrep\fP, however, has no problem with reading
+Xa list of words from a pipe.
+XYou may wonder why \fCdiff <(foo) bar\fP doesn't work, since
+X\fCfoo | diff - bar\fP works; this is because \fCdiff\fP creates
+Xa temporary file if it notices that one of its arguments
+Xis \fC-\fP, and then copies its standard input to the temporary
+Xfile.
+X.PP
+X\fC>(\fR...\fC)\fR is just like \fC<(\fR...\fC)\fR except that the
+Xcommand between the parentheses will get its input from the named
+Xpipe.
+X.Ds
+X% dvips -o >(lpr) zsh.dvi
+X.De
+X.Sh "Redirection"
+X.PP
+XApart from all the regular redirections like the Bourne shell has,
+X\fBzsh\fP can do more.  You can send the output of a command to more
+Xthan one file, by specifying more redirections like
+X.Ds
+X% echo Hello World >file1 >file2
+X.De
+Xand the text will end up in both files.  Similarly, you can send the
+Xoutput to a file and into a pipe:
+X.Ds
+X% make > make.log | grep Error
+X.De
+XThe same goes for input.  You can make the input of a command come
+Xfrom more than one file.
+X.Ds
+X% sort <file1 <file2 <file3
+X.De
+XThe command will first get the contents of file1 as its standard
+Xinput, then those of file2 and finally the contents of file3.  This,
+Xtoo, works with pipes.
+X.Ds
+X% cut -d: -f1 /etc/passwd | sort <newnames
+X.De
+XThe sort will get as its standard input first the output of \fCcut\fP
+Xand then the contents of \fCnewnames\fP.
+X.PP
+XSuppose you would like to watch the standard output of a command on
+Xyour terminal, but want to pipe the standard error to another command.
+XAn easy way to do this in \fBzsh\fP is by redirecting the standard
+Xerror using \fC2> >(\fR...\fC)\fR.
+X.Ds
+X% find / -name games 2> >(grep -v 'Permission' > realerrors)
+X.De
+XThe above redirection will actually be implemented with a regular
+Xpipe, not a temporary named pipe.
+X.Sh "Aliasing"
+X.PP
+XOften-used commands can be abbreviated with an alias:
+X.Ds
+X% alias uc=uncompress
+X% ls
+Xhanoi.Z
+X% uc hanoi
+X% ls
+Xhanoi
+X.De
+Xor commands with certain desired options:
+X.Ds
+X% alias fm='finger -m'
+X% fm root
+XLogin name: root                        In real life: Operator
+XDirectory: /                            Shell: /bin/csh
+XOn since May 19 10:41:15 on console     3 days 5 hours Idle Time
+XNo unread mail
+XNo Plan.
+X
+X% alias lock='lock -p -60000'
+X% lock
+Xlock: /dev/ttyr4 on phoenix. timeout in 60000 minutes
+Xtime now is Fri May 24 04:23:18 EDT 1991
+XKey: 
+X
+X% alias l='ls -AF'
+X% l /
+X\&.bash_history              kadb*
+X\&.bashrc                    lib@
+X\&.cshrc                     licensed/
+X\&.exrc                      lost+found/
+X\&.login                     macsyma
+X\&\fR...
+X.De
+XAliases can also be used to replace old commands:
+X.Ds
+X% alias grep=egrep ps=sps make=gmake
+X% alias whoami='echo root'
+X% whoami
+Xroot
+X.De
+Xor to define new ones:
+X.Ds
+X% cd /
+X% alias sz='ls -l | sort -n +3 | tail -10'
+X% sz
+Xdrwxr-sr-x  7 bin          3072 May 23 11:59 etc
+Xdrwxrwxrwx 26 root         5120 May 24 04:20 tmp
+Xdrwxr-xr-x  2 root         8192 Dec 26 19:34 lost+found
+Xdrwxr-sr-x  2 bin         14848 May 23 18:48 dev
+X-r--r--r--  1 root       140520 Dec 26 20:08 boot
+X-rwxr-xr-x  1 root       311172 Dec 26 20:08 kadb
+X-rwxr-xr-x  1 root      1209695 Apr 16 15:33 vmunix.old
+X-rwxr-xr-x  1 root      1209702 May 14 19:04 vmunix
+X-rwxr-xr-x  1 root      1209758 May 21 12:23 vmunix.new.kernelmap.old
+X-rwxr-xr-x  1 root      1711848 Dec 26 20:08 vmunix.org
+X% cd
+X% alias rable='ls -AFtrd *(R)' nrable='ls -AFtrd *(^R)'
+X% rable
+XREADME      func/       bin/        pub/        News/       src/
+Xnicecolors  etc/        scr/        tmp/        iris/       zsh*
+X% nrable
+XMailboxes/  mail/       notes
+X.De
+X(The pattern \fC*(R)\fP matches all readable files in the current
+Xdirectory, and \fC*(^R)\fP matches all unreadable files.)
+X.PP
+XMost other shells have aliases of this kind (\fIcommand\fP aliases).
+XHowever, \fBzsh\fP also has \fIglobal\fP aliases, which are substituted
+Xanywhere on a line.
+XGlobal aliases can be used to abbreviate frequently-typed
+Xusernames, hostnames, etc.
+X.Ds
+X% alias -g me=pfalstad gun=egsirer mjm=maruchck
+X% who | grep me
+Xpfalstad ttyp0   May 24 03:39   (mickey.Princeton)
+Xpfalstad ttyp5   May 24 03:42   (mickey.Princeton)
+X% fm gun
+XLogin name: egsirer                     In real life: Emin Gun Sirer
+XDirectory: /u/egsirer                   Shell: /bin/sh
+XLast login Thu May 23 19:05 on ttyq3 from bow.Princeton.ED
+XNew mail received Fri May 24 02:30:28 1991;
+X  unread since Fri May 24 02:30:27 1991
+X% alias -g phx=phoenix.princeton.edu warc=wuarchive.wustl.edu
+X% ftp warc
+XConnected to wuarchive.wustl.edu.
+X.De
+XHere are some more interesting uses.
+X.Ds
+X% alias -g M='| more' GF='| fgrep -f ~/.friends'
+X% who M   # \fIpipes the output of \fCwho\fI through \fCmore
+X% who GF  # \fIsee if your friends are on\fC
+X% w GF    # \fIsee what your friends are doing
+X.De
+XAnother example makes use of \fBzsh\fP's process substitution.
+XIf you run NIS, and you miss being able to do this:
+X.Ds
+X% grep pfalstad /etc/passwd
+X.De
+Xyou can define an alias that will seem more natural
+Xthan \fCypmatch pfalstad passwd\fP:
+X.Ds
+X% alias -g PASS='<(ypcat passwd)'
+X% grep pfalstad PASS
+Xpfalstad:*:3564:35:Paul John Falstad:/u/pfalstad:/usr/princeton/bin/zsh
+X.De
+XIf you're really crazy, you can even call it \fC/etc/passwd\fP:
+X.Ds
+X% alias -g /etc/passwd='<(ypcat passwd)'
+X% grep pfalstad /etc/passwd
+Xpfalstad:*:3564:35:Paul John Falstad:/u/pfalstad:/usr/princeton/bin/zsh
+X.De
+XThe last example shows one of the perils of global aliases;
+Xthey have a lot of potential to cause confusion.
+XFor example, if you defined a global alias called \fC|\fP (which is
+Xpossible), \fBzsh\fP would begin to act very strangely; every pipe
+Xsymbol would be replaced with the text of your alias.
+XTo some extent, global aliases are like macros in C;
+Xdiscretion is advised in using them and in choosing names for them.
+XUsing names in all caps is not a bad idea, especially
+Xfor aliases which introduce shell metasyntax (like \fCM\fP and \fCGF\fP
+Xabove).
+X.PP
+XNote that \fBzsh\fP aliases are not like csh aliases.  The syntax for
+Xdefining them is different, and they do not have arguments.
+XAll your favorite csh aliases will probably not work under \fBzsh\fP.
+XFor example, if you try:
+X.Ds
+Xalias rm mv '\e!* /tmp/wastebasket'
+X.De
+Xno aliases will be defined, but \fBzsh\fP will not report an error.
+XIn csh, this line defines an alias that makes \fCrm\fP safe---files
+Xthat are \fCrm\fP'd will be moved to a temporary directory instead of
+Xinstantly destroyed.  In \fBzsh\fP's syntax, however, this line asks
+Xthe shell to print any existing alias definitions for \fCrm\fP,
+X\fCmv\fP, or \fC!*\ /tmp/wastebasket\fP.  Since there are none, most
+Xlikely, the shell will not print anything, although \fCalias\fP will
+Xreturn a nonzero exit code.  The proper syntax is this:
+X.Ds
+Xalias rm='mv \e!* /tmp/wastebasket'
+X.De
+XHowever, this won't work either:
+X.Ds
+X% rm foo.dvi
+Xzsh: no matches found: !*
+X.De
+XWhile this makes \fCrm\fP safe, it is certainly not what the user
+Xintended.  In \fBzsh\fP, you must use a shell function for this:
+X.Ds
+X% unalias rm
+X% rm () { mv $* /tmp/wastebasket }
+X% rm foo.dvi
+X% ls /tmp/wastebasket
+Xfoo.dvi
+X.De
+XWhile this is much cleaner and easier to read (I hope you will
+Xagree), it is not csh-compatible.  Therefore, a script to convert
+Xcsh aliases and variables has been provided.  You should only need to use it
+Xonce, to convert all your csh aliases and parameters to \fBzsh\fP format:
+X.Ds
+X% csh
+Xcsh> alias
+Xl       ls -AF
+Xmore    less
+Xon      last -2 !:1 ; who | grep !:1
+Xcsh> exit
+X% c2z >neat_zsh_aliases
+X% cat neat_zsh_aliases
+Xalias l='ls -AF'
+Xalias more='less'
+Xon () { last -2 $1 ; who | grep $1 }
+X\&...
+X.De
+XThe first two aliases were converted to regular \fBzsh\fP aliases, while
+Xthe third, since it needed to handle arguments, was converted to
+Xa function.  \fCc2z\fP can convert most aliases to \fBzsh\fP format without
+Xany problems.  However, if you're using some really arcane csh tricks,
+Xor if you have an alias with a name like \fCdo\fP (which is reserved
+Xin \fBzsh\fP), you may have to fix some of the aliases by hand.
+X.PP
+XThe \fCc2z\fP script checks your csh setup, and produces a list
+Xof \fBzsh\fP commands which replicate your aliases and parameter settings
+Xas closely as possible.  You could include its output in your
+Xstartup file, \fC.zshrc\fP.
+X.Sh "History"
+X.PP
+XThere are several ways to manipulate history in \fBzsh\fP.
+XOne way is to use csh-style \fC!\fP history:
+X.Ds
+X% /usr/local/bin/!:0 !-2*:s/foo/bar/ >>!$
+X.De
+XIf you don't want to use this, you can turn it off
+Xby typing \fCsetopt nobanghist\fP.  If you are afraid of accidentally
+Xexecuting the wrong command you can set the \fIHISTVERIFY\fP option.
+XIf this option is set, commands that result from history expansion
+Xwill not be executed immediately, but will be put back into the editor
+Xbuffer for further consideration.
+X.PP
+XIf you're not familiar with \fC!\fP history, here follows some
+Xexplanation.  History substitutions always start with a \fC!\fP,
+Xcommonly called \*Qbang\*U.  After the \fC!\fP comes an (optional)
+Xdesignation of which \*Qevent\*U (command) to use, then a colon, and
+Xthen a designation of what word of that command to use.  For example,
+X\fC!-\fIn\fR refers to the command \fIn\fP commands ago.
+X.Ds
+X% ls
+Xfoo  bar
+X% cd foo
+X% !-2
+Xls
+Xbaz  bam
+X.De
+XNo word designator was used, which means that the whole command
+Xreferred to was repeated.  Note that the shell will echo the result of
+Xthe history substitution.  The word designator can, among other
+Xthings, be a number indicating the argument to use, where \fC0\fP is
+Xthe command.
+X.Ds
+X% /usr/bin/ls foo
+Xfoo
+X% !:0 bar
+X/usr/bin/ls bar
+Xbar
+X.De
+XIn this example, no event designator was used, which tells \fBzsh\fP
+Xto use the previous command.  A \fC$\fP specifies the last argument
+X.Ds
+X% mkdir /usr/local/lib/emacs/site-lisp/calc
+X% cd !:$
+Xcd /usr/local/lib/emacs/site-lisp/calc
+X.De
+XIf you use more words of the same command, only the first \fC!\fP
+Xneeds an event designator.
+X.Ds
+X% make prig >> make.log
+Xmake: *** No rule to make target `prig'.  Stop.
+X% cd src
+X% !-2:0 prog >> !:$
+Xmake prog >> make.log
+X.De
+XThis is different from csh, where a bang with no event designator
+Xalways refers to the previous command.  If you actually like this
+Xbehaviour, set the \fICSHJUNKIEHISTORY\fP option.
+X.Ds
+X% setopt cshjunkiehistory
+X% !-2:0 prog2 >> !:$
+Xmake prog2 >> cshjunkiehistory
+X.De
+XAnother way to use history is to use the \fCfc\fP command.  For
+Xexample, if you type an erroneous command:
+X.Ds
+X% for i in `cat /etc/clients` 
+X do 
+X rpu $i 
+X done
+Xzsh: command not found: rpu
+Xzsh: command not found: rpu
+Xzsh: command not found: rpu
+X\&\fR...
+X.De
+Xtyping \fCfc\fP will execute an editor on this command, allowing
+Xyou to fix it.  (The default editor is \fCvi\fP, by the way,
+Xnot \fCed\fP).
+X.Ds
+X% fc
+X49
+X/rpu/s//rup/p
+X rup $i 
+Xw
+X49
+Xq
+Xfor i in `cat /etc/clients` 
+X do 
+X rup $i 
+X done
+X        beam    up  2 days, 10:17,    load average: 0.86, 0.80, 0.50
+X         bow    up  4 days,  8:41,    load average: 0.91, 0.80, 0.50
+X        burn    up          17:18,    load average: 0.91, 0.80, 0.50
+X       burst    up  9 days,  1:49,    load average: 0.95, 0.80, 0.50
+X         tan    up          11:14,    load average: 0.91, 0.80, 0.50
+X       bathe    up  3 days, 17:49,    load average: 1.84, 1.79, 1.50
+X        bird    up  1 day,   9:13,    load average: 1.95, 1.82, 1.51
+X      bonnet    up  2 days, 21:18,    load average: 0.93, 0.80, 0.50
+X\&\fR...
+X.De
+XA variant of the \fCfc\fP command is \fCr\fP, which redoes the last
+Xcommand, with optional changes:
+X.Ds
+X% echo foo
+Xfoo
+X% r
+Xecho foo
+Xfoo
+X
+X% echo foo
+Xfoo
+X% r foo=bar
+Xecho bar
+Xbar
+X.De
+X.Sh "Command Line Editing"
+X.PP
+X\fBzsh\fP's command line editor, \fBZLE\fP, is quite powerful.
+XIt is designed to emulate either emacs or vi; the default
+Xis emacs.  To set the bindings for vi mode, type \fCbindkey -v\fP.  If
+Xyour \fBEDITOR\fP or \fBVISUAL\fP environment variable is vi,
+X\fBzsh\fP will use vi emulation by default.  You can then switch to
+Xemacs mode with \fCbindkey -e\fP.
+X.PP
+XIn addition to basic editing, the shell allows you to 
+Xrecall previous lines in the history.  In emacs mode,
+Xthis is done with \fI^P\fP (control-P) or (on many terminals) with the
+Xcursor-up key:
+X.Ds
+X% ls ~
+X-           README      file        mail        pub         tmp
+XMailboxes   bin         func        nicecolors  scr         zsh
+XNews        etc         iris        notes       src
+X% echo foobar
+Xfoobar
+X% \fI^P\fC
+X% echo foobar\fI^P\fC
+X% ls ~_
+X.De
+XPressing \fI^P\fP once brings up the previous line (\fCecho foobar\fP);
+Xpressing it again brings up the line before that (\fCls ~\fP).
+XThe cursor is left at the end of the line, allowing you to
+Xedit the line if desired before executing it.
+XIn many cases, \fBZLE\fP eliminates the need for the \fCfc\fP command,
+Xsince it is powerful enough to handle even multiline commands:
+X.Ds
+X% for i in a b c d e
+X> do
+X> echo $i
+X> done
+Xa
+Xb
+Xc
+Xd
+Xe
+X% \fI^P\fC
+X% for i in a b c d e 
+X do 
+X echo $i 
+X done_
+X.De
+XNow you can just move up to the part you want to change...
+X.Ds
+X% for i in \kxa\l'|\nxu\(ul' b c d e
+X do 
+X echo $i 
+X done
+X.De
+Xchange it, and execute the new command.
+X.Ds
+X% for i in f g h i j
+X do 
+X echo $i 
+X done
+Xf
+Xg
+Xh
+Xi
+Xj
+X.De
+XAlso, you can search the history for a certain command using
+X\fIESC-P\fP, this will look for the last command that started with the
+X(part of the) word at the beginning of the current line.  Hitting
+X\fIESC-P\fP another time gets you the command before that, etc.
+X.Ds
+X% set \fIESC-P\fC
+X% setopt autolist \fIESC-P\fC
+X% setopt nocorrect_
+X.De
+XAnother way is to do an incremental search, emacs-style:
+X.Ds
+X% \fI^R\fC
+X% _
+Xi-search:
+X
+X% l\kxs\l'|\nxu\(ul' /usr/bin
+Xi-search: l
+X
+X% date > foofile\kx.\l'|\nxu\(ul'c
+Xi-search: le
+X.De
+XSuppose you have retrieved an old history event in one of these ways
+Xand would like to execute several consecutive old commands starting
+Xwith this one.  \fC^O\fP will execute the current command and then put
+Xthe next command from the history into the editor buffer.  Typing
+X\fC^O\fP several times will therefore reexecute several consecutive
+Xcommands from the history.  Of course, you can edit some of those
+Xcommands in between.
+X.PP
+XIn addition to completion (see below), \fITAB\fP performs expansion if
+Xpossible.
+X.Ds
+X% ls *.c\fITAB\fC
+X% ls foofile.c fortune.c rnd.c strfile.c unstr.c_
+X.De
+XFor example, suppose you have a bunch of weird files in an important
+Xdirectory:
+X.Ds
+X% ls
+X  * * *       ; & % $??foo  dspfok        foo.c
+X  !"foo"!       ` \e `         foo           rrr
+X.De
+XYou want to remove them, but you don't want to damage \fCfoo.c\fP.
+XHere is one way to do this:
+X.Ds
+X% rm *\fITAB\fC
+X% rm \e \e \e*\e \e*\e \e*\e \e \e  \e!\e"foo\e"\e! \e;\e \e&\e %\e \e$'
+X''
+X'foo \e`\e \e\e\e \e` dspfok foo foo.c rrr_
+X.De
+XWhen you expand \fC*\fP, \fBzsh\fP inserts the names of all the files
+Xinto the editing buffer, with proper shell quoting.
+XNow, just move back and remove \fCfoo.c\fP from the buffer:
+X.Ds
+X% rm \e \e \e*\e \e*\e \e*\e \e \e  \e!\e"foo\e"\e! \e;\e \e&\e %\e \e$'
+X''
+X'foo \e`\e \e\e\e \e` dspfok foo \kxr\l'|\nxu\(ul'rr
+X.De
+Xand press return.
+XEverything except \fCfoo.c\fP will be deleted from the directory.  If
+Xyou do not want to actually expand the current word, but would like to
+Xsee what the matches are, type \fC^Xg\fP.
+X.Ds
+X% rm f*\fI^Xg\fP
+Xfoo    foo.c
+X% rm f*_
+X.De
+XHere's another trick; let's say you have typed this command in:
+X.Ds
+X% gcc -o x.out foob.c -g -Wpointer-arith -Wtrigraphs_
+X.De
+Xand you forget which library you want.  You need to escape
+Xout for a minute and check by typing
+X\fCls /usr/lib\fP, or some other such command;
+Xbut you don't want to retype the whole command again,
+Xand you can't press return now because the current command
+Xis incomplete.
+XIn \fBzsh\fP, you can put the line on the \fIbuffer stack\fP, using
+X\fIESC-Q\fP, and type some other commands.  The next time a prompt is printed,
+Xthe \fCgcc\fP line will be popped off the stack and put
+Xin the editing buffer automatically; you can then enter the
+Xproper library name and press return (or, \fIESC-Q\fP again and look
+Xfor some other libraries whose names you forgot).
+X.PP
+XA similar situation: what if you forget the option to gcc that
+Xfinds bugs using AI techniques?  You could either use \fIESC-Q\fP
+Xagain, and type \fCman gcc\fP, or you could press \fIESC-H\fP, which
+Xessentially does the same thing; it puts the current line on
+Xthe buffer stack, and executes the command \fCrun-help gcc\fP,
+Xwhere \fCrun-help\fP is an alias for \fCman\fP.
+X.PP
+XAnother interesting command is \fIESC-A\fP.  This executes the
+Xcurrent line, but retains it in the buffer, so that it appears
+Xagain when the next prompt is printed.
+XAlso, the cursor stays in the same place.
+XThis is useful for executing a series of similar commands:
+X.Ds
+X% cc grok.c -g -lc -lgl -lsun -lmalloc -Bstatic -o b.out
+X% cc fubar.c -g -lc -lgl -lsun -lmalloc -Bstatic -o b.out
+X% cc fooble.c -g -lc -lgl -lsun -lmalloc -Bstatic -o b.out
+X.De
+X.PP
+XThe \fIESC-'\fP command is useful for managing the shell's quoting
+Xconventions.  Let's say you want to print this string:
+X.Ds
+Xdon't do that; type 'rm -rf \e*', with a \e before the *.
+X.De
+XAll that is necessary is to type it into the editing buffer:
+X.Ds
+X% don't do that; type 'rm -rf \e*', with a \e before the *.
+X.De
+Xpress \fIESC-'\fP (escape-quote):
+X.Ds
+X% 'don'\e''t do that; type '\e''rm -rf \e*'\e'', with a \e before the *.'
+X.De
+Xthen move to the beginning and add the \fCecho\fP command.
+X.Ds
+X% echo 'don'\e''t do that; type '\e''rm -rf \e*'\e'', with a \e before the *.'
+Xdon't do that; type 'rm -rf \e*', with a \e before the *.
+X.De
+XLet's say you want to create an alias to do this \fCecho\fP command.
+XThis can be done by recalling the line with \fI^P\fP and pressing
+X\fIESC-'\fP again:
+X.Ds
+X% 'echo '\e''don'\e''\e'\e'''\e''t do that; type '\e''\e'\e'''\e''rm -rf
+X\e*'\e''\e'\e'''\e'', with a \e before the *.'\e'''
+X.De
+Xand then move to the beginning and add the command to create
+Xan alias.
+X.Ds
+X% alias zoof='echo '\e''don'\e''\e'\e'''\e''t do that; type '\e''\e'\e'''\e''rm
+X-rf \e*'\e''\e'\e'''\e'', with a \e before the *.'\e'''
+X% zoof
+Xdon't do that; type 'rm -rf \e*', with a \e before the *.
+X.De
+XIf one of these fancy editor commands changes your command line in a
+Xway you did not intend, you can undo changes with \fC^_\fP, if you can
+Xget it out of your keyboard, or \fC^X^U\fP, otherwise.
+X.PP
+XAnother use of the editor is to edit the value of variables.
+XFor example, an easy way to change your path is to use
+Xthe \fCvared\fP command:
+X.Ds
+X% vared PATH
+X> /u/pfalstad/scr:/u/pfalstad/bin/sun4:/u/maruchck/scr:/u/subbarao/bin:/u/maruc
+Xhck/bin:/u/subbarao/scripts:/usr/princeton/bin:/usr/ucb:/usr/bin:/bin:/usr/host
+Xs:/usr/princeton/bin/X11:/./usr/lang:/./usr/etc:/./etc
+X.De
+XYou can now edit the path.  When you press return, the contents
+Xof the edit buffer will be assigned to \fBPATH\fP.
+X.Sh "Completion"
+X.PP
+XAnother great \fBzsh\fP feature is completion.  If you hit \fITAB\fP, \fBzsh\fP
+Xwill complete all kinds of stuff.  Like commands or filenames:
+X.Ds
+X% comp\fITAB\fC
+X% compress _
+X
+X% ls nic\fITAB\fC
+X% ls nicecolors _
+X
+X% ls /usr/pr\fITAB\fC
+X% ls /usr/princeton/_
+X
+X% ls -l =com\fITAB\fC
+X% ls -l =compress _
+X.De
+XIf the completion is ambiguous, the editor will beep.  If you find
+Xthis annoying, you can set the \fINOLISTBEEP\fP option.  Completion
+Xcan even be done in the middle of words.  To use this, you will have
+Xto set the \fICOMPLETEINWORD\fP option:
+X.Ds
+X% setopt completeinword
+X% ls /usr/p\kxt\l'|\nxu\(ul'on\fITAB\fC
+X% ls /usr/prince\kxt\l'|\nxu\(ul'on/
+X% setopt alwaystoend
+X% ls /usr/p\kxt\l'|\nxu\(ul'on\fITAB\fC
+X% ls /usr/princeton/_
+X.De
+XYou can list possible completions by pressing \fI^D\fP:
+X.Ds
+X% ls /vmu\fITAB \(embeep\(em\fC
+X% ls /vmunix_
+X% ls /vmunix\fI^D\fC
+Xvmunix                    vmunix.old                
+Xvmunix.new.kernelmap.old  vmunix.org
+X.De
+XOr, you could just set the \fIAUTOLIST\fP option:
+X.Ds
+X% setopt autolist
+X% ls /vmu\fITAB \(embeep\(em\fC
+Xvmunix                    vmunix.old                
+Xvmunix.new.kernelmap.old  vmunix.org
+X% ls /vmunix_
+X.De
+XIf you like to see the types of the files in these lists, like in
+X\fCls\ -F\fP, you can set the \fILISTTYPES\fP option.  Together with
+X\fIAUTOLIST\fP you can use \fILISTAMBIGUOUS\fP.  This will only list
+Xthe possibilities if there is no unambiguous part to add:
+X.Ds
+X% setopt listambiguous
+X% ls /vmu\fITAB \(embeep\(em\fC
+X% ls /vmunix_\fITAB \(embeep\(em\fC
+Xvmunix                    vmunix.old                
+Xvmunix.new.kernelmap.old  vmunix.org
+X.De
+XIf you don't want several of these listings to scroll the screen so
+Xmuch, the \fIALWAYSLASTPROMPT\fP option is useful.  If set, you can
+Xcontinue to edit the line you were editing, with the completion
+Xlisting appearing beneath it.
+X.PP
+XAnother interesting option is \fIMENUCOMPLETE\fP.  This affects the
+Xway \fITAB\fP works.  Let's look at the \fC/vmunix\fP example again:
+X.Ds
+X% setopt menucomplete
+X% ls /vmu\fITAB\fC
+X% ls /vmunix\fITAB\fC
+X% ls /vmunix.new.kernelmap.old\fITAB\fC
+X% ls /vmunix.old_
+X.De
+XEach time you press \fITAB\fP, it displays the next possible completion.
+XIn this way, you can cycle through the possible completions until
+Xyou find the one you want.
+X.PP
+XThe \fIAUTOMENU\fP option makes a nice compromise between this method
+Xof completion and the regular method.  If you set this option,
+Xpressing \fITAB\fP once completes the unambiguous part normally,
+Xpressing the \fITAB\fP key repeatedly after an ambiguous completion
+Xwill cycle through the possible completions.
+X.PP
+XAnother option you could set is \fIRECEXACT\fP, which causes
+Xexact matches to be accepted, even if there are other possible
+Xcompletions:
+X.Ds
+X% setopt recexact
+X% ls /vmu\fITAB \(embeep\(em\fC
+Xvmunix                    vmunix.old                
+Xvmunix.new.kernelmap.old  vmunix.org
+X% ls /vmunix_\fITAB\fC
+X% ls /vmunix _
+X.De
+XTo facilitate the typing of pathnames, a slash will be added whenever
+Xa directory is completed.  Some computers don't like the spurious
+Xslashes at the end of directory names.  In that case, the
+X\fIAUTOREMOVESLASH\fP option comes to rescue.  It will remove these
+Xslashes when you type a space or return after them.
+X.PP
+XThe \fIfignore\fP variable lists suffixes of files to ignore
+Xduring completion.
+X.Ds
+X% ls foo\fITAB \(embeep\(em\fC
+Xfoofile.c  foofile.o
+X% fignore=( .o \e~ .bak .junk )
+X% ls foo\fITAB\fP
+X% ls foofile.c _
+X.De
+XSince \fCfoofile.o\fP has a suffix that is in the \fCfignore\fP list,
+Xit was not considered a possible completion of \fCfoo\fP.
+X.PP
+XUsername completion is also supported:
+X.Ds
+X% ls ~pfal\fITAB\fC
+X% ls ~pfalstad/_
+X.De
+Xand parameter name completion:
+X.Ds
+X% echo $ORG\fITAB\fC
+X% echo $ORGANIZATION _
+X% echo ${ORG\fITAB\fC
+X% echo ${ORGANIZATION _
+X.De
+XNote that in the last example a space is added after the completion as
+Xusual.  But if you want to add a colon or closing brace, you probably
+Xdon't want this extra space.  Setting the \fIAUTOPARAMKEYS\fP option
+Xwill automatically remove this space if you type a colon or closing
+Xbrace after such a completion.
+X.PP
+XThere is also option completion:
+X.Ds
+X% setopt nocl\fITAB\fC
+X% setopt noclobber _
+X.De
+Xand binding completion:
+X.Ds
+X% bindkey '^X^X' pu\fITAB\fC
+X% bindkey '^X^X' push-line _
+X.De
+XThe \fCcompctl\fP command is used to control completion of the
+Xarguments of specific commands.  For example, to specify that certain
+Xcommands take other commands as arguments, you use \fCcompctl -c\fP:
+X.Ds
+X% compctl -c man nohup
+X% man upt\fITAB\fC
+X% man uptime _
+X.De
+XTo specify that a command should complete filenames, you should use
+X\fCcompctl -f\fP.  This is the default.  It can be combined with \fC-c\fP,
+Xas well.
+X.Ds
+X% compctl -cf echo
+X% echo upt\fITAB\fC
+X% echo uptime _
+X
+X% echo fo\fITAB\fC
+X% echo foo.c
+X.De
+XSimilarly, use \fC-o\fP to specify options, \fC-v\fP to specify
+Xvariables, and \fC-b\fP to specify bindings.
+X.Ds
+X% compctl -o setopt unsetopt
+X% compctl -v typeset vared unset export
+X% compctl -b bindkey
+X.De
+XYou can also use \fC-k\fP to specify a custom list of keywords to use
+Xin completion.  After the \fC-k\fP comes either the name of an array
+Xor a literal array to take completions from.
+X.Ds
+X% ftphosts=(ftp.uu.net wuarchive.wustl.edu)
+X% compctl -k ftphosts ftp
+X% ftp wu\fITAB\fC
+X% ftp wuarchive.wustl.edu _
+X
+X% compctl -k '(cpirazzi subbarao sukthnkr)' mail finger
+X% finger cp\fITAB\fC
+X% finger cpirazzi _
+X.De
+XTo better specify the files to complete for a command, use the
+X\fC-g\fP option which takes any glob pattern as an argument.  Be sure
+Xto quote the glob patterns as otherwise they will be expanded when the
+X\fCcompctl\fP command is run.
+X.Ds
+X% ls
+Xletter.tex  letter.dvi  letter.aux  letter.log  letter.toc
+X% compctl -g '*.tex' latex
+X% compctl -g '*.dvi' xdvi dvips
+X% latex l\fITAB\fC
+X% latex letter.tex _
+X% xdvi l\fITAB\fC
+X% xdvi letter.dvi _
+X.De
+XGlob patterns can include qualifiers within parentheses.  To rmdir
+Xonly directories and cd to directories and symbolic links pointing to
+Xthem:
+X.Ds
+X% compctl -g '*(-/)' cd
+X% compctl -g '*(/)' rmdir
+X.De
+XRCS users like to run commands on files which are not in the current
+Xdirectory, but in the RCS subdirectory where they all get \fC,v\fP
+Xsuffixes.  They might like to use
+X.Ds
+X% compctl -g 'RCS/*(:t:s/\e,v//)' co rlog rcs
+X% ls RCS
+Xbuiltin.c,v  lex.c,v      zle_main.c,v
+X% rlog bu\fITAB\fC
+X% rlog builtin.c _
+X.De
+XThe \fC:t\fP modifier keeps only the last part of the pathname and the
+X\fC:s/\e,v//\fP will replace any \fC,v\fP by nothing.
+X.PP
+XThe \fC-s\fP flag is similar to \fC-g\fP, but it uses all expansions,
+Xinstead of just globbing, like brace expansion, parameter substitution
+Xand command substitution.
+X.Ds
+X% compctl -s '$(setopt)' unsetopt
+X.De
+Xwill only complete options which are actually set to be arguments to
+X\fCunsetopt\fP.
+X.PP
+XSometimes a command takes another command as its argument.  You can
+Xtell \fBzsh\fP to complete commands as the first argument to such a
+Xcommand and then use the completion method of the second command.  The
+X\fC-l\fP flag with a null-string argument is used for this.
+X.Ds
+X% compctl -l '' nohup exec
+X% nohup comp\fITAB\fC
+X% nohup compress _
+X% nohup compress fil\fITAB\fC
+X% nohup compress filename _
+X.De
+XSometimes you would like to run really complicated commands to find
+Xout what the possible completions are.  To do this, you can specify a
+Xshell function to be called that will assign the possible completions
+Xto a variable called reply.  Note that this variable must be an array.
+XHere's another (much slower) way to get the completions for \fCco\fP
+Xand friends:
+X.Ds
+X% function getrcs {
+X> reply=()
+X> for i in RCS/*
+X>   do
+X>   reply=($reply[*] $(basename $i ,v))
+X>   done
+X> }
+X% compctl -K getrcs co rlog rcs
+X.De
+XSome command arguments use a prefix that is not a part of the things
+Xto complete.  The kill builtin command takes a signal name after a
+X\fC-\fP.  To make such a prefix be ignored in the completion process,
+Xyou can use the \fC-P\fP flag.
+X.Ds
+X% compctl -P - -k signals kill
+X% kill -H\fITAB\fP
+X% kill -HUP _
+X.De
+XTeX is usually run on files ending in \fC.tex\fP, but also sometimes
+Xon other files.  It is somewhat annoying to specify that the arguments
+Xof TeX should end in \fC.tex\fP and then not be able to complete these
+Xother files.  Therefore you can specify things like \*QComplete to
+Xfiles ending in \fC.tex\fP if available, otherwise complete to any
+Xfilename.\*U.  This is done with \fIxor\fPed completion:
+X.Ds
+X% compctl -g '*.tex' + -f tex
+X.De
+XThe \fC+\fP tells the editor to only take the next thing into account
+Xif the current one doesn't generate any matches.  If you have not
+Xchanged the default completion, the above example is in fact
+Xequivalent to
+X.Ds
+X% compctl -g '*.tex' + tex
+X.De
+Xas a lone \fC+\fP at the end is equivalent to specifying the default
+Xcompletion after the \fC+\fP.  This form of completion is also
+Xfrequently used if you want to run some command only on a certain type
+Xof files, but not necessarily in the current directory.  In this case
+Xyou will want to complete both files of this type and directories.
+XDepending on your preferences you can use either of
+X.Ds
+X% compctl -g '*.ps' + -g '*(-/)' ghostview
+X% compctl -g '*.ps *(-/)' ghostview
+X.De
+Xwhere the first one will only complete directories (and symbolic links
+Xpointing to directories) if no postscript file matches the already
+Xtyped part of the argument.
+X.Sh "Extended completion"
+X.PP
+XIf you play with completion, you will soon notice that you would like
+Xto specify what to complete, depending on what flags you give to the
+Xcommand and where you are on the command line.  For example, a command
+Xcould take any filename argument after a \fC-f\fP flag, a username
+Xafter a \fC-u\fP flag and an executable after a \fC-x\fP flag.  This
+Xsection will introduce you to the ways to specify these things.  To
+Xmany people it seems rather difficult at first, but taking the trouble
+Xto understand it can save you lots of typing in the end.  Even I keep
+Xbeing surprised when \fBzsh\fP manages to complete a small or even
+Xempty prefix to the right file in a large directory.
+X.PP
+XTo tell \fBzsh\fP about these kinds of completion, you use \*Qextended
+Xcompletion\*U by specifying the \fC-x\fP flag to compctl.  The
+X\fC-x\fP flag takes a list of patterns/flags pairs.  The patterns
+Xspecify when to complete and the flags specify what.  The flags are
+Xsimply those mentioned above, like \fC-f\fP or \fC-g \fIglob
+Xpattern\fR.
+X.PP
+XAs an example, the \fCr[\fIstring1\fC,\fIstring2\fC]\fR pattern
+Xmatches if the cursor is after something that starts with
+X\fIstring1\fP and before something that starts with \fIstring2\fP.
+XThe \fIstring2\fP is often something that you do not want to match
+Xanything at all.
+X.Ds
+X% ls
+Xfoo1   bar1   foo.Z  bar.Z
+X% compctl -g '^*.Z' -x 'r[-d,---]' -g '*.Z' -- compress
+X% compress f\fITAB\fP
+X% compress foo1 _
+X% compress -d f\fITAB\fP
+X% compress -d foo.Z _
+X.De
+XIn the above example, if the cursor is after the \fC-d\fP the pattern
+Xwill match and therefore \fBzsh\fP uses the \fC-g *.Z\fP flag that will only
+Xcomplete files ending in \fC.Z\fP.  Otherwise, if no pattern matches,
+Xit will use the flags before the \fC-x\fP and in this case complete
+Xevery file that does not end in \fC.Z\fP.
+X.PP
+XThe \fCs[\fIstring\fC]\fR pattern matches if the current word starts
+Xwith \fIstring\fP.  The \fIstring\fP itself is not considered to be
+Xpart of the completion.
+X.Ds
+X% compctl -x 's[-]' -k signals -- kill
+X% kill -H\fITAB\fP
+X% kill -HUP _
+X.De
+XThe \fCtar\fP command takes a tar file as an argument after the
+X\fC-f\fP option.  The \fCc[\fIoffset\fC,\fIstring\fC]\fR pattern
+Xmatches if the word in position \fIoffset\fP relative to the current
+Xword is \fIstring\fP.  More in particular, if \fIoffset\fP is -1, it
+Xmatches if the previous word is \fIstring\fP.  This suggests
+X.Ds
+X% compctl -f -x 'c[-1,-f]' -g '*.tar' -- tar
+X.De
+XBut this is not enough.  The \fC-f\fP option could be the last of a
+Xlonger string of options.  \fCC[\fR...\fC,\fR...\fC]\fR is just like
+X\fCc[\fR...\fC,\fR...\fC]\fR, except that it uses glob-like pattern
+Xmatching for \fIstring\fP.  So
+X.Ds
+X% compctl -f -x 'C[-1,-*f]' -g '*.tar' -- tar
+X.De
+Xwill complete tar files after any option string ending in an \fCf\fP.
+XBut we'd like even more.  Old versions of tar used all options as the
+Xfirst argument, but without the minus sign.  This might be
+Xinconsistent with option usage in all other commands, but it is still
+Xsupported by newer versions of \fCtar\fP.  So we would also like to
+Xcomplete tar files if the first argument ends in an \fCf\fP and we're
+Xright behind it.
+X.PP
+XWe can `and' patterns by putting them next to each other with a space
+Xbetween them.  We can `or' these sets by putting comma's between them.
+XWe will also need some new patterns.  \fCp[\fInum\fC]\fR will match if
+Xthe current argument (the one to be completed) is the \fInum\fPth
+Xargument.  \fCW[\fIindex\fC,\fIpattern\fC]\fR will match if the
+Xargument in place \fIindex\fP matches the \fIpattern\fP.  This gives
+Xus
+X.Ds
+X% compctl -f -x 'C[-1,-*f] , W[1,*f] p[2]' -g '*.tar' -- tar
+X.De
+XIn words: If the previous argument is an option string that ends in an
+X\fCf\fP, or the first argument ended in an \fCf\fP and it is now the
+Xsecond argument, then complete only filenames ending in \fC.tar\fP.
+X.PP
+XAll the above examples used only one set of patterns with one
+Xcompletion flag.  You can use several of these pattern/flag pairs
+Xseparated by a \fC-\fP.  The first matching pattern will be used.
+XSuppose you have a version of \fCtar\fP that supports compressed files
+Xby using a \fC-Z\fP option.  Leaving the old tar syntax aside for a
+Xmoment, we would like to complete files ending in \fC.tar.Z\fP if a
+X\fC-Z\fP option has been used and files ending in \fC.tar\fP
+Xotherwise, all this only after a \fC-f\fP flag.  Again, the \fC-Z\fP
+Xcan be alone or it can be part of a longer option string, perhaps the
+Xsame as that of the \fC-f\fP flag.  Here's how to do it; note the
+Xbackslash and the secondary prompt which are not part of the
+X\fCcompctl\fP command.
+X.Ds
+X% compctl -f -x 'C[-1,-*Z*f] , R[-*Z*,---] C[-1,-*f]' -g '*.tar.Z' - \e
+X> 'C[-1,-*f]' -g '*.tar' -- tar
+X.De
+XThe first pattern set tells us to match if either the previous
+Xargument was an option string including a \fCZ\fP and ending in an
+X\fCf\fP or there was an option string with a \fCZ\fP somewhere and the
+Xprevious word was any option string ending in an \fCf\fP.  If this is
+Xthe case, we need a compressed tar file.  Only if this is not the case
+Xthe second pattern set will be considered.  By the way,
+X\fCR[\fIpattern1\fC,\fIpattern2\fC]\fR is just like
+X\fCr[\fR...\fC,\fR...\fC]\fR except that it uses pattern matching with
+Xshell metacharacters instead of just strings.
+X.PP
+XYou will have noticed the \fC--\fP before the command name.  This ends
+Xthe list of pattern/flag pairs of \fC-x\fP.  It is usually used just
+Xbefore the command name, but you can also use an extended completion
+Xas one part of a list of xored completions, in which case the \fC--\fP
+Xappears just before one of the \fC+\fP signs.
+X.PP
+XNote the difference between using extended completion as part of a
+Xlist of xored completions as in
+X.Ds
+X% ls
+Xfoo  bar
+X% compctl -x 'r[-d,---]' -g '*.Z' -- + -g '^*.Z' compress
+X% compress -d f\fITAB\fP
+X% compress -d foo _
+X.De
+Xand specifying something before the \fC-x\fP as in
+X.Ds
+X% compctl -g '^*.Z' -x 'r[-d,---]' -g '*.Z' -- compress
+X% compress -d f\fITAB\fP
+X% compress -d f_
+X.De
+XIn the first case, the alternative glob pattern (\fC^*.Z\fP) will be
+Xused if the first part does not generate any possible completions,
+Xwhile in the second case the alternative glob pattern will only be
+Xused if the \fCr[\fR...\fC]\fR pattern doesn't match.
+X.Sh "Bindings"
+X.PP
+XEach of the editor commands we have seen was actually a function bound
+Xby default to a certain key.  The real names of the commands are:
+X.Ds
+X\fCexpand-or-complete   \fITAB\fR
+X\fCpush-line            \fIESC-Q\fR
+X\fCrun-help             \fIESC-H\fR
+X\fCaccept-and-hold      \fIESC-A\fR
+X\fCquote-line           \fIESC-'\fR
+X.De
+XThese bindings are arbitrary; you could change them if you want.
+XFor example, to bind \fCaccept-line\fP to \fI^Z\fP:
+X.Ds
+X% bindkey '^Z' accept-line
+X.De
+XAnother idea would be to bind the delete key to \fCdelete-char\fP;
+Xthis might be convenient if you use \fI^H\fP for backspace.
+X.Ds
+X% bindkey '^?' delete-char
+X.De
+XOr, you could bind \fI^X\fP\fI^H\fP to \fCrun-help\fP:
+X.Ds
+X% bindkey '^X^H' run-help
+X.De
+XOther examples:
+X.Ds
+X% bindkey '^X^Z' universal-argument
+X% bindkey ' ' magic-space
+X% bindkey -s '^T' 'uptime
+X> '
+X% bindkey '^Q' push-line-or-edit
+X.De
+X\fCuniversal-argument\fP multiplies the next command by 4.
+XThus \fI^X\fP\fI^Z\fP\fI^W\fP might delete the last four words on the line.
+XIf you bind space to \fCmagic-space\fP, then csh-style history
+Xexpansion is done on the line whenever you press the space bar.
+X.PP
+XSomething that often happens is that I am typing a multiline command
+Xand discover an error in one of the previous lines.  In this case,
+X\fCpush-line-or-edit\fP will put the entire multiline construct into
+Xthe editor buffer.  If there is only a single line, it is equivalent
+Xto \fCpush-line\fP.
+X.PP
+XThe \fC-s\fP flag to \fCbindkey\fP specifies that you are binding the key
+Xto a string, not a command.  Thus \fCbindkey -s '^T' 'uptime\en'\fP
+Xlets you VMS lovers get the load average whenever you press \fI^T\fP.
+X.PP
+XIf you have a NeXT keyboard, the one with the \fC|\fP and \fC\e\fP keys
+Xvery inconveniently placed, the following
+Xbindings may come in handy:
+X.Ds
+X% bindkey -s '\ee/' '\e\e'
+X% bindkey -s '\ee=' '|'
+X.De
+XNow you can type \fIALT-/\fP to get a backslash, and \fIALT-=\fP to
+Xget a vertical bar.  This only works inside \fBzsh\fP, of course;
+X\fCbindkey\fP has no effect on the key mappings inside \fCtalk\fP
+Xor \fCmail\fP, etc.
+X.PP
+XSome people like to bind \fC^S\fP and \fC^Q\fP to editor commands.
+XJust binding these has no effect, as the terminal will catch them and
+Xuse them for flow control.  You could unset them as stop and start
+Xcharacters, but most people like to use these for external commands.
+XThe solution is to set the \fINOFLOWCONTROL\fP option.  This will
+Xallow you to bind the start and stop characters to editor commands,
+Xwhile retaining their normal use for external commands.
+X.Sh "Parameter Substitution"
+X.PP
+XIn \fBzsh\fP, parameters are set like this:
+X.Ds
+X% foo=bar
+X% echo $foo
+Xbar
+X.De
+XSpaces before or after the \fC=\fP are frowned upon:
+X.Ds
+X% foo = bar
+Xzsh: command not found: foo
+X.De
+XAlso, \fCset\fP doesn't work for setting parameters:
+X.Ds
+X% set foo=bar
+X% set foo = bar
+X% echo $foo
+X
+X%
+X.De
+XNote that no error message was printed.  This is because both
+Xof these commands were perfectly valid; the \fCset\fP builtin
+Xassigns its arguments to the \fIpositional parameters\fP
+X(\fC$1\fP, \fC$2\fP, etc.).
+X.Ds
+X% set foo=bar
+X% echo $1
+Xfoo=bar
+X% set foo = bar
+X% echo $3 $2
+Xbar =
+X.De
+XIf you're really intent on using the csh syntax, define a
+Xfunction like this:
+X.Ds
+X% set () {
+X>    eval "$1$2$3"
+X> }
+X% set foo = bar
+X% set fuu=brrr
+X% echo $foo $fuu
+Xbar brrr
+X.De
+XBut then, of course you can't use the form of \fCset\fP with
+Xoptions, like \fCset -F\fP (which turns off filename generation).
+XAlso, the \fCset\fP command by itself won't list all the parameters
+Xlike it should.
+XTo get around that you need a \fCcase\fP statement:
+X.Ds
+X% set () {
+X>    case $1 in
+X>    -*|+*|'') builtin set $* ;;
+X>    *) eval "$1$2$3" ;;
+X>    esac
+X> }
+X.De
+XFor the most part, this should make csh users happy.
+X.PP
+XThe following sh-style operators are supported in \fBzsh\fP:
+X.Ds
+X% unset null
+X% echo ${foo-xxx}
+Xbar
+X% echo ${null-xxx}
+Xxxx
+X% unset null
+X% echo ${null=xxx}
+Xxxx
+X% echo $null
+Xxxx
+X% echo ${foo=xxx}
+Xbar
+X% echo $foo
+Xbar
+X% unset null
+X% echo ${null+set}
+X
+X% echo ${foo+set}
+Xset
+X.De
+XAlso, csh-style \fC:\fP modifiers may be appended to a parameter
+Xsubstitution.
+X.Ds
+X% echo $PWD
+X/home/learning/pf/zsh/zsh2.00/src
+X% echo $PWD:h
+X/home/learning/pf/zsh/zsh2.00
+X% echo $PWD:h:h
+X/home/learning/pf/zsh
+X% echo $PWD:t
+Xsrc
+X% name=foo.c
+X% echo $name
+Xfoo.c
+X% echo $name:r
+Xfoo
+X% echo $name:e
+Xc
+X.De
+XThe equivalent constructs in ksh (which are also supported in \fBzsh\fP)
+Xare a bit more general and easier to remember.
+XWhen the shell expands \fC${foo#\fR\fIpat\fR\fC}\fR,
+Xit checks to see if \fIpat\fP matches a substring at the beginning
+Xof the value
+Xof \fCfoo\fP.  If so, it removes that portion of \fCfoo\fP, using the shortest
+Xpossible match.
+XWith \fC${foo##\fR\fIpat\fR\fC}\fR, the longest possible match is removed.
+X\fC${foo%\fR\fIpat\fR\fC}\fR and \fC${foo%%\fR\fIpat\fR\fC}\fR remove the match
+Xfrom the end.
+XHere are the ksh equivalents of the \fC:\fP modifiers:
+X.Ds
+X% echo ${PWD%/*}
+X/home/learning/pf/zsh/zsh2.00
+X% echo ${PWD%/*/*}
+X/home/learning/pf/zsh
+X% echo ${PWD##*/}
+Xsrc
+X% echo ${name%.*}
+Xfoo
+X% echo ${name#*.}
+Xc
+X.De
+X\fBzsh\fP also has upper/lowercase modifiers:
+X.Ds
+X% xx=Test
+X% echo $xx:u
+XTEST
+X% echo $xx:l
+Xtest
+X.De
+Xand a substitution modifier:
+X.Ds
+X% echo $name:s/foo/bar/
+Xbar.c
+X% ls
+Xfoo.c    foo.h    foo.o    foo.pro
+X% for i in foo.*; mv $i $i:s/foo/bar/
+X% ls
+Xbar.c    bar.h    bar.o    bar.pro
+X.De
+XThere is yet another syntax to modify substituted parameters.  You can
+Xadd certain modifiers in parentheses after the opening brace like:
+X.Ds
+X${(\fImodifiers\fC)\fIparameter\fC}
+X.De
+XFor example, \fCo\fP sorts the words resulting from the expansion:
+X.Ds
+X% echo ${path}
+X/usr/bin /usr/bin/X11 /etc
+X% echo ${(o)path}
+X/etc /usr/bin /usr/bin/X11
+X.De
+XOne possible source of confusion is the fact that in \fBzsh\fP,
+Xthe result of parameter substitution is \fInot\fP split into
+Xwords.  Thus, this will not work:
+X.Ds
+X% srcs='glob.c exec.c init.c'
+X% ls $srcs
+Xglob.c exec.c init.c not found
+X.De
+XThis is considered a feature, not a bug.
+XIf splitting were done by default, as it is in most other shells,
+Xfunctions like this would not work properly:
+X.Ds
+X$ ll () { ls -F $* }
+X$ ll 'fuu bar'
+Xfuu not found
+Xbar not found
+X
+X% ll 'fuu bar'
+Xfuu bar not found
+X.De
+XOf course, a hackish workaround is available in sh (and \fBzsh\fP):
+X.Ds
+X% setopt shwordsplit
+X% ll () { ls -F "$@" }
+X% ll 'fuu bar'
+Xfuu bar not found
+X.De
+XIf you like the sh behaviour, \fBzsh\fP can accomodate you:
+X.Ds
+X% ls ${=srcs}
+Xexec.c  glob.c  init.c
+X% setopt shwordsplit
+X% ls $srcs
+Xexec.c  glob.c  init.c
+X.De
+XAnother way to get the \fC$srcs\fP trick to work is to use an array:
+X.Ds
+X% unset srcs
+X% srcs=( glob.c exec.c init.c )  
+X% ls $srcs
+Xexec.c  glob.c  init.c
+X.De
+Xor an alias:
+X.Ds
+X% alias -g SRCS='exec.c glob.c init.c'
+X% ls SRCS
+Xexec.c  glob.c  init.c
+X.De
+XAnother option that modifies parameter expansion is
+X\fIRCEXPANDPARAM\fP:
+X.Ds
+X% echo foo/$srcs
+Xfoo/glob.c exec.c init.c
+X% setopt rcexpandparam
+X% echo foo/$srcs
+Xfoo/glob.c foo/exec.c foo/init.c
+X% echo foo/${^srcs}
+Xfoo/glob.c foo/exec.c foo/init.c
+X% echo foo/$^srcs
+Xfoo/glob.c foo/exec.c foo/init.c
+X.De
+X.Sh "Shell Parameters"
+X.PP
+XThe shell has many predefined parameters that may be
+Xaccessed.  Here are some examples:
+X.Ds
+X% sleep 10 &
+X[1] 3820
+X% echo $!
+X3820
+X% set a b c
+X% echo $#
+X3
+X% echo $ARGC
+X3
+X% ( exit 20 ) ; echo $?
+X20
+X% false; echo $status
+X1
+X.De
+X(\fC$?\fP and \fC$status\fP are equivalent.)
+X.Ds
+X% echo $HOST $HOSTTYPE
+Xdendrite sun4
+X% echo $UID $GID
+X701 60
+X% cd /tmp
+X% cd /home
+X% echo $PWD $OLDPWD
+X/home /tmp
+X% ls $OLDPWD/.getwd 
+X/tmp/.getwd
+X.De
+X\fC~+\fP and \fC~-\fP are short for \fC$PWD\fP and \fC$OLDPWD\fP, respectively.
+X.Ds
+X% ls ~-/.getwd
+X/tmp/.getwd
+X% ls -d ~+/learning
+X/home/learning
+X% echo $RANDOM
+X4880
+X% echo $RANDOM
+X11785
+X% echo $RANDOM
+X2062
+X% echo $TTY
+X/dev/ttyp4
+X% echo $VERSION
+Xzsh v2.00.03
+X% echo $USERNAME
+Xpf
+X.De
+X.PP
+XThe \fCcdpath\fP variable sets the search path for the \fCcd\fP command.
+XIf you do not specify \fC.\fP somewhere in the path, it is assumed to
+Xbe the first component.
+X.Ds
+X% cdpath=( /usr ~ ~/zsh )
+X% ls /usr
+X5bin         dict         lang         net          sccs         sys
+X5include     etc          lector       nserve       services     tmp
+X5lib         export       lib          oed          share        ucb
+Xadm          games        local        old          skel         ucbinclude
+Xbin          geac         lost+found   openwin      spool        ucblib
+Xboot         hosts        macsyma_417  pat          src          xpg2bin
+Xdemo         include      man          princeton    stand        xpg2include
+Xdiag         kvm          mdec         pub          swap         xpg2lib
+X% cd spool
+X/usr/spool
+X% cd bin
+X/usr/bin
+X% cd func
+X~/func
+X% cd 
+X% cd pub
+X% pwd
+X/u/pfalstad/pub
+X% ls -d /usr/pub
+X/usr/pub
+X.De
+X\fBPATH\fP and \fBpath\fP both set the search path for commands.
+XThese two variables are equivalent, except that one is a string
+Xand one is an array.  If the user modifies \fBPATH\fP, the shell
+Xchanges \fBpath\fP as well, and vice versa.
+X.Ds
+X% PATH=/bin:/usr/bin:/tmp:.
+X% echo $path
+X/bin /usr/bin /tmp .
+X% path=( /usr/bin . /usr/local/bin /usr/ucb )
+X% echo $PATH
+X/usr/bin:.:/usr/local/bin:/usr/ucb
+X.De
+XThe same is true of \fBCDPATH\fP and \fBcdpath\fP:
+X.Ds
+X% echo $CDPATH
+X/usr:/u/pfalstad:/u/pfalstad/zsh
+X% CDPATH=/u/subbarao:/usr/src:/tmp
+X% echo $cdpath
+X/u/subbarao /usr/src /tmp
+X.De
+XIn general, predefined parameters with names in all lowercase are
+Xarrays; assignments to them take the form:
+X.Ds
+X\fIname\fR\fC=(\fR \fIelem\fR ...\ \fC)\fR
+X.De
+XPredefined parameters with names in all uppercase are strings.  If
+Xthere is both an array and a string version of the same parameter, the
+Xstring version is a colon-separated list, like \fBPATH\fP.
+X.PP
+X\fBHISTFILE\fP is the name of the history file, where the history
+Xis saved when a shell exits.
+X.Ds
+X% zsh
+Xphoenix% HISTFILE=/tmp/history
+Xphoenix% SAVEHIST=20
+Xphoenix% echo foo
+Xfoo
+Xphoenix% date
+XFri May 24 05:39:35 EDT 1991
+Xphoenix% uptime
+X  5:39am  up 4 days, 20:02,  40 users,  load average: 2.30, 2.20, 2.00
+Xphoenix% exit
+X% cat /tmp/history
+XHISTFILE=/tmp/history
+XSAVEHIST=20
+Xecho foo
+Xdate
+Xuptime
+Xexit
+X% HISTSIZE=3
+X% history
+X   28  rm /tmp/history
+X   29  HISTSIZE=3
+X   30  history
+X.De
+XIf you have several incantations of \fBzsh\fP running at the same
+Xtime, like when using the X window system, it might be preferable to
+Xappend the history of each shell to a file when a shell exits instead
+Xof overwriting the old contents of the file.  You can get this
+Xbehaviour by setting the \fIAPPENDHISTORY\fP option.
+X.PP
+XIn \fBzsh\fP, if you say
+X.Ds
+X% >file
+X.De
+Xthe command \fCcat\fP is normally assumed:
+X.Ds
+X% >file
+Xfoo!    
+X^D
+X% cat file
+Xfoo!
+X.De
+XThus, you can view a file simply by typing:
+X.Ds
+X% <file
+Xfoo!
+X.De
+XHowever, this is not csh or sh compatible.  To correct this,
+Xchange the value of the parameter \fBNULLCMD\fP,
+Xwhich is \fCcat\fP by default.
+X.Ds
+X% NULLCMD=:
+X% >file
+X% ls -l file
+X-rw-r--r--  1 pfalstad        0 May 24 05:41 file
+X.De
+XIf \fCNULLCMD\fP is unset, the shell reports an error if no
+Xcommand is specified (like csh).
+X.Ds
+X% unset NULLCMD
+X% >file
+Xzsh: redirection with no command
+X.De
+XActually, \fBREADNULLCMD\fP is used whenever you have a null command
+Xreading input from a single file.  Thus, you can set \fBREADNULLCMD\fP
+Xto \fCmore\fP or \fCless\fP rather than \fCcat\fP.  Also, if you
+Xset \fBNULLCMD\fP to \fC:\fP for sh compatibility, you can still read
+Xfiles with \fC< file\fP if you leave \fBREADNULLCMD\fP set to \fCmore\fP.
+X.Sh "Prompting"
+X.PP
+XThe default prompt for \fBzsh\fP is:
+X.Ds
+Xphoenix% echo $PROMPT
+X%m%# 
+X.De
+XThe \fC%m\fP stands for the short form of the current hostname,
+Xand the \fC%#\fP stands for a \fC%\fP or a \fC#\fP, depending on whether
+Xthe shell is running as root or not.
+X\fBzsh\fP supports many other control sequences
+Xin the \fBPROMPT\fP variable.
+X.Ds
+X% PROMPT='%/> '
+X/u/pfalstad/etc/TeX/zsh>
+X
+X% PROMPT='%~> '   
+X~/etc/TeX/zsh> 
+X
+X% PROMPT='%h %~> '
+X6 ~/etc/TeX/zsh> 
+X.De
+X\fC%h\fP represents the number of current history event.
+X.Ds
+X% PROMPT='%h %~ %M> '
+X10 ~/etc/TeX/zsh apple-gunkies.gnu.ai.mit.edu> 
+X
+X% PROMPT='%h %~ %m> '
+X11 ~/etc/TeX/zsh apple-gunkies> 
+X
+X% PROMPT='%h %t> '
+X12 6:11am> 
+X
+X% PROMPT='%n %w tty%l>'
+Xpfalstad Fri 24 ttyp0>
+X.De
+X\fBPROMPT2\fP is used in multiline commands, like for-loops.  The
+X\fC%_\fP escape sequence was made especially for this prompt.  It is
+Xreplaced by the kind of command that is being entered.
+X.Ds
+X% PROMPT2='%_> '
+X% for i in foo bar
+Xfor>
+X
+X% echo 'hi
+Xquote>
+X.De
+XAlso available is the \fBRPROMPT\fP parameter.
+XIf this is set, the shell puts a prompt on the \fIright\fP side
+Xof the screen.
+X.Ds
+X% RPROMPT='%t'
+X%                                                      6:14am
+X
+X% RPROMPT='%~'
+X%                                               ~/etc/TeX/zsh
+X
+X% PROMPT='%l %T %m[%h] ' RPROMPT=' %~'
+Xp0 6:15 phoenix[5]                              ~/etc/TeX/zsh
+X.De
+XThese special escape sequences can also be used with the
+X\fC-P\fP option to \fCprint\fP:
+X.Ds
+X% print -P %h tty%l
+X15 ttyp1
+X.De
+X.PP
+XThe \fBPOSTEDIT\fP parameter is printed whenever the editor exits.
+XThis can be useful for termcap tricks.  To highlight the prompt
+Xand command line while leaving command output unhighlighted, try this:
+X.Ds
+X% POSTEDIT=`echotc se`
+X% PROMPT='%S%% '
+X.De
+X.Sh "Login/logout watching"
+X.PP
+XYou can specify login or logout events to monitor
+Xby setting the \fBwatch\fP variable.
+XNormally, this is done by specifying a list of usernames.
+X.Ds
+X% watch=( pfalstad subbarao sukthnkr egsirer )
+X.De
+XThe \fClog\fP command reports all people logged in
+Xthat you are watching for.
+X.Ds
+X% log
+Xpfalstad has logged on p0 from mickey.
+Xpfalstad has logged on p5 from mickey.
+X% \fR...\fC
+Xsubbarao has logged on p8 from phoenix.
+X% \fR...\fC
+Xsubbarao has logged off p8 from phoenix.
+X% \fR...\fC
+Xsukthnkr has logged on p8 from dew.
+X% \fR...\fC
+Xsukthnkr has logged off p8 from dew.
+X.De
+XIf you specify hostnames with an \fC@\fP prepended,
+Xthe shell will watch for all users logging in from
+Xthe specified host.
+X.Ds
+X% watch=( @mickey @phoenix )
+X% log
+Xdjthongs has logged on q2 from phoenix.
+Xpfalstad has logged on p0 from mickey.
+Xpfalstad has logged on p5 from mickey.
+X.De
+XIf you give a tty name with a \fC%\fP prepended, the shell
+Xwill watch for all users logging in on that tty.
+X.Ds
+X% watch=( %ttyp0 %console )
+X% log
+Xroot has logged on console from .
+Xpfalstad has logged on p0 from mickey.
+X.De
+XThe format of the reports may also be changed.
+X.Ds
+X% watch=( pfalstad gettes eps djthongs jcorr bdavis )
+X% log
+Xjcorr has logged on tf from 128.112.176.3:0.
+Xjcorr has logged on r0 from 128.112.176.3:0.
+Xgettes has logged on p4 from yo:0.0.
+Xdjthongs has logged on pe from grumpy:0.0.
+Xdjthongs has logged on q2 from phoenix.
+Xbdavis has logged on qd from BRUNO.
+Xeps has logged on p3 from csx30:0.0.
+Xpfalstad has logged on p0 from mickey.
+Xpfalstad has logged on p5 from mickey.
+X% WATCHFMT='%n on tty%l from %M'
+X% log
+Xjcorr on ttytf from 128.112.176.3:0.
+Xjcorr on ttyr0 from 128.112.176.3:0.
+Xgettes on ttyp4 from yo:0.0
+Xdjthongs on ttype from grumpy:0.0
+Xdjthongs on ttyq2 from phoenix.Princeto
+Xbdavis on ttyqd from BRUNO.pppl.gov
+Xeps on ttyp3 from csx30:0.0
+Xpfalstad on ttyp0 from mickey.Princeton
+Xpfalstad on ttyp5 from mickey.Princeton
+X% WATCHFMT='%n fm %m'
+X% log
+Xjcorr fm 128.112.176.3:0
+Xjcorr fm 128.112.176.3:0
+Xgettes fm yo:0.0
+Xdjthongs fm grumpy:0.0
+Xdjthongs fm phoenix
+Xbdavis fm BRUNO
+Xeps fm csx30:0.0
+Xpfalstad fm mickey
+Xpfalstad fm mickey
+X% WATCHFMT='%n %a at %t %w.'
+X% log
+Xjcorr logged on at 3:15pm Mon 20.
+Xjcorr logged on at 3:16pm Wed 22.
+Xgettes logged on at 6:54pm Wed 22.
+Xdjthongs logged on at 7:19am Thu 23.
+Xdjthongs logged on at 7:20am Thu 23.
+Xbdavis logged on at 12:40pm Thu 23.
+Xeps logged on at 4:19pm Thu 23.
+Xpfalstad logged on at 3:39am Fri 24.
+Xpfalstad logged on at 3:42am Fri 24.
+X.De
+XIf you have a \fC.friends\fP file in your home directory,
+Xa convenient way to make \fBzsh\fP watch for all your friends
+Xis to do this:
+X.Ds
+X% watch=( $(< ~/.friends) )
+X% echo $watch
+Xsubbarao maruchck root sukthnkr \fR...
+X.De
+XIf watch is set to \fCall\fP, then all users logging in or out
+Xwill be reported.
+X.Sh "Options"
+X.PP
+XSome options have already been mentioned; here are a few more:
+X.PP
+XUsing the \fIAUTOCD\fP option, you can simply type the name
+Xof a directory, and it will become the current directory.
+X.Ds
+X% cd /
+X% setopt autocd
+X% bin
+X% pwd
+X/bin
+X% ../etc
+X% pwd
+X/etc
+X.De
+XWith \fICDABLEVARS\fP, if the argument to \fCcd\fP is the name of a
+Xparameter whose value is a valid directory, it will become
+Xthe current directory.
+X.Ds
+X% setopt cdablevars
+X% foo=/tmp
+X% cd foo
+X/tmp
+X.De
+X\fICORRECT\fP turns on spelling correction for commands,
+Xand the \fICORRECTALL\fP option turns on spelling correction
+Xfor all arguments.
+X.Ds
+X% setopt correct
+X% sl
+Xzsh: correct `sl' to `ls' [nyae]? y
+X% setopt correctall
+X% ls x.v11r4
+Xzsh: correct `x.v11r4' to `X.V11R4' [nyae]? n
+X/usr/princton/src/x.v11r4 not found
+X% ls /etc/paswd
+Xzsh: correct to `/etc/paswd' to `/etc/passwd' [nyae]? y
+X/etc/passwd
+X.De
+XIf you press \fCy\fP
+Xwhen the shell asks you if you want to correct a word, it will
+Xbe corrected.  If you press \fCn\fP, it will be left alone.
+XPressing \fCa\fP aborts the command, and pressing \fCe\fP brings the line
+Xup for editing again, in case you agree the word is spelled wrong
+Xbut you don't like the correction.
+X.PP
+XNormally, a quoted expression may contain a newline:
+X.Ds
+X% echo '
+X> foo
+X> '
+X
+Xfoo
+X
+X%
+X.De
+XWith \fICSHJUNKIEQUOTES\fP set, this is illegal, as it is
+Xin csh.
+X.Ds
+X% setopt cshjunkiequotes
+X% ls 'foo
+Xzsh: unmatched '
+X.De
+X\fIGLOBDOTS\fP lets files beginning with a \fC.\fP be matched without
+Xexplicitly specifying the dot.
+X.Ds
+X% ls -d *x*
+XMailboxes
+X% setopt globdots
+X% ls -d *x*
+X\&.exrc         .pnewsexpert  .xserverrc
+X\&.mushexpert   .xinitrc      Mailboxes
+X.De
+X\fIHISTIGNOREDUPS\fP prevents the current line from being
+Xsaved in the history if it is the same as the previous one;
+X\fIHISTIGNORESPACE\fP prevents the current line from being
+Xsaved if it begins with a space.
+X.Ds
+X% PROMPT='%h> '
+X39> setopt histignoredups
+X40> echo foo
+Xfoo
+X41> echo foo
+Xfoo
+X41> echo foo
+Xfoo
+X41> echo bar
+Xbar
+X42> setopt histignorespace
+X43>  echo foo
+Xfoo
+X43>  echo fubar
+Xfubar
+X43>  echo fubar
+Xfubar
+X.De
+X\fIIGNOREBRACES\fP turns off csh-style brace expansion.
+X.Ds
+X% echo x{y{z,a},{b,c}d}e
+Xxyze xyae xbde xcde
+X% setopt ignorebraces
+X% echo x{y{z,a},{b,c}d}e
+Xx{y{z,a},{b,c}d}e
+X.De
+X\fIIGNOREEOF\fP forces the user to type \fCexit\fP or \fClogout\fP,
+Xinstead of just pressing \fI^D\fP.
+X.Ds
+X% setopt ignoreeof
+X% ^D
+Xzsh: use 'exit' to exit.
+X.De
+X\fIINTERACTIVECOMMENTS\fP turns on interactive comments;
+Xcomments begin with a \fC#\fP.
+X.Ds
+X% setopt interactivecomments
+X% date # this is a comment
+XFri May 24 06:54:14 EDT 1991
+X.De
+X\fINOBEEP\fP makes sure the shell never beeps.
+X.PP
+X\fINOCLOBBER\fP prevents you from accidentally
+Xoverwriting an existing file.
+X.Ds
+X% setopt noclobber
+X% cat /dev/null >~/.zshrc
+Xzsh: file exists: /u/pfalstad/.zshrc
+X.De
+XIf you really do want to clobber a file, you can use the
+X\fC>!\fP operator.
+XTo make things easier in this case, the \fC>\fP is stored in
+Xthe history list as a \fC>!\fP:
+X.Ds
+X% cat /dev/null >! ~/.zshrc
+X% cat /etc/motd > ~/.zshrc
+Xzsh: file exists: /u/pfalstad/.zshrc
+X% !!
+Xcat /etc/motd >! ~/.zshrc
+X% \fR...
+X.De
+X\fIRCQUOTES\fP lets you use a more elegant method for including
+Xsingle quotes in a singly quoted string:
+X.Ds
+X% echo '"don'\e''t do that."'
+X"don't do that."
+X% echo '"don''t do that."'
+X"dont do that."
+X% setopt rcquotes
+X% echo '"don''t do that."'
+X"don't do that."
+X.De
+XFinally,
+X\fISUNKEYBOARDHACK\fP wins the award for the strangest option.
+XIf a line ends with \fC`\fP, and there are an odd number of them
+Xon the line, the shell will ignore the trailing \fC`\fP.  This
+Xis provided for keyboards whose RETURN key is too small,
+Xand too close to the \fC`\fP key.
+X.Ds
+X% setopt sunkeyboardhack
+X% date`
+XFri May 24 06:55:38 EDT 1991
+X.De
+X.Sh "Closing Comments"
+X.PP
+XI (Bas de Bakker) would be happy to receive mail if anyone has any
+Xtricks or ideas to add to this document, or if there are some points
+Xthat could be made clearer or covered more thoroughly.  Please notify
+Xme of any errors in this document.
+X.bp
+X.PX
+END_OF_FILE
+  if test 78952 -ne `wc -c <'zsh-2.5.0/doc/intro.ms'`; then
+    echo shar: \"'zsh-2.5.0/doc/intro.ms'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/doc/intro.ms'
+fi
+if test ! -d 'zsh-2.5.0/dots' ; then
+    echo shar: Creating directory \"'zsh-2.5.0/dots'\"
+    mkdir 'zsh-2.5.0/dots'
+fi
+if test ! -d 'zsh-2.5.0/func' ; then
+    echo shar: Creating directory \"'zsh-2.5.0/func'\"
+    mkdir 'zsh-2.5.0/func'
+fi
+if test ! -d 'zsh-2.5.0/help' ; then
+    echo shar: Creating directory \"'zsh-2.5.0/help'\"
+    mkdir 'zsh-2.5.0/help'
+fi
+if test ! -d 'zsh-2.5.0/man' ; then
+    echo shar: Creating directory \"'zsh-2.5.0/man'\"
+    mkdir 'zsh-2.5.0/man'
+fi
+if test ! -d 'zsh-2.5.0/scripts' ; then
+    echo shar: Creating directory \"'zsh-2.5.0/scripts'\"
+    mkdir 'zsh-2.5.0/scripts'
+fi
+if test ! -d 'zsh-2.5.0/src' ; then
+    echo shar: Creating directory \"'zsh-2.5.0/src'\"
+    mkdir 'zsh-2.5.0/src'
+fi
+if test ! -d 'zsh-2.5.0/src/config' ; then
+    echo shar: Creating directory \"'zsh-2.5.0/src/config'\"
+    mkdir 'zsh-2.5.0/src/config'
+fi
+if test -f 'zsh-2.5.0/src/signals.h.sample' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/signals.h.sample'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/signals.h.sample'\" \(1430 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/signals.h.sample' <<'END_OF_FILE'
+XYour signals.h file should look something like this.  If it doesn't,
+Xperhaps your csh or ed is different.
+X
+X/* this file is created automatically by buildzsh */
+X/* if all this is wrong, blame csh ;-) */
+X
+X#define SIGCOUNT       31
+X
+X#ifdef GLOBALS
+X
+Xchar *sigmsg[SIGCOUNT+2] = {
+X	"done",
+X	"hangup",
+X	"interrupt",
+X	"quit",
+X	"illegal instruction",
+X	"trace trap",
+X	"abort",
+X	"EMT instruction",
+X	"floating point exception",
+X	"killed",
+X	"bus error",
+X	"segmentation fault",
+X	"bad system call",
+X	"broken pipe",
+X	"SIGALRM",
+X	"terminated",
+X	"SIGURG",
+X#ifdef USE_SUSPENDED
+X	"suspended (signal)",
+X#else
+X	"stopped (signal)",
+X#endif
+X#ifdef USE_SUSPENDED
+X	"suspended",
+X#else
+X	"stopped",
+X#endif
+X	"continued",
+X	"SIGCHLD",
+X#ifdef USE_SUSPENDED
+X	"suspended (tty input)",
+X#else
+X	"stopped (tty input)",
+X#endif
+X#ifdef USE_SUSPENDED
+X	"suspended (tty output)",
+X#else
+X	"stopped (tty output)",
+X#endif
+X	"SIGIO",
+X	"cpu limit exceeded",
+X	"filesize limit exceeded",
+X	"virtual time alarm",
+X	"SIGPROF",
+X	"SIGWINCH",
+X	"SIGLOST",
+X	"SIGUSR1",
+X	"SIGUSR2",
+X	NULL
+X};
+X
+Xchar *sigs[SIGCOUNT+4] = {
+X	"EXIT",
+X	"HUP",
+X	"INT",
+X	"QUIT",
+X	"ILL",
+X	"TRAP",
+X	"ABRT",
+X	"EMT",
+X	"FPE",
+X	"KILL",
+X	"BUS",
+X	"SEGV",
+X	"SYS",
+X	"PIPE",
+X	"ALRM",
+X	"TERM",
+X	"URG",
+X	"STOP",
+X	"TSTP",
+X	"CONT",
+X	"CHLD",
+X	"TTIN",
+X	"TTOU",
+X	"IO",
+X	"XCPU",
+X	"XFSZ",
+X	"VTALRM",
+X	"PROF",
+X	"WINCH",
+X	"LOST",
+X	"USR1",
+X	"USR2",
+X	"ZERR",
+X	"DEBUG",
+X	NULL
+X};
+X
+X#else
+X
+Xextern char *sigs[SIGCOUNT+4],*sigmsg[SIGCOUNT+2];
+X
+X#endif
+END_OF_FILE
+  if test 1430 -ne `wc -c <'zsh-2.5.0/src/signals.h.sample'`; then
+    echo shar: \"'zsh-2.5.0/src/signals.h.sample'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/signals.h.sample'
+fi
+echo shar: End of archive 1 \(of 18\).
+cp /dev/null ark1isdone
+MISSING=""
+for I in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 ; do
+    if test ! -f ark${I}isdone ; then
+	MISSING="${MISSING} ${I}"
+    fi
+done
+if test "${MISSING}" = "" ; then
+    echo You have unpacked all 18 archives.
+    rm -f ark[1-9]isdone ark[1-9][0-9]isdone
+else
+    echo You still must unpack the following archives:
+    echo "        " ${MISSING}
+fi
+exit 0
+exit 0 # Just in case...

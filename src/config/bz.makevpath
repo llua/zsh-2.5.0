@@ -1,0 +1,48 @@
+# --- bz.makevpath
+
+# --- cc?
+
+test -z "$makecc_done" && . ./config/bz.makecc
+
+# --- does $MAKE grok VPATH?
+
+test -z "$MAKE" && MAKE=make	# failsafe
+echo "	checking whether $MAKE understands VPATH..." >&2
+
+make_groks_VPATH=
+
+oldwd=`pwd`
+mkdir $VPATHTMP $VPATHTMPa $VPATHTMPb
+if test -d "$VPATHTMP" -a -d "$VPATHTMPa" -a -d "$VPATHTMPb"
+then
+  cd $VPATHTMPa && echo 'static int foo = 42;' > foo.c
+  if test -f $VPATHTMPa/foo.c
+  then
+    cd $VPATHTMPb && {
+      cat > Makefile <<'foo'
+foo.o:	foo.c
+	@$(CC) -c $<
+foo
+      if test -f $VPATHTMPb/Makefile
+      then
+        $MAKE VPATH=$VPATHTMPa 2>/dev/null
+        test -s $VPATHTMPb/foo.o && make_groks_VPATH=yep
+        rm -f $VPATHTMPb/foo.o $VPATHTMPb/Makefile
+      fi
+    }
+    rm -f $VPATHTMPa/foo.c
+  fi
+  (cd $VPATHTMP && \
+   rmdir $VPATHTMPa && \
+   rmdir $VPATHTMPb && \
+   cd .. && rmdir $VPATHTMP)
+fi
+cd $oldwd
+
+echo
+echo "	($MAKE does "`test -z "$make_groks_VPATH" && echo "not "`"understand VPATH...)"
+echo
+
+make_groks_VPATH_done=yep
+
+###

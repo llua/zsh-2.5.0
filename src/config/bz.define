@@ -1,0 +1,72 @@
+_sym_="$1"
+_dfl_="$2"
+_des_="$3"
+_emp_="$4"
+_quo_="$5"
+
+_ans_=
+while test Z"$_ans_" != Zok
+do
+  if test -n "$B_query"
+  then
+     if test -z "$F_define_warned"
+     then
+     {
+       cat <<foo
+	* to accept the default (which is inside [brackets]), just press
+          Enter/Newline/Return.
+	* some questions accept empty answers, they are indicated by
+          "(empty ok)" text.
+	* to give an empty answer, answer just "none" (but without ""s)
+	* do not worry about possible missing "quotes" around your answers,
+          they will automagically be added.
+foo
+     } >&2
+       F_define_warned=yep
+     fi
+     test -z "$B_query"
+     {
+       echo
+       echo "Define $_des_:"
+       echo "$_sym_ [$_dfl_] "                | tr -d '\012'
+       test -n "$_emp_" && echo "(empty ok) " | tr -d '\012'
+       echo "? "                              | tr -d '\012'
+     } >&2
+     read _ans_
+  else
+     _ans_=$_dfl_
+  fi
+  _val_=
+  case $_ans_ in
+  none ) _val_=
+         test -n "$_emp_" && _ans_=ok || _ans_=
+         _msg_="$_sym_ is undefined"
+	 eval $_sym_=
+         _ans_=ok
+         ;;
+  *   )  test -n "$_ans_" && _val_=$_ans_ || _val_=$_dfl_
+	 if test -z "$_dfl_" -a -z "$_val_"
+	 then
+           _msg_="$_sym_ is empty"
+	 else
+         test Z"$_quo_" = Z'"' && _val_=\"$_val_\"
+         test Z"$_quo_" = Z"'" && _val_=\'$_val_\'
+           _msg_="$_sym_ is \"$_val_\""
+         fi
+	 eval $_sym_=\"$_val_\"
+         _ans_=ok
+         ;;
+  esac
+done
+
+test -n "$F_define" && echo "/* $_des_ */"
+if test -n "$_val_"
+then
+  test -n "$F_define" && echo "#define $_sym_ $_val_"
+else
+  test -n "$F_define" && echo "#undef $_sym_"
+fi
+{
+  echo "	$_msg_..."
+  test -n "$B_query" && echo
+} >&2

@@ -1,0 +1,5 @@
+       getln name ...
+              Read the top value from the buffer stack and put it
+              in the shell parameter name.   Equivalent  to  read
+              -zr.  The flags -c, -l, -A, -e, -E, and -n are sup-
+              ported, too.

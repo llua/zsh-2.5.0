@@ -1,0 +1,18 @@
+       echo [ -n ] [ arg ... ]
+              Write each arg on the standard output, with a space
+              separating each one.  If the -n flag  is  not  pre-
+              sent,  print a newline at the end.  echo recognizes
+              the following escape sequences:
+              \a     bell character
+              \b     backspace
+              \c     don't print an ending newline
+              \e     escape
+              \f     form feed
+              \n     newline
+              \r     carriage return
+              \t     horizontal tab
+              \v     vertical tab
+              \\     backslash
+              \nnn   character code in octal, with a  maximum  of
+                     four  digits.  A  non-octal digit terminates
+                     the number. It must start with zero.

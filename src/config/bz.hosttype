@@ -1,0 +1,182 @@
+# --- (host type determination)
+
+echo
+echo '	determining host type...'
+
+headerdir=/usr/include
+arch=`(uname) 2>/dev/null`
+motd=`(head -2 /etc/motd) 2>/dev/null`
+case "$arch" in
+"")	case "$motd" in
+	*"HP-UX"*)	HPUX=yep; machid=hp9000;;
+	*"Iris"*)	IRIX=yep; host=iris4d;;
+	*"Ultrix"*)	ULTRIX=yep; host=vax;;
+	*"RISC iX"*)	ARM=yep; host=arm;;
+	*"Umax 4.2"*)	ENCORE=yep; host=encore;;
+	*"Alliant Concentrix"*) ALLIANT=yep; host=alliant;;
+	*"FPS Model 500"*) FPS=yep; host=fps500;;
+	*"HCX/UX"*)	HARRIS=yep; host=harris;;
+        "DYNIX/ptx"*)   SEQUENTPTX=yep; host=sequentptx;;
+	*"nX Operating System"*)	BBN=yep; host=`arch`;;
+	*"NEWS-OS"*)	NEWS=yep; host=news;;
+	*)
+		if test -d ${headerdir}/caif
+		then AIX=yep; host=ibm032
+		elif test -d /sys/node_data
+		then APOLLO=yep; host=apollo-$ISP
+		elif test -f /bin/pyr && /bin/pyr
+		then PYR=yep; host=pyr
+		elif test -d /NextApps
+		then host=next
+		      if test -d /NextDeveloper/Headers/bsd
+		      then NEXT=3.x; headerdir=${headerdir}/bsd
+		      else NEXT=2.x
+		      fi
+		elif test -f /etc/comply
+		then SUNOS=yep; host=sun3
+		elif test -f /bin/hinv
+		then IRIX=yep; host=iris4d
+		elif grep ULTRIX ${headerdir}/stdio.h >/dev/null 2>&1
+		then ULTRIX=yep; host=vax
+		elif grep 'Property of IBM' ${headerdir}/stdio.h >/dev/null 2>&1
+		then AIX=yep
+		else host=`(tcsh -fc 'echo $HOSTTYPE' || arch || machine || mach || echo $machine) 2>/dev/null`
+		fi;;
+	esac;;
+HP-UX)	HPUX=`uname -r 2>/dev/null || echo yep`; machid=`uname -m`
+	case "$machid" in
+ 	9000/7*)	host=hp9000s700;;
+ 	9000/8*)	host=hp9000s800;;
+ 	9000/[34]*)	host=hp9000s300;;
+ 	9000/2*)	host=hp9000s200;;
+ 	"")		host=hp9000;;
+ 	*)		host=hp-unknown;;
+	esac;;
+AIX*)	AIX=yep; machid=`uname -m`
+	case "$machid" in
+	00*) host=rs6000;;
+	10*) host=ibm032;;
+	20*) host=ibm032;;
+	esac;;
+A/UX)	MAC=yep; host=macII;;
+dgux)	DGUX=yep; machid=`uname -m`
+	case "$machid" in
+	AViiON) host=aviion;;
+	esac;;
+SunOS)	machid=`uname -m`
+	if test -n "`uname -r|egrep '^5'`"
+	then
+		SOLARIS=yep
+	fi
+	SUNOS=yep; case "$machid" in
+	sun3*) host=sun3;;
+	sun4*) host=sun4;;
+	*) host=$machid;;
+	esac;;
+ULTRIX)	machid=`uname -m`
+	ULTRIX=yep; case "$machid" in
+	VAX) host=vax;;
+	RISC) host=decstation ; MIPS_ULTRIX=yep;;
+	*) host=$machid;;
+	esac;;
+IRIX)	IRIX=yep;
+	host=iris4d
+        osvers=`uname -r`
+        case "$osvers" in
+        5.*) IRIX5=yep;;
+        esac
+	;;
+ConvexOS)CONVEX=yep; host=convex;;
+OSF1)	OSF1=yep; 
+	host=`uname -m`
+	case "$host" in
+	hp*) HPOSF=yep; host=hposf;;
+	mips) MIPSOSF=yep; host=mipsosf;;
+	esac
+	;;
+Linux)	LINUX=yep; host=`uname -m`;;
+NetBSD)	NETBSD=yep; host=NetBSD;;
+FreeBSD)FreeBSD=yep; host=`uname -m`;;
+TitanOS)TITAN=yep; host=titan;;
+*)	machid=`uname -m`
+	case "$machid" in
+	mips|IP6|IP7) MIPS=yep; host=mips;;
+	CRAY*) UNICOS=yep; host=$machid;;
+	i[34]86)
+	    if test -f /etc/copyrights/01.sco
+	    then SCO=yep host=`uname -m`
+	    else
+		# This doesn't work above because the PTX 1.4 and 2.0
+		# return the hostname from uname which is deceptive.
+		case "$motd" in
+		"DYNIX/ptx"*)   SEQUENTPTX=yep; host=sequentptx;;
+		esac
+	    fi
+	;;
+	*) host=`(tcsh -fc 'echo $HOSTTYPE' || arch || machine || mach || echo $machine || echo $machid) 2>/dev/null`
+	esac;;
+esac
+if test -n "$host"
+then 
+	# not foolproof but nice crome, though :-)
+	a=a"`echo $host|egrep '^[aeiouy]' > /dev/null 2>&1 && echo n`"
+	echo "	...looks like $a $host "
+	case $host in
+	mips) test -d /usr/include/bsd43 && headerdir=/usr/include/bsd43 ;;
+	titan) test -d /usr/include/bsd && headerdir=/usr/include/bsd ;;
+	esac
+else
+while test -z "$host"
+do
+	echo 1>&2 '
+
+I cannot figure out what sort of host this is.	Please enter one
+short alphanumeric string describing this host (e.g. sun, vax, hp)
+(This will be used to set the $HOSTTYPE variable, so '"you don't
+have to be very accurate if you're not in a multivendor environment.)
+"
+	 echo "? " | tr -d '\012' 1>&2
+	 read host
+	 echo ' ' 1>&2
+done
+fi
+
+# --- we can deduce some things about ARCH
+
+if test -n "$MIPS_ULTRIX" -o -n "$OSF1" -o -n "$IRIX" \
+     -o -n "$MIPS" -o -n "$RISC" -o -n "$NEWS"
+then
+  CC_MIPS_STYLE=yep
+fi
+
+# --- (ARCH substitution)
+
+test -n "$ARCH" && arch=$ARCH || arch=$host
+
+if test -n "`echo $arch|egrep '[ /]'`"
+then
+   echo "Architecture name $ARCH contains either"
+   echo "troublesome characters (' ') or"
+   echo "illegal characters ('/')"
+   echo "(considering using ARCH for pathnames)"
+   echo "Will substitute them with '_' and '-'"
+   arch="`echo $arch|tr ' ' '_'|tr '/' '-'|tr -s _- _-`"
+   echo "yielding $arch (only for use in pathnames)"
+   echo
+fi
+
+for ap in $ARCH_PARMS
+do
+  ape="`eval echo '$'$ap`"
+  if test -n "`echo \"$ape\"|grep \"$C_ARCHPATT\"`"
+  then
+     eval "$ap=`echo \"$ape\"|sed \"s/$C_ARCHPATT/$arch/g\"`"
+  fi
+done
+
+if test -n "$C_BLDDIR"
+then
+echo
+echo Building directory is $C_BLDDIR
+fi
+

@@ -1,0 +1,98 @@
+# The configurable parameters
+CONFIG_PARMS="CC CFLAGS CFLAGS_D CFLAGS_W CFLAGS_X CFLAGS_M CFLAGS_O CFLAGS_g CFLAGS_z LDFLAGS LIBS SRCDIR BLDDIR ARCH ARCHPATT INSTDIR BINDIR MANDIR MAKE ETCDIR"
+# The boolean parameters
+BOOL_PARMS="config.h signals.h hs Makefile makefile mf gcc mediumgcc strictgcc ksh help query auto noopt nodebug nozshdebug nomake justmake"
+# The parameters that can contain $ARCHPATT
+# $ARCHPATT will be substituted with $HOSTTYPE unless ARCH is specified
+ARCH_PARMS="BINDIR BLDDIR"
+
+GCC_BASE0_W='-Wall -Wno-implicit -Winline'
+GCC_BASE1_W="$GCC_BASE0_W -Wmissing-prototypes"
+GCC_MEDIUM_W='-Wimplicit -pedantic'
+GCC_STRICT_W='-Wshadow -Wtraditional -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wcast-qual -Wcast-align -Wconversion'
+
+DEFAULT_C_CC=cc
+# The following is changed to -O2 in bz.Makefile for GCC
+DEFAULT_C_CFLAGS_O=-O
+DEFAULT_C_CFLAGS_g=-g
+DEFAULT_C_LD='$(CC)'
+DEFAULT_C_LIBS=
+DEFAULT_C_SRCDIR=.
+DEFAULT_C_BLDDIR=.
+DEFAULT_C_ARCHPATT="%(ARCH)"
+DEFAULT_C_INSTDIR=
+DEFAULT_C_BINDIR=/usr/local/bin
+DEFAULT_C_MANDIR=/usr/local/man/man1
+DEFAULT_C_ETCDIR=/etc
+DEFAULT_C_MAKE=make
+
+DEFAULT_B_config_h=yep
+DEFAULT_B_signals_h=yep
+DEFAULT_B_hs=yep
+DEFAULT_B_mf=yep
+DEFAULT_B_gcc=
+DEFAULT_B_mediumgcc=
+DEFAULT_B_strictgcc=
+DEFAULT_B_ksh=
+DEFAULT_B_help=
+DEFAULT_B_query=
+DEFAULT_B_probe=yep
+DEFAULT_B_auto=
+DEFAULT_B_noopt=
+DEFAULT_B_debug=
+DEFAULT_B_zshdebug=
+DEFAULT_B_install=yep
+DEFAULT_B_nomake=
+DEFAULT_B_justmake=
+DEFAULT_B_makeatbld=
+
+PAGER_PROGS="less more pg cat"
+PAGER_PATH="/usr/local/bin /usr/ucb /usr/bsd /usr/bin /bin"
+
+# Which variables mean when non-empty that $CC groks simultaneous -c and -o ?
+CC_GROK_c_o="AIX CONVEX GCC HPUX CC_MIPS_STYLE SUNOS"
+# Which variables mean when non-empty that $CC fouls simultaneous -c and -o ?
+CC_LOSE_c_o="UNICOS DGUX"
+# Which variables mean when non-empty that $CC groks simultaneous -g and -O ?
+# variables like test:foo:bar mean testing for variable "test",
+# if that succeeds, setting CC_gFLAGS to "foo" and CC_OFLAGS to "bar"
+# use 'quotes' to protect whitespace
+CC_GROK_g_O="GCC:-g:-O6 AIX CC_MIPS_STYLE:-g3:'-O -Olimit 1000'"
+# Which variables mean when non-empty that $CC fouls simultaneous -g and -O ?
+CC_LOSE_g_O="HPUX"
+# How many users is lots of? (enough to justify username caching)
+LOTSA_USERS=150
+
+# VPATHTMP: VPATH temporary top test directory
+VPATHTMP=/tmp/vpath.$$
+VPATHTMPa=$VPATHTMP/a
+VPATHTMPb=$VPATHTMP/b
+
+# TRASHF: known temporary files
+#	ARGV set in bz.saveargv
+#	ARGH in bz.argh
+#	/tmp/sh/sh[0-9][0-9]* are sh temporary files
+#		(used for example by <<here documents)
+TRASHF="$ARGV $ARGH $VPATHTMPa/foo.c $VPATHTMPb/Makefile $VPATHTMPa/foo.o /tmp/sh[0-9][0-9]*"
+
+# TRASHF: known temporary directories
+#	VPATHTMP...	used for VPATH testing
+TRASHD="$VPATHTMP $VPATHTMPa $VPATHTMPb"
+
+# TRAPN: the last thing to do when trapped
+TRAPN="echo '[Cleaning up]';test -n '$TRASHF' && rm -f $TRASHF 2>/dev/null;test -n '$TRASHD' && rm -rf '$TRASHD' 2>/dev/null;exit 9"
+
+# the signals to trap
+TRAPSIGS="1 2 3 15"
+
+# the text pager to use
+if [ -z "$PAGER" ]
+then
+    set PAGER "$PAGER_PROGS" "$PAGER_PATH" cat
+    . ./config/bz.walk
+fi
+export PAGER
+case "$PAGER" in
+*pg) PAGER_quit='q and Enter/Newline/Return' ;;
+  *) PAGER_quit=q ;;	# more, less, hopefully everything else
+esac

@@ -1,0 +1,19 @@
+       set [ +-options ] [ +-o option name ] ... [ -A [name] ] [
+              arg  ] ...
+              Set the options for the shell and/or set the  posi-
+              tional  parameters,  or  declare an array.  For the
+              meaning of the flags, see OPTIONS above.  Flags may
+              be  specified  by name using the -o option.  If the
+              -A flag is specified, name is set to an array  con-
+              taining  the  given  args; if no name is specified,
+              all arrays are printed.  Otherwise  the  positional
+              parameters  are  set.   If  no arguments are given,
+              then the names and values  of  all  parameters  are
+              printed  on the standard output.  If the only argu-
+              ment is +, the names of all parameters are printed.
+
+       unset [ -m ] name ...
+              Each named parameter is unset. If the  -m  flag  is
+              specified  the  arguments  are  taken  as  patterns
+              (should be quoted) and all parameters with matching
+              names are unset.

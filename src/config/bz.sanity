@@ -1,0 +1,91 @@
+# --- INSTDIR sanity checking
+if test -n "$INSTDIR"
+then
+  if test -n "$BINDIR" -o -n "$MANDIR"
+  then
+    echo 'When INSTDIR is defined, neither BINDIR or MANDIR can be defined'
+    echo 'Aborting.'
+  else
+    BINDIR="$INSTDIR/bin"
+    MANDIR="$INSTDIR/man/man1"
+  fi
+fi
+# --- default: do all the files
+if test -z "$B_Makefile" -a -z "$B_signals_h" -a -z "$B_config_h"
+then
+  B_Makefile=1
+  B_signals_h=1
+  B_config_h=1
+fi
+
+# --- (defaults handling)
+
+for cp in $CONFIG_PARMS
+do
+  if test -z "`eval echo '$'C_$cp`"
+  then
+    case "$cp" in
+    INSTDIR)	;;
+    BINDIR)	C_BINDIR=$DEFAULT_C_BINDIR ;;
+    MANDIR)	C_MANDIR=$DEFAULT_C_MANDIR ;;
+    ETCDIR)	C_ETCDIR=$DEFAULT_C_ETCDIR ;;
+    CC)		;;
+    CFLAGS)	;;
+    CFLAGS_D)	;;
+    CFLAGS_M)	;;
+    CFLAGS_W)	;;
+    CFLAGS_X)	;;
+    CFLAGS_O)	;;
+    CFLAGS_g)	;;
+    CFLAGS_z)	;;
+    LDFLAGS)	;;
+    DFLAGS)	C_DFLAGS=$DEFAULT_C_DFLAGS ;;
+    LIBS)	C_LIBS=$DEFAULT_C_LIBS;;
+    SRCDIR)	C_SRCDIR=$DEFAULT_C_SRCDIR ;;
+    BLDDIR)	C_BLDDIR=$DEFAULT_C_BLDDIR ;;
+    ARCH)	;;
+    ARCHPATT)	C_ARCHPATT="$DEFAULT_C_ARCHPATT" ;;
+    MAKE)	C_MAKE=$DEFAULT_C_MAKE ;;
+    *)	echo 'Unrecognized configurable parameter "'$cp'"'
+	echo 'Recognized configurable paramaters : '$CONFIG_PARMS
+	echo 'Aborting.'
+	exit 1
+	;;
+    esac
+  fi
+done
+
+for cp in $BOOL_PARMS
+do
+  if test -z "`eval echo '$B_'$cp`" -a -n "`eval echo '$DEFAULT_B_'$cp`"
+  then
+    eval "B_$cp=\"`eval echo '$DEFAULT_B_'$cp`\""
+  fi
+done
+
+# *both* "auto" *and* "query" do not make sense
+if test -n "$B_auto" -a -n "$B_query"
+then
+  echo
+  echo 'Options "auto" and "query" simultaneously do not make sense.'
+  echo 'Dropping option "auto".'
+  B_auto=
+fi
+
+# add the debug / optimization flags if necessary
+test -n "$B_debug"    && DEFAULT_C_CFLAGS="$DEFAULT_C_FLAGS "'$(CFLAGS_g)'
+test -z "$B_noopt"    && DEFAULT_C_CFLAGS="$DEFAULT_C_FLAGS "'$(CFLAGS_O)'
+test -n "$B_zshdebug" && DEFAULT_C_DFLAGS="$DEFAULT_C_FLAGS "'$(CFLAGS_D)'
+
+# SRCDIR and BLDDIR sanity check
+# (sanity = empty if just ".",_one_ trailing "/" if non-empty )
+
+test Z"$C_SRCDIR" = Z"." && C_SRCDIR=
+test -n "$C_SRCDIR" && SRCDIR="`echo $C_SRCDIR/ | sed 's%//*$%/%'`"
+test Z"$C_BLDDIR" = Z"." && C_BLDDIR=
+test -n "$C_BLDDIR" && BLDDIR="`echo $C_BLDDIR/ | sed 's%//*$%/%'`"
+
+# whether the building and the source directory are the same
+test Z"`(cd $C_BLDDIR;pwd)`" = Z"`(cd $C_SRCDIR;pwd)`" && F_bld_eq_src=yep
+
+MAKEFILE=${C_BLDDIR}Makefile

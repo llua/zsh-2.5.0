@@ -1,0 +1,34 @@
+       read [ -rzpqAclneE ] [ -k [ num ] ] [ -un ]  [
+              name?prompt  ]  [ name ...  ]
+              Read one line and break it into  fields  using  the
+              characters  in IFS as separators.  In raw mode, -r,
+              a \ at the end of a line does not signify line con-
+              tinuation.   With the -q flag read only one charac-
+              ter and set name to `y' if this character  was  `y'
+              or  `Y'  and  to  `n' otherwise.  If the -k flag is
+              given read only one (or num) characters.  If the -z
+              flag  is  set,  read  from the editor buffer stack.
+              The first field is assigned to the first name,  the
+              second  field  to the second name, etc., with left-
+              over fields assigned to the last name.  If  the  -e
+              or the -E flag is given, the words read are printed
+              after the whole line is read. If  the  -e  flag  is
+              set,  the words are not assigned to the parameters.
+              If the -A flag is set, the first name is  taken  as
+              the  name of an array and all words are assigned to
+              it.  The -c and -l flags are allowed only if called
+              inside  a  function  used for completion (specified
+              with the -K flag to compctl). If  the  -c  flag  is
+              given,  the  words of the current command are read.
+              If the -l flag is given, the whole line is assigned
+              as  a  scalar.  Together  with  the  -n  flag these
+              options give the number of the word the  cursor  is
+              on  and the index of the character the cursor is on
+              respectively.  If name is  omitted  then  REPLY  is
+              used  for  scalars and reply for arrays.  If -un is
+              specified, then input is read from file  descriptor
+              n;  if -p is specified, then input is read from the
+              coprocess.  If the first argument contains a ?, the
+              remainder of this word is used as a prompt on stan-
+              dard error when the shell is interactive.  The exit
+              status is 0 unless an end-of-file is encountered.

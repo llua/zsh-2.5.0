@@ -1,0 +1,10 @@
+       disable [ -m ] arg ...
+              Disable the builtin arg temporarily.   This  allows
+              you  to  use an external command with the same name
+              as a shell builtin.  Without arguments all disabled
+              builtins  are  printed,  with the -m flag the argu-
+              ments are taken as patterns (should  be  quoted  to
+              preserve  them  from  being taken as glob patterns)
+              and all builtins matching these patterns  are  dis-
+              abled.   Actually the same as unhash.  Builtins can
+              be enabled with the enable command.

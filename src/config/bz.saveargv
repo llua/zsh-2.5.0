@@ -1,0 +1,13 @@
+# --- (argument vector saving)
+
+_argv=
+for _argi in "$@"
+do
+  # @@@ ["'] should actually be escaped with \
+  if test Z"`echo \"$_argi\"|egrep '[ 	]'`" != Z
+  then
+    _argv="$_argv \"$_argi\""
+  else
+    _argv="$_argv $_argi"
+  fi
+done

@@ -1,0 +1,36 @@
+#! /bin/sh
+
+if test "x$VERSION" != x
+then
+setopt shwordsplit
+unsetopt cshjunkiequotes noclobber extendedglob noequals
+fi
+
+VERSION=`sed 's/.*"\(.*\)".*/\1/' version.h`
+
+if test "Z$1" != "Zhelp"
+then
+cat <<foo
+#
+# buildzsh -- zsh configuration tool
+#
+# try "buildzsh help" for more information
+#
+
+Building $VERSION
+foo
+fi
+
+# the real scripts are at src/config/
+
+PATH=config:$PWD:$PATH;export PATH
+
+. ./config/bz.init
+. ./config/bz.argh
+. ./config/bz.check
+. ./config/bz.hosttype
+. ./config/bz.hs
+. ./config/bz.Makefile
+. ./config/bz.finale
+
+exit 0

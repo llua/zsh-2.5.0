@@ -1,0 +1,3367 @@
+Path: news.csc.fi!news.eunet.fi!EU.net!uunet!sparky!not-for-mail
+From: zsh-list@sterling.com (Bas de Bakker)
+Newsgroups: comp.sources.misc
+Subject: v43i103:  zsh - The Z shell, version 2.5.0, Part14/18
+Followup-To: comp.sources.d
+Date: 13 Jul 1994 23:07:08 -0500
+Organization: Sterling Software
+Lines: 3352
+Sender: kent@sparky.sterling.com
+Approved: kent@sparky.sterling.com
+Message-ID: <302dlc$63@sparky.sterling.com>
+References: <csm-v43i089=zsh.230017@sparky.sterling.com>
+NNTP-Posting-Host: sparky.sterling.com
+X-Md4-Signature: 4b3464b17b6e50ee6a859e2fea66d895
+
+Submitted-by: zsh-list@sterling.com (Bas de Bakker)
+Posting-number: Volume 43, Issue 103
+Archive-name: zsh/part14
+Environment: UNIX
+Supersedes: zsh: Volume 35, Issue 51-72
+
+#! /bin/sh
+# This is a shell archive.  Remove anything before this line, then feed it
+# into a shell via "sh file" or similar.  To overwrite existing files,
+# type "sh file -c".
+# Contents:  zsh-2.5.0/dots/zcomp zsh-2.5.0/help/autoload
+#   zsh-2.5.0/src/hist.c zsh-2.5.0/src/jobs.c
+#   zsh-2.5.0/src/zle_bindings.c
+# Wrapped by kent@sparky on Tue Jul 12 16:47:25 1994
+PATH=/bin:/usr/bin:/usr/ucb:/usr/local/bin:/usr/lbin:$PATH ; export PATH
+echo If this archive is complete, you will see the following message:
+echo '          "shar: End of archive 14 (of 18)."'
+if test -f 'zsh-2.5.0/dots/zcomp' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/dots/zcomp'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/dots/zcomp'\" \(10755 characters\)
+  sed "s/^X//" >'zsh-2.5.0/dots/zcomp' <<'END_OF_FILE'
+X# This file gives some examples of compctl commands. The name zcomp
+X# does not mean anything to zsh, you can either put the compctl commands
+X# in your .zshrc or include a separate file from your .zshrc with the
+X# source command.
+X
+X# These are just examples, use and modify to personal taste.  Copying this
+X# file without thought will needlessly increase zsh's memory usage and
+X# startup time.
+X
+X# For an explanation of what all this means, read either the
+X# introduction for some explanation or the manual for a detailed
+X# description.
+X
+X# Rmdir only real directories
+Xcompctl -g '*(/)' rmdir dircmp
+X
+X# Strip, profile, and debug only executables.  The compctls for the
+X# debuggers could be better, of course.
+Xcompctl -g '*(*)' strip gprof adb dbx xdbx ups
+X
+X# See the func/cdmatch function in the distribution
+Xcompctl -K cdmatch -S '/' -x 'S[/][~]' -g '*(-/)' -- cd pushd
+X
+X# For rcs users, co and rlog from the RCS directory.  We don't want to see
+X# the RCS and ,v though.
+Xcompctl -g 'RCS/*(:t:s/\,v//)' co rlog rcs
+X
+X# Run ghostscript on postscript files, but if no postscript file matches what
+X# we already typed, complete directories as the postscript file may not be in
+X# the current directory.
+Xcompctl -g '*.ps' + -g '*(-/)' gs ghostview psps pstops psmulti psselect
+X
+X# Similar things for tex, texinfo and dvi files.
+Xcompctl -g '*.tex*' + -g '*(-/)' tex latex texi2dvi glatex slitex gslitex
+Xcompctl -g '*.dvi' + -g '*(-/)' xdvi dvips
+X
+X# Anything after nohup is a command by itself with its own completion
+X# (the one for the trap builtin isn't perfect -- it does not complete
+X# signal names)
+Xcompctl -l '' nohup exec nice eval trap
+Xcompctl -l '' -x 'p[1]' -B -- builtin
+X
+X# If the command is rsh, make the first argument complete to hosts and treat the
+X# rest of the line as a command on its own.
+Xcompctl -k hosts -x 'p[2,-1]' -l '' -- rsh
+X
+X# kill takes signal names as the first argument after -, but job names after %
+Xcompctl -j -P % -x 's[-] p[1]' -k signals -- kill
+X
+X# gzip files, but gzip -d only gzipped or compressed files
+Xcompctl -f -x 'R[-*d,^*]' -g '*.gz *.z *.Z' + -g '*(-/)' -- gzip
+Xcompctl -g '*.gz *.z *.Z' + -g '*(-/)' gunzip   # zcat if you use GNU
+Xcompctl -g '*.Z' + -g '*(-/)' uncompress zmore  # zcat if you don't use GNU
+Xcompctl -g '*.F' + -g '*(-/)' melt fcat
+X
+X# find is very system dependend, this one is for GNU find.
+Xcompctl -x 's[-]' -k "(daystart depth follow maxdepth mindepth noleaf version xdev \
+Xamin anewer cmin cnewer ctime empty false fstype gid group inum links lname mmin \
+Xmtime name newer nouser nogroup path perm regex size true type uid used user xtype \
+Xexec fprint fprint0 fprintf ok print print0 printf prune ls)" - \
+X'p[1]' -g '. .. *(-/)' - \
+X'c[-1,-anewer][-1,-cnewer][-1,-newer][-1,-fprint][-1,fprint0][-1,fprintf]' -f - \
+X'c[-1,-fstype]' -k '(ufs 4.2 4.3 nfs tmp mfs S51K S52K)' - \
+X'c[-1,-group]' -s '$(groups)' - \
+X'c[-1,-user]' -u - \
+X'r[-exec,;][-ok,;]' -l '' -- find
+X
+X# xsetroot: gets possible colours, cursors and bitmaps from wherever.
+X# Uses two auxiliary functions.  You might need to change the path names.
+XXcolours() { reply=($(awk '{ print $4 }' < /usr/lib/X11/X11/rgb.txt)) }
+XXcursor() { reply=($(awk '/^#define/ {print $2}' \
+X</usr/include/X11/cursorfont.h | sed 's/^XC_//')) }
+Xcompctl -k '(-help -def -display -cursor -cursor_name -bitmap -mod -fg -bg
+X  -grey -rv -solid -name)' -x 'c[-1,-display]' -k hosts -S ':0.0' - \
+X  'c[-1,-cursor]' -f -  'c[-2,-cursor]' -f - \
+X  'c[-1,-bitmap]' -g '/usr/include/X11/bitmaps/*' - \
+X  'c[-1,-cursor_name]' -K Xcursor - \
+X  'C[-1,-(solid|fg|bg)]' -K Xcolours -- xsetroot
+X
+X# Default completion.  See func/multicomp
+Xcompctl -D -f + -U -K multicomp
+X# If completion of usernames is slow for you, you may want to add something
+X# like
+X#    -x 'C[0,*/*]' -f - 's[~]' -S/ -k users + -u
+X# where `users' contains the names of the users you want to complete often.
+X# If you want to use this and to be able to complete named directories after
+X# the `~' you should add `+ -n' at the end
+X
+X
+X# rlogin takes hosts and users after `-l'
+Xcompctl -k hosts -x 'c[-1,-l]' -u -- rlogin
+X
+X# su takes an username and args for the shell, the `-c' case is
+X# handled specially here
+Xcompctl -u -x 'w[2,-c] p[3,-1]' -l '' -- su
+X
+X# Some systems have directories containing indices of ftp servers.
+X# For example: we have the directory /home/ftp/index/INDEX containing
+X# files of the form `<name>-INDEX.Z', this leads to:
+Xcompctl -g '/home/ftp/index/INDEX/*-INDEX.Z(:t:r:s/-INDEX//)' ftp tftp
+X
+X# There are (at least) two ways to complete manual pages.  This one is
+X# extremely memory expensive if you have lots of man pages
+Xman_var() {
+X  man_pages=( $^manpath/man*/*(N:t:r) )   # Check your setting of SH_WORD_SPLIT
+X  compctl -k man_pages man
+X  reply=( $man_pages )
+X}
+Xcompctl -K man_var man
+X# This one isn't that expensive but somewhat slower
+Xman_glob () {
+X  local a
+X  read -cA a
+X  if [[ $a[2] = -s ]] then         # Or [[ $a[2] = [0-9]* ]] for BSD
+X    reply=( $^manpath/man$a[3]/$1*$2(N:t:r) )    # See above
+X  else
+X    reply=( $^manpath/man*/$1*$2(N:t:r) )    # See above
+X  fi
+X}
+Xcompctl -K man_glob man
+X
+X# Misc.
+Xcompctl -s '$(groups)' newgrp
+Xcompctl -f -x 'p[1]' -s '$(groups)' -- chgrp
+Xcompctl -f -x 'p[1]' -u -- chown
+Xcompctl -g '*.x' + -g '*(-/)' rpcgen
+Xcompctl -g "*.[cCoa]" -x 's[-I]' -g "*(/)" - \
+X  's[-l]' -s '${(s.:.)LD_LIBRARY_PATH}/lib*.a(:t:r:s/lib//)' -- cc gcc
+Xcompctl -f -x 'C[-1,*f*] p[2]' -g "*.tar" -- tar
+Xcompctl -u -x 's[+] c[-1,-f],s[-f+]' -g '~/Mail/*(:t)' - \
+X  's[-f],c[-1,-f]' -f -- mail elm
+X
+X# Some builtins.
+Xcompctl -j -P % fg bg wait jobs disown
+Xcompctl -A shift
+Xcompctl -caF type whence which
+Xcompctl -F unfunction
+Xcompctl -a unalias
+Xcompctl -v unset typeset declare vared readonly export integer
+Xcompctl -e disable
+Xcompctl -d enable
+Xcompctl -k '(cputime filesize datasize stacksize coredumpsize resident \
+X  memoryuse memorylocked descriptors openfiles vmemorysize)' limit ulimit
+Xcompctl -l '' -x 'p[1]' -f -- . source
+X
+X# Various MH completions by Peter Stephenson
+X# Still to do:
+X# Support for searching for files in standard MH locations.
+X
+X# mhcomp is best autoloaded.  Edit path where indicated.
+Xfunction mhcomp {
+X  # Completion function for MH folders.
+X  # Works with both + (rel. to top) and @ (rel. to current).
+X  local nword args pref char mhpath
+X  integer ngtrue
+X  read -nc nword
+X  read -cA args
+X
+X  [[ -o nullglob ]] && ngtrue=1 || setopt nullglob
+X
+X  pref=$args[$nword]
+X  char=$pref[1]
+X  pref=$pref[2,-1]
+X
+X# The `...`'s here account for most of the time spent in this function.
+X  if [[ $char = + ]]; then
+X#    mhpath=`mhpath +`
+X# EDIT ME:  Use a hard wired value here: it's faster.
+X    mhpath=~/Mail
+X  elif [[ $char = @ ]]; then
+X    mhpath=`mhpath`
+X  fi
+X
+X  reply="reply=($mhpath/$pref*(-/))"
+X  eval $reply
+X
+X  # I'm frankly amazed that this next step works, but it does.
+X  reply=(${reply#$mhpath/})
+X
+X  (( ngtrue )) || unsetopt nullglob
+X}
+X
+Xmhfseq() { set -A reply $(mark | awk -F: '{print $1}') \
+Xnext cur prev first last all unseen }
+X
+Xcompctl -K mhfseq -x 's[+][@]' -K mhcomp -S / -q - \
+X  's[-]' -k '(all fast nofast header noheader help list nolist \
+X  pack nopack pop push recurse norecurse total nototal)' -- folder
+Xcompctl -K mhfseq -x 's[+][@],c[-1,-draftfolder] s[+][@]' \
+X  -K mhcomp -S / -q - 'c[-1,-draftmessage]' -K mhfseq - \
+X  'C[-1,-(editor|whatnowproc)]' -c - \
+X  's[-]' -k '(draftfolder draftmessage nodraftfolder editor noedit \
+X  file form use nouse whatnowproc nowhatnowproc help)' -- comp
+Xcompctl -K mhfseq + -x 's[+][@]' -K mhcomp -S / -q - \
+X  's[-]' -k '(audit noaudit changecur nochangecur form format \
+X  file silent nosilent truncate notruncate width help)' - \
+X  'C[-1,-(audit|form|file)]' -f -- inc
+Xcompctl -K mhfseq -x 's[+][@],C[-1,-src] s[+][@]' \
+X  -K mhcomp -S / -q - 'c[-1,-file]' -f - 'c[-1,-rmmprov]' -c - \
+X  's[-]' -k '(draft link nolink preserve nopreserve src file \
+X  rmmproc normmproc help)' -- refile
+Xcompctl -K mhfseq -x 's[+][@],C[-1,-(draftfolder|fcc)] s[+][@]' \
+X  -K mhcomp -S / -q - 'c[-1,-draftmessage]' -K mhfseq -\
+X  's[-]' -k '(annotate noannotate cc nocc draftfolder nodraftfolder \
+X  draftmessage editor noedit fcc filter form inplace noinplace query \
+X  noquery width whatnowproc nowhatnowproc help)' - 'c[-1,(cc|nocc)]' \
+X  -k '(all to cc me)' - 'C[-1,-(filter|form)]' -f - \
+X  'C[-1,-(editor|whatnowproc)]' -c -- repl
+Xcompctl -K mhfseq -x 's[+][@]' -K mhcomp -S / -q - \
+X  's[-]' -k '(clear noclear form format header noheader reverse noreverse \
+X  file help width)' - 'C[-1,-(file|form)]' -f -- scan
+Xcompctl -K mhfseq -x 's[+][@]'  -K mhcomp -S / -q - \
+X  's[-]' -k '(draft header noheader showproc noshowproc)' - \
+X  'c[-1,showproc]' -c -- show
+Xcompctl -K mhfseq -x 's[+][@]' -K mhcomp -S / -q - 's[-]' \
+X  -k '(help)' -- rmm
+X
+X# End of MH completions
+X
+X# By Bart Schaefer
+X# CVS -- there's almost no way to make this all-inclusive, but ...
+X#
+Xcvsflags=(-H -Q -q -r -w -l -n -t -v -b -e -d)
+Xcvscmds=(add admin checkout commit diff history import export log rdiff
+X	    release remove status tag rtag update)
+X
+X# diff assumes gnu rcs using gnu diff
+X# log assumes gnu rcs
+X
+Xcompctl -k "($cvscmds $cvsflags)" \
+X    -x "c[-1,-D]" -k '(today yesterday 1\\\ week\\\ ago)' \
+X    - "r[add,;]" -k "(-k -m)" -f \
+X    - "r[admin,;]" -K cvstargets \
+X    - "r[checkout,;]" -k "(-A -N -P -Q -c -f -l -n -p -q -s -r -D -d -k -j)" \
+X    - "r[commit,;]" -k "(-n -R -l -f -m -r)"  -K cvstargets \
+X    - "r[diff,;]" -k "(-l -D -r -c -u -b -w)" -K cvstargets \
+X    - "r[history,;]" \
+X	-k "(-T -c -o -m -x -a -e -l -w -D -b -f -n -p -r -t -u)" \
+X	-K cvstargets \
+X    - "r[history,;] c[-1,-u]" -u \
+X    - "r[import,;]" -k "(-Q -q -I -b -m)" -f \
+X    - "r[export,;]" -k "(-N -Q -f -l -n -q -r -D -d)" -f \
+X    - "R[(r|)log,;]" -k "(-l -R -h -b -t -r -w)" -K cvstargets \
+X    - 'R[(r|)log,;] s[-w] n[-1,,],s[-w]' -u -S , -q \
+X    - "r[rdiff,;]" -k "(-Q -f -l -c -u -s -t -D -r -V)" -K cvstargets \
+X    - "r[release,;]" -k "(-Q -d -q)" -f \
+X    - "r[remove,;]" -k "(-l -R)" -K cvstargets \
+X    - "r[status,;]" -k "(-v -l -R)" -K cvstargets \
+X    - "r[tag,;]" -k "(-Q -l -R -q -d -b)" -K cvstargets \
+X    - "r[rtag,;]" -k "(-Q -a -f -l -R -n -q -d -b -r -D)" -f \
+X    - "r[update,;]" -k "(-A -P -Q -d -f -l -R -p -q -k -r -D -j -I)" \
+X	-K cvstargets \
+X    -- cvs
+Xunset cvsflags cvscmds
+X
+Xcvstargets() {
+X    local nword args pref ngtrue f
+X    [[ -o nullglob ]] && ngtrue=1
+X    setopt nullglob
+X    read -nc nword; read -Ac args
+X    pref=$args[$nword]
+X    if [[ -d $pref:h && ! -d $pref ]]
+X    then
+X	pref=$pref:h
+X    elif [[ $pref != */* ]]
+X    then
+X	pref=
+X    fi
+X    [[ -n "$pref" && "$pref" != */ ]] && pref=$pref/
+X    reply=($(for f in $(cat ${pref}CVS/Entries 2>/dev/null | \
+X    		sed 's/^\/\([^\/]*\).*/\1/'); do echo $pref$f; done)
+X	   $(echo ${pref}**/CVS(:h) | sed 's/CVS//'))
+X    [[ $ngtrue = 1 ]] || unsetopt nullglob
+X}
+END_OF_FILE
+  if test 10755 -ne `wc -c <'zsh-2.5.0/dots/zcomp'`; then
+    echo shar: \"'zsh-2.5.0/dots/zcomp'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/dots/zcomp'
+fi
+if test -f 'zsh-2.5.0/help/autoload' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/help/autoload'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/help/autoload'\" \(316 characters\)
+  sed "s/^X//" >'zsh-2.5.0/help/autoload' <<'END_OF_FILE'
+X       autoload [ name ... ]
+X              For  each  of  the  names (which are names of func-
+X              tions), create a function  marked  undefined.   The
+X              fpath  variable will be searched to find the actual
+X              function definition when the function is first ref-
+X              erenced.
+END_OF_FILE
+  if test 316 -ne `wc -c <'zsh-2.5.0/help/autoload'`; then
+    echo shar: \"'zsh-2.5.0/help/autoload'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/help/autoload'
+fi
+if test -f 'zsh-2.5.0/src/hist.c' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/hist.c'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/hist.c'\" \(27109 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/hist.c' <<'END_OF_FILE'
+X/*
+X *
+X * hist.c - history expansion
+X *
+X * This file is part of zsh, the Z shell.
+X *
+X * This software is Copyright 1992 by Paul Falstad
+X *
+X * Permission is hereby granted to copy, reproduce, redistribute or otherwise
+X * use this software as long as: there is no monetary profit gained
+X * specifically from the use or reproduction of this software, it is not
+X * sold, rented, traded or otherwise marketed, and this copyright notice is
+X * included prominently in any copy made.
+X *
+X * The author make no claims as to the fitness or correctness of this software
+X * for any use whatsoever, and it is provided as is. Any use of this software
+X * is at the user's own risk.
+X *
+X */
+X
+X#include "zsh.h"
+X
+Xstatic Histent curhistent;
+X
+Xstatic int lastc;
+X
+X/* add a character to the current history word */
+X
+Xvoid hwaddc(c)			/**/
+Xint c;
+X{
+X    if (hlastw && chline && (!(errflag || lexstop) || c == HISTSPACE)) {
+X	if (c == '!' && unset(NOBANGHIST))
+X	    hwaddc('\\');
+X	*hptr++ = c;
+X	if (hptr - chline >= hlinesz) {
+X	    int ll, flag = 0, oldsiz = hlinesz;
+X
+X	    ll = hptr - hlastw;
+X	    if (curhistent->lex == chline)
+X		flag = 1;
+X	    chline = realloc(chline, hlinesz = oldsiz + 16);
+X	    if (flag)
+X		curhistent->lex = chline;
+X	    hptr = chline + oldsiz;
+X	    hlastw = hptr - ll;
+X	}
+X    }
+X}
+X
+X#define habort() { errflag = lexstop = 1; return ' '; }
+X
+X/* get a character after performing history substitution */
+X
+Xint hgetc()
+X{				/**/
+X    int c, ev, farg, evset = -1, larg, argc, cflag = 0, bflag = 0;
+X    static int mev = -1, marg = -1;
+X    char buf[256], *ptr;
+X    char *sline, *eline;
+X
+X  tailrec:
+X    c = hgetch();
+X    if (stophist || alstackind) {
+X	hwaddc(c);
+X	return c;
+X    }
+X    if (isfirstch && c == hatchar) {
+X	isfirstch = 0;
+X	hungetch(hatchar);
+X	hungets(":s");
+X	goto hatskip;
+X    }
+X    if (c != ' ')
+X	isfirstch = 0;
+X    if (c == '\\') {
+X	int g = hgetch();
+X
+X	if (g != bangchar)
+X	    hungetch(g);
+X	else {
+X	    hwaddc(bangchar);
+X	    return bangchar;
+X	}
+X    }
+X    if (c != bangchar) {
+X	hwaddc(c);
+X	return c;
+X    }
+X  hatskip:
+X    *hptr = '\0';
+X    if ((c = hgetch()) == '{') {
+X	bflag = cflag = 1;
+X	c = hgetch();
+X    }
+X    if (c == '\"') {
+X	stophist = 1;
+X	goto tailrec;
+X    }
+X    if ((!cflag && inblank(c)) || c == '=' || c == '(' || lexstop) {
+X	if (lexstop)
+X	    lexstop = 0;
+X	else
+X	    hungetch(c);
+X	hwaddc(bangchar);
+X	return bangchar;
+X    }
+X    cflag = 0;
+X    ptr = buf;
+X
+X/* get event number */
+X
+X    if (c == '?') {
+X	for (;;) {
+X	    c = hgetch();
+X	    if (c == '?' || c == '\n' || lexstop)
+X		break;
+X	    else
+X		*ptr++ = c;
+X	}
+X	if (c != '\n' && !lexstop)
+X	    c = hgetch();
+X	*ptr = '\0';
+X	mev = ev = hconsearch(hsubl = ztrdup(buf), &marg);
+X	evset = 0;
+X	if (ev == -1) {
+X	    herrflush();
+X	    zerr("no such event: %s", buf, 0);
+X	    habort();
+X	}
+X    } else {
+X	int t0;
+X
+X	for (;;) {
+X	    if (inblank(c) || c == ';' || c == ':' || c == '^' || c == '$' ||
+X		c == '*' || c == '%' || c == '}' ||
+X		c == '\'' || c == '"' || c == '`' || lexstop)
+X		break;
+X	    if (ptr != buf) {
+X		if (c == '-')
+X		    break;
+X		if ((idigit(buf[0]) || buf[0] == '-') && !idigit(c))
+X		    break;
+X	    }
+X	    *ptr++ = c;
+X	    if (c == '#' || c == bangchar) {
+X		c = hgetch();
+X		break;
+X	    }
+X	    c = hgetch();
+X	}
+X	*ptr = 0;
+X	if (!*buf)
+X	    if (c != '%') {
+X		if (isset(CSHJUNKIEHISTORY))
+X		    ev = curhist - 1;
+X		else
+X		    ev = defev;
+X		if (c == ':' && evset == -1)
+X		    evset = 0;
+X		else
+X		    evset = 1;
+X	    } else {
+X		if (marg != -1)
+X		    ev = mev;
+X		else
+X		    ev = defev;
+X		evset = 0;
+X	} else if ((t0 = atoi(buf))) {
+X	    ev = (t0 < 0) ? curhist + t0 : t0;
+X	    evset = 1;
+X	} else if ((unsigned)*buf == bangchar) {
+X	    ev = curhist - 1;
+X	    evset = 1;
+X	} else if (*buf == '#') {
+X	    ev = curhist;
+X	    evset = 1;
+X	} else if ((ev = hcomsearch(buf)) == -1) {
+X	    zerr("event not found: %s", buf, 0);
+X	    while (c != '\n' && !lexstop)
+X		c = hgetch();
+X	    habort();
+X	} else
+X	    evset = 1;
+X    }
+X
+X/* get the event */
+X
+X    if (!(eline = getevent(defev = ev)))
+X	habort();
+X
+X/* extract the relevant arguments */
+X
+X    argc = getargc(eline);
+X    if (c == ':') {
+X	cflag = 1;
+X	c = hgetch();
+X	if (c == '%' && marg != -1) {
+X	    if (!evset) {
+X		eline = getevent(defev = mev);
+X		argc = getargc(eline);
+X	    } else {
+X		zerr("Ambiguous history reference", NULL, 0);
+X		while (c != '\n' && !lexstop)
+X		    c = hgetch();
+X		habort();
+X	    }
+X
+X	}
+X    }
+X    if (c == '*') {
+X	farg = 1;
+X	larg = argc;
+X	cflag = 0;
+X    } else {
+X	hungetch(c);
+X	larg = farg = getargspec(argc, marg, evset);
+X	if (larg == -2)
+X	    habort();
+X	if (farg != -1)
+X	    cflag = 0;
+X	c = hgetch();
+X	if (c == '*') {
+X	    cflag = 0;
+X	    larg = argc;
+X	} else if (c == '-') {
+X	    cflag = 0;
+X	    larg = getargspec(argc, marg, evset);
+X	    if (larg == -2)
+X		habort();
+X	    if (larg == -1)
+X		larg = argc - 1;
+X	} else
+X	    hungetch(c);
+X    }
+X    if (farg == -1)
+X	farg = 0;
+X    if (larg == -1)
+X	larg = argc;
+X    if (!(sline = getargs(eline, farg, larg)))
+X	habort();
+X
+X/* do the modifiers */
+X
+X    for (;;) {
+X	c = (cflag) ? ':' : hgetch();
+X	cflag = 0;
+X	if (c == ':') {
+X	    int gbal = 0;
+X
+X	    if ((c = hgetch()) == 'g') {
+X		gbal = 1;
+X		c = hgetch();
+X	    }
+X	    switch (c) {
+X	    case 'p':
+X		histdone = HISTFLAG_DONE | HISTFLAG_NOEXEC;
+X		break;
+X	    case 'h':
+X		if (!remtpath(&sline)) {
+X		    herrflush();
+X		    zerr("modifier failed: h", NULL, 0);
+X		    habort();
+X		}
+X		break;
+X	    case 'e':
+X		if (!rembutext(&sline)) {
+X		    herrflush();
+X		    zerr("modifier failed: e", NULL, 0);
+X		    habort();
+X		}
+X		break;
+X	    case 'r':
+X		if (!remtext(&sline)) {
+X		    herrflush();
+X		    zerr("modifier failed: r", NULL, 0);
+X		    habort();
+X		}
+X		break;
+X	    case 't':
+X		if (!remlpaths(&sline)) {
+X		    herrflush();
+X		    zerr("modifier failed: t", NULL, 0);
+X		    habort();
+X		}
+X		break;
+X	    case 's':
+X		{
+X		    int del;
+X		    char *ptr1, *ptr2;
+X
+X		    del = hgetch();
+X		    ptr1 = hdynread2(del);
+X		    if (!ptr1)
+X			habort();
+X		    ptr2 = hdynread2(del);
+X		    if (strlen(ptr1)) {
+X			zsfree(hsubl);
+X			hsubl = ptr1;
+X		    }
+X		    zsfree(hsubr);
+X		    hsubr = ptr2;
+X		    if (hsubl && !ztrstr(sline, hsubl)) {
+X			herrflush();
+X			zerr("substitution failed", NULL, 0);
+X			habort();
+X		    }
+X		}
+X	    case '&':
+X		if (hsubl && hsubr)
+X		    subst(&sline, hsubl, hsubr, gbal);
+X		else {
+X		    herrflush();
+X		    zerr("no previous substitution with &", NULL, 0);
+X		    habort();
+X		}
+X		break;
+X	    case 'q':
+X		quote(&sline);
+X		break;
+X	    case 'x':
+X		quotebreak(&sline);
+X		break;
+X	    case 'l':
+X		downcase(&sline);
+X		break;
+X	    case 'u':
+X		upcase(&sline);
+X		break;
+X	    default:
+X		herrflush();
+X		zerr("illegal modifier: %c", NULL, c);
+X		habort();
+X	    }
+X	} else {
+X	    if (c != '}' || !bflag)
+X		hungetch(c);
+X	    if (c != '}' && bflag) {
+X		zerr("'}' expected", NULL, 0);
+X		habort();
+X	    }
+X	    break;
+X	}
+X    }
+X
+X/* stuff the resulting string in the input queue and start over */
+X
+X    lexstop = 0;
+X    if (alstackind != MAXAL) {
+X	hungets(HISTMARK);
+X	alstack[alstackind++] = NULL;
+X    }
+X    for (ptr = sline; *ptr; ptr++) {
+X	if (ptr[0] == '\\' && ptr[1] == '!')
+X	    chuck(ptr);
+X    }
+X    hungets(sline);
+X    histdone |= HISTFLAG_DONE;
+X    if (isset(HISTVERIFY))
+X	histdone |= HISTFLAG_NOEXEC | HISTFLAG_RECALL;
+X    goto tailrec;
+X}
+X
+X/* reset the alias stack for lexrestore () */
+X
+Xvoid clearalstack()
+X{				/**/
+X    Alias ix;
+X
+X    while (alstackind) {
+X	ix = alstack[--alstackind];
+X	ix->inuse = 0;
+X    }
+X}
+X
+X/* get a character without history expansion */
+X
+Xint hgetch()
+X{				/**/
+X    unsigned char *hgetchline, *hgetchpmpt = NULL, *hgetchpmpt2 = NULL;
+X    int plen, p2len = 0;
+X
+X  start:
+X    if (inbufct) {
+X	inbufct--;
+X	if ((lastc = *inbufptr++) == ALPOP && alstackind > 0) {
+X	    Alias ix;
+X	    char *t;
+X
+X	    ix = alstack[--alstackind];
+X	    if (ix) {
+X		ix->inuse = 0;
+X		t = ix->text;
+X		if (*t && t[strlen(t) - 1] == ' ')
+X		    alstat = ALSTAT_MORE;
+X		else
+X		    alstat = ALSTAT_JUNK;
+X	    }
+X	    goto start;
+X	}
+X	if (itok(lastc))
+X	    goto start;
+X	return lastc;
+X    }
+X    if (strin || errflag) {
+X	lexstop = 1;
+X	return lastc = ' ';
+X    }
+X    if (interact && isset(SHINSTDIN))
+X	if (!isfirstln)
+X	    hgetchpmpt = (unsigned char *)putprompt(prompt2, &plen, 0);
+X	else {
+X	    hgetchpmpt = (unsigned char *)putprompt(prompt, &plen, 0);
+X	    if (rprompt)
+X		hgetchpmpt2 = (unsigned char *)putprompt(rprompt, &p2len, 0);
+X	    else
+X		hgetchpmpt2 = NULL, p2len = 0;
+X	}
+X    if (!(interact && isset(SHINSTDIN) && SHTTY != -1 && isset(USEZLE))) {
+X	char *lbuf;
+X
+X	if (interact && isset(SHINSTDIN))
+X	    write(2, (WRITE_ARG_2_T) hgetchpmpt, strlen((char *)hgetchpmpt));
+X	hgetchline = (unsigned char *)fgets(lbuf = (char *)zalloc(256), 256, bshin);
+X	if (!hgetchline)
+X	    zfree(lbuf, 256);
+X    } else
+X	hgetchline = zleread(hgetchpmpt, hgetchpmpt2, plen, p2len);
+X    if (!hgetchline) {
+X	lexstop = 1;
+X	return lastc = ' ';
+X    }
+X    if (errflag) {
+X	free(hgetchline);
+X	lexstop = errflag = 1;
+X	return lastc = ' ';
+X    }
+X    if (interact && isset(SHINSTDIN)) {
+X	char *s = curhistent->lit;
+X
+X	curhistent->lit = tricat("", s, (char *)hgetchline);
+X	zsfree(s);
+X    }
+X    if (isfirstln)
+X	spaceflag = *hgetchline == ' ';
+X    if (isset(VERBOSE)) {
+X	fputs((char *)hgetchline, stderr);
+X	fflush(stderr);
+X    }
+X    if (*hgetchline && hgetchline[strlen((char *)hgetchline) - 1] == '\n') {
+X	lineno++;
+X	if (interact && isset(SUNKEYBOARDHACK) && isset(SHINSTDIN) &&
+X	    SHTTY != -1 && *hgetchline && hgetchline[1] &&
+X	    hgetchline[strlen((char *)hgetchline) - 2] == '`') {
+X	    int ct;
+X	    unsigned char *ptr;
+X
+X	    for (ct = 0, ptr = hgetchline; *ptr; ptr++)
+X		if (*ptr == '`')
+X		    ct++;
+X	    if (ct & 1) {
+X		ptr[-2] = '\n';
+X		ptr[-1] = '\0';
+X	    }
+X	}
+X    }
+X    isfirstch = 1;
+X    hungets((char *)hgetchline);
+X    free(hgetchline);
+X    goto start;
+X}
+X
+X/* Read one line of at most n-1 chars from the input queue */
+X
+Xchar *hgets(buf, n)		/**/
+Xchar *buf;
+Xint n;
+X{
+X    int l;
+X
+X    for (l = 0; l < n - 1; l++)
+X	if ((buf[l] = hgetch()) == '\n' || lexstop)
+X	    break;
+X    buf[l + (lexstop ? 0 : 1)] = 0;
+X
+X    return (!lexstop || l) ? buf : NULL;
+X}
+X
+X/* put a string in the input queue */
+X
+Xvoid hungets(str)		/**/
+Xchar *str;
+X{
+X    int slen = strlen(str);
+X
+X/* shrink inbuf if it gets too big */
+X
+X    if (!inbufct && inbufsz > 65536) {
+X	free(inbuf);
+X	inbuf = (char *)zalloc(inbufsz = 256);
+X	inbufptr = inbuf + inbufsz;
+X	inbufct = 0;
+X    }
+X    if (slen + inbufct > inbufsz) {
+X	char *x;
+X
+X	while (slen + inbufct > inbufsz)
+X	    inbufsz *= 4;
+X	x = (char *)zalloc(inbufsz);
+X	memcpy(x + inbufsz - inbufct, inbufptr, inbufct);
+X	inbufptr = x + inbufsz - inbufct;
+X	free(inbuf);
+X	inbuf = x;
+X    }
+X    memcpy(inbufptr -= slen, str, slen);
+X    inbufct += slen;
+X}
+X
+X/* unget a char and remove it from chline */
+X
+Xvoid hungetc(c)			/**/
+Xint c;
+X{
+X    if (lexstop)
+X	return;
+X    if (hlastw) {
+X	if (hlastw == hptr)
+X	    zerr("hungetc attempted at buffer start", NULL, 0);
+X	else {
+X	    hptr--;
+X	    if (*hptr == '!' && unset(NOBANGHIST))
+X		hptr--;
+X	}
+X    }
+X    hungetch(c);
+X}
+X
+Xvoid hungetch(c)		/**/
+Xint c;
+X{
+X    if (lexstop)
+X	return;
+X    if (inbufct == inbufsz) {
+X	hungets(" ");
+X	*inbufptr = c;
+X    } else {
+X	*--inbufptr = c;
+X	inbufct++;
+X    }
+X}
+X
+X/* begin reading a string */
+X
+Xvoid strinbeg()
+X{				/**/
+X    strin = 1;
+X    hbegin();
+X    lexinit();
+X}
+X
+X/* done reading a string */
+X
+Xvoid strinend()
+X{				/**/
+X    hend();
+X    strin = 0;
+X    isfirstch = 1;
+X    histdone = 0;
+X}
+X
+X/* stuff a whole file into the input queue and print it */
+X
+Xint stuff(fn)			/**/
+Xchar *fn;
+X{
+X    FILE *in;
+X    char *buf;
+X    int len;
+X
+X    if (!(in = fopen(fn, "r"))) {
+X	zerr("can't open %s", fn, 0);
+X	return 1;
+X    }
+X    fseek(in, 0, 2);
+X    len = ftell(in);
+X    fseek(in, 0, 0);
+X    buf = (char *)alloc(len + 1);
+X    if (!(fread(buf, len, 1, in))) {
+X	zerr("read error on %s", fn, 0);
+X	fclose(in);
+X	zfree(buf, len + 1);
+X	return 1;
+X    }
+X    fclose(in);
+X    buf[len] = '\0';
+X    fwrite(buf, len, 1, stdout);
+X    hungets(buf);
+X    return 0;
+X}
+X
+X/* flush input queue */
+X
+Xvoid hflush()
+X{				/**/
+X    inbufptr += inbufct;
+X    inbufct = 0;
+X}
+X
+X/* initialize the history mechanism */
+X
+Xvoid hbegin()
+X{				/**/
+X    isfirstln = isfirstch = 1;
+X    histremmed = errflag = histdone = spaceflag = 0;
+X    stophist = !interact || isset(NOBANGHIST) || unset(SHINSTDIN);
+X    lithist = isset(HISTLIT);
+X    chline = hptr = zcalloc(hlinesz = 16);
+X    curhistent = gethistent(curhist);
+X    if (!curhistent->ftim)
+X	curhistent->ftim = time(NULL);
+X    if (interact && isset(SHINSTDIN) && !strin) {
+X	attachtty(mypgrp);
+X	defev = curhist++;
+X	if (curhist - histsiz >= 0)
+X	    if (gethistent(curhist - histsiz)->lex) {
+X		zsfree(gethistent(curhist - histsiz)->lex);
+X		gethistent(curhist - histsiz)->lex = NULL;
+X	    }
+X	if (curhist - lithistsiz >= 0)
+X	    if (gethistent(curhist - lithistsiz)->lit) {
+X		zsfree(gethistent(curhist - lithistsiz)->lit);
+X		gethistent(curhist - lithistsiz)->lit = NULL;
+X	    }
+X	curhistent = gethistent(curhist);
+X	curhistent->lex = chline;
+X	*(curhistent->lit = zalloc(1)) = '\0';
+X    } else
+X	histremmed = 1;
+X}
+X
+X/* say we're done using the history mechanism */
+X
+Xint hend()
+X{				/**/
+X    int flag, save = 1;
+X    Histent he;
+X
+X    if (!chline)
+X	return 1;
+X    if (!interact || strin || unset(SHINSTDIN)) {
+X	zfree(chline, hlinesz);
+X	return 1;
+X    }
+X    flag = histdone;
+X    histdone = 0;
+X    if (hptr < chline + 2)
+X	save = 0;
+X    else {
+X	char *s, *t;
+X
+X	s = curhistent->lit;
+X	if (*s && (*(t = s + strlen(s) - 1) == HISTSPACE || *t == '\n'))
+X	    *t = '\0';
+X	hptr[-1] = '\0';
+X	if (hptr[-2] == '\n')
+X	    if (chline[1]) {
+X		if (hptr[-3] == HISTSPACE)
+X		    hptr[-3] = '\0';
+X		else
+X		    hptr[-2] = '\0';
+X	    } else
+X		save = 0;
+X	he = gethistent(curhist - 1);
+X	if (!*chline || !strcmp(chline, "\n") ||
+X	    (isset(HISTIGNOREDUPS) && he->lex && !strcmp(he->lex, chline)) ||
+X	    (isset(HISTIGNORESPACE) && spaceflag))
+X	    save = 0;
+X    }
+X    if (flag & (HISTFLAG_DONE | HISTFLAG_RECALL)) {
+X	char *ptr, *p;
+X
+X	p = ptr = ztrdup(chline);
+X	for (; *p; p++)
+X	    if (*p == HISTSPACE)
+X		*p = ' ';
+X	if ((flag & (HISTFLAG_DONE | HISTFLAG_RECALL)) == HISTFLAG_DONE) {
+X	    fprintf(stderr, "%s\n", ptr);
+X	    fflush(stderr);
+X	}
+X	if (flag & HISTFLAG_RECALL) {
+X	    permalloc();
+X	    pushnode(bufstack, ptr);
+X	    lastalloc();
+X	    save = 0;
+X	} else
+X	    zsfree(ptr);
+X    }
+X    curhistent->stim = time(NULL);
+X    curhistent->ftim = 0L;
+X    curhistent->flags = 0;
+X    if (!save)
+X	remhist();
+X    if (chline && !curhistent->lex)
+X	zfree(chline, hlinesz);
+X    if (curhistent->lex) {
+X	char *s = ztrdup(curhistent->lex);
+X
+X	zfree(curhistent->lex, hlinesz);
+X	curhistent->lex = s;
+X    }
+X    chline = NULL;
+X    return !(flag & HISTFLAG_NOEXEC || errflag);
+X}
+X
+X/* remove the current line from the history List */
+X
+Xvoid remhist()
+X{				/**/
+X    if (!histremmed) {
+X	histremmed = 1;
+X	curhist--;
+X    }
+X}
+X
+X/* begin a word */
+X
+Xvoid hwbegin()
+X{				/**/
+X    hlastw = hptr;
+X}
+X
+X/* add a word to the history List */
+X
+Xchar *hwadd()
+X{				/**/
+X    if (hlastw && chline) {
+X	hwaddc(HISTSPACE);
+X	if (alstackind || strin)
+X	    if (!(alstackind == 1 && !alstack[0]))
+X		hptr = hlastw;
+X    }
+X    if (alstat == ALSTAT_JUNK)
+X	alstat = 0;
+X    return hlastw;
+X}
+X
+X/* get an argument specification */
+X
+Xint getargspec(argc, marg, evset)	/**/
+Xint argc;
+Xint marg;
+Xint evset;
+X{
+X    int c, ret = -1;
+X
+X    if ((c = hgetch()) == '0')
+X	return 0;
+X    if (idigit(c)) {
+X	ret = 0;
+X	while (idigit(c)) {
+X	    ret = ret * 10 + c - '0';
+X	    c = hgetch();
+X	}
+X	hungetch(c);
+X    } else if (c == '^')
+X	ret = 1;
+X    else if (c == '$')
+X	ret = argc;
+X    else if (c == '%') {
+X	if (evset) {
+X	    herrflush();
+X	    zerr("Ambiguous history reference", NULL, 0);
+X	    return -2;
+X	}
+X	if (marg == -1) {
+X	    herrflush();
+X	    zerr("%% with no previous word matched", NULL, 0);
+X	    return -2;
+X	}
+X	ret = marg;
+X    } else
+X	hungetch(c);
+X    return ret;
+X}
+X
+X/* do ?foo? search */
+X
+Xint hconsearch(str, marg)	/**/
+Xchar *str;
+Xint *marg;
+X{
+X    int t0, t1 = 0;
+X    char *s, *hs;
+X
+X    for (t0 = curhist - 1; (hs = quietgetevent(t0)); t0--)
+X	if ((s = ztrstr(hs, str))) {
+X	    while (s != hs)
+X		if (*s-- == HISTSPACE)
+X		    t1++;
+X	    *marg = t1;
+X	    return t0;
+X	}
+X    return -1;
+X}
+X
+X/* do !foo search */
+X
+Xint hcomsearch(str)		/**/
+Xchar *str;
+X{
+X    int t0;
+X    char *hs;
+X
+X    for (t0 = curhist - 1; (hs = quietgetevent(t0)); t0--)
+X	if (!strncmp(hs, str, strlen(str)))
+X	    return t0;
+X    return -1;
+X}
+X
+X/* various utilities for : modifiers */
+X
+Xint remtpath(junkptr)		/**/
+Xchar **junkptr;
+X{
+X    char *str = *junkptr, *remcut;
+X
+X    if ((remcut = strrchr(str, '/'))) {
+X	if (str != remcut)
+X	    *remcut = '\0';
+X	else
+X	    str[1] = '\0';
+X	return 1;
+X    }
+X    return 0;
+X}
+X
+Xint remtext(junkptr)		/**/
+Xchar **junkptr;
+X{
+X    char *str = *junkptr, *remcut;
+X
+X    if ((remcut = strrchr(str, '.')) && remcut != str) {
+X	*remcut = '\0';
+X	return 1;
+X    }
+X    return 0;
+X}
+X
+Xint rembutext(junkptr)		/**/
+Xchar **junkptr;
+X{
+X    char *str = *junkptr, *remcut;
+X
+X    if ((remcut = strrchr(str, '.')) && remcut != str) {
+X	*junkptr = dupstring(remcut + 1);	/* .xx or xx? */
+X	return 1;
+X    }
+X    return 0;
+X}
+X
+Xint remlpaths(junkptr)		/**/
+Xchar **junkptr;
+X{
+X    char *str = *junkptr, *remcut;
+X
+X    if ((remcut = strrchr(str, '/'))) {
+X	*remcut = '\0';
+X	*junkptr = dupstring(remcut + 1);
+X	return 1;
+X    }
+X    return 0;
+X}
+X
+Xint makeuppercase(junkptr)	/**/
+Xchar **junkptr;
+X{
+X    char *str = *junkptr;
+X
+X    for (; *str; str++)
+X	*str = tuupper(*str);
+X    return 1;
+X}
+X
+Xint makelowercase(junkptr)	/**/
+Xchar **junkptr;
+X{
+X    char *str = *junkptr;
+X
+X    for (; *str; str++)
+X	*str = tulower(*str);
+X    return 1;
+X}
+X
+Xint makecapitals(junkptr)	/**/
+Xchar **junkptr;
+X{
+X    char *str = *junkptr;
+X
+X    for (; *str;) {
+X	for (; *str && !ialnum(*str); str++);
+X	if (*str)
+X	    *str = tuupper(*str), str++;
+X	for (; *str && ialnum(*str); str++)
+X	    *str = tulower(*str);
+X    }
+X    return 1;
+X}
+X
+Xvoid subst(strptr, in, out, gbal)	/**/
+Xchar **strptr;
+Xchar *in;
+Xchar *out;
+Xint gbal;
+X{
+X    char *str = *strptr, *instr = *strptr, *substcut, *sptr, *oldstr;
+X    int off, inlen, outlen;
+X
+X    if (!(substcut = (char *)ztrstr(str, in)))
+X	return;
+X    inlen = strlen(in);
+X    sptr = convamps(out, in, inlen);
+X    outlen = strlen(sptr);
+X
+X    do {
+X	*substcut = '\0';
+X	off = substcut - *strptr + outlen;
+X	substcut += inlen;
+X	*strptr = tricat(oldstr = *strptr, sptr, substcut);
+X	if (oldstr != instr)
+X	    zsfree(oldstr);
+X	str = (char *)*strptr + off;
+X    } while (gbal && (substcut = (char *)ztrstr(str, in)));
+X}
+X
+Xchar *convamps(out, in, inlen)	/**/
+Xchar *out;
+Xchar *in;
+Xint inlen;
+X{
+X    char *ptr, *ret, *pp;
+X    int slen, sdup = 0;
+X
+X    for (ptr = out, slen = 0; *ptr; ptr++, slen++)
+X	if (*ptr == '\\')
+X	    ptr++, sdup = 1;
+X	else if (*ptr == '&')
+X	    slen += inlen - 1, sdup = 1;
+X    if (!sdup)
+X	return out;
+X    ret = pp = (char *)alloc(slen + 1);
+X    for (ptr = out; *ptr; ptr++)
+X	if (*ptr == '\\')
+X	    *pp++ = *++ptr;
+X	else if (*ptr == '&') {
+X	    strcpy(pp, in);
+X	    pp += inlen;
+X	} else
+X	    *pp++ = *ptr;
+X    *pp = '\0';
+X    return ret;
+X}
+X
+Xchar *makehstr(s)		/**/
+Xchar *s;
+X{
+X    char *t;
+X
+X    t = s = dupstring(s);
+X    for (; *t; t++)
+X	if (*t == HISTSPACE)
+X	    *t = ' ';
+X    return s;
+X}
+X
+Xchar *quietgetevent(ev)		/**/
+Xint ev;
+X{
+X    Histent ent;
+X
+X    if (ev < firsthist() || ev > curhist)
+X	return NULL;
+X    ent = gethistent(ev);
+X    return (lithist) ? ent->lit : ent->lex;
+X}
+X
+Xchar *getevent(ev)		/**/
+Xint ev;
+X{
+X    char *ret;
+X
+X    ret = quietgetevent(ev);
+X    if (!ret) {
+X	herrflush();
+X	zerr("no such event: %d", NULL, ev);
+X    }
+X    return ret;
+X}
+X
+Xint getargc(list)		/**/
+Xchar *list;
+X{
+X    int argc = 0;
+X
+X    for (; *list; list++)
+X	if (*list == HISTSPACE)
+X	    argc++;
+X    return argc;
+X}
+X
+Xchar *getargs(elist, arg1, arg2)/**/
+Xchar *elist;
+Xint arg1;
+Xint arg2;
+X{
+X    char *ret = elist, *retn;
+X    int acnt = arg2 - arg1 + 1;
+X
+X    while (arg1--)
+X	while (*ret && *ret++ != HISTSPACE);
+X    if (!*ret)
+X	if (arg1 == -1 && arg2 == 0) {
+X	    herrflush();
+X	    zerr("no words available from current command", NULL, 0);
+X	    return NULL;
+X	} else {
+X	    herrflush();
+X	    zerr("no such word in event", NULL, 0);
+X	    return NULL;
+X	}
+X    retn = ret = dupstring(ret);
+X    while (acnt > 0) {
+X	while (*ret && *ret != HISTSPACE)
+X	    ret++;
+X	if (*ret == HISTSPACE)
+X	    *ret = ' ';
+X	else
+X	    break;
+X	acnt--;
+X    }
+X    if (acnt > 1 && !*ret) {
+X	herrflush();
+X	zerr("no such word in event", NULL, 0);
+X	return NULL;
+X    }
+X    *ret = '\0';
+X    return retn;
+X}
+X
+Xvoid upcase(x)			/**/
+Xchar **x;
+X{
+X    char *pp = *(char **)x;
+X
+X    for (; *pp; pp++)
+X	*pp = tuupper(*pp);
+X}
+X
+Xvoid downcase(x)		/**/
+Xchar **x;
+X{
+X    char *pp = *(char **)x;
+X
+X    for (; *pp; pp++)
+X	*pp = tulower(*pp);
+X}
+X
+Xint quote(tr)			/**/
+Xchar **tr;
+X{
+X    char *ptr, *rptr, **str = (char **)tr;
+X    int len = 3;
+X    int inquotes = 0;
+X
+X    for (ptr = *str; *ptr; ptr++, len++)
+X	if (*ptr == '\'') {
+X	    len += 3;
+X	    if (!inquotes)
+X		inquotes = 1;
+X	    else
+X		inquotes = 0;
+X	} else if (inblank(*ptr) && !inquotes && ptr[-1] != '\\')
+X	    len += 2;
+X    ptr = *str;
+X    *str = rptr = (char *)alloc(len);
+X    *rptr++ = '\'';
+X    for (; *ptr; ptr++)
+X	if (*ptr == '\'') {
+X	    if (!inquotes)
+X		inquotes = 1;
+X	    else
+X		inquotes = 0;
+X	    *rptr++ = '\'';
+X	    *rptr++ = '\\';
+X	    *rptr++ = '\'';
+X	    *rptr++ = '\'';
+X	} else if (inblank(*ptr) && !inquotes && ptr[-1] != '\\') {
+X	    *rptr++ = '\'';
+X	    *rptr++ = *ptr;
+X	    *rptr++ = '\'';
+X	} else
+X	    *rptr++ = *ptr;
+X    *rptr++ = '\'';
+X    *rptr++ = 0;
+X    str[1] = NULL;
+X    return 0;
+X}
+X
+Xint quotebreak(tr)		/**/
+Xchar **tr;
+X{
+X    char *ptr, *rptr, **str = (char **)tr;
+X    int len = 3;
+X
+X    for (ptr = *str; *ptr; ptr++, len++)
+X	if (*ptr == '\'')
+X	    len += 3;
+X	else if (inblank(*ptr))
+X	    len += 2;
+X    ptr = *str;
+X    *str = rptr = (char *)alloc(len);
+X    *rptr++ = '\'';
+X    for (; *ptr;)
+X	if (*ptr == '\'') {
+X	    *rptr++ = '\'';
+X	    *rptr++ = '\\';
+X	    *rptr++ = '\'';
+X	    *rptr++ = '\'';
+X	    ptr++;
+X	} else if (inblank(*ptr)) {
+X	    *rptr++ = '\'';
+X	    *rptr++ = *ptr++;
+X	    *rptr++ = '\'';
+X	} else
+X	    *rptr++ = *ptr++;
+X    *rptr++ = '\'';
+X    *rptr++ = '\0';
+X    return 0;
+X}
+X
+Xvoid herrflush()
+X{				/**/
+X    if (strin)
+X	hflush();
+X    else
+X	while (lastc != '\n' && !lexstop)
+X	    hgetch();
+X}
+X
+X/* read an arbitrary amount of data into a buffer until stop is found */
+X
+Xchar *hdynread(stop)		/**/
+Xint stop;
+X{
+X    int bsiz = 256, ct = 0, c;
+X    char *buf = (char *)zalloc(bsiz), *ptr;
+X
+X    ptr = buf;
+X    while ((c = hgetch()) != stop && c != '\n' && !lexstop) {
+X	if (c == '\\')
+X	    c = hgetch();
+X	*ptr++ = c;
+X	if (++ct == bsiz) {
+X	    buf = realloc(buf, bsiz *= 2);
+X	    ptr = buf + ct;
+X	}
+X    }
+X    *ptr = 0;
+X    if (c == '\n') {
+X	hungetch('\n');
+X	zerr("delimiter expected", NULL, 0);
+X	zfree(buf, bsiz);
+X	return NULL;
+X    }
+X    return buf;
+X}
+X
+Xchar *hdynread2(stop)		/**/
+Xint stop;
+X{
+X    int bsiz = 256, ct = 0, c;
+X    char *buf = (char *)zalloc(bsiz), *ptr;
+X
+X    ptr = buf;
+X    while ((c = hgetch()) != stop && c != '\n' && !lexstop) {
+X	if (c == '\n') {
+X	    hungetch(c);
+X	    break;
+X	}
+X	if (c == '\\')
+X	    c = hgetch();
+X	*ptr++ = c;
+X	if (++ct == bsiz) {
+X	    buf = realloc(buf, bsiz *= 2);
+X	    ptr = buf + ct;
+X	}
+X    }
+X    *ptr = 0;
+X    if (c == '\n')
+X	hungetch('\n');
+X    return buf;
+X}
+X
+Xvoid inithist()
+X{				/**/
+X    histentct = (lithistsiz > histsiz) ? lithistsiz : histsiz;
+X    histentarr = (Histent) zcalloc(histentct * sizeof *histentarr);
+X}
+X
+Xvoid resizehistents()
+X{				/**/
+X    int newentct, t0, t1, firstlit, firstlex;
+X    Histent newarr;
+X
+X    newentct = (lithistsiz > histsiz) ? lithistsiz : histsiz;
+X    newarr = (Histent) zcalloc(newentct * sizeof *newarr);
+X    firstlex = curhist - histsiz + 1;
+X    firstlit = curhist - lithistsiz + 1;
+X    t0 = firsthist();
+X    if (t0 < curhist - newentct)
+X	t0 = curhist - newentct;
+X    t1 = t0 % newentct;
+X    for (; t0 <= curhist; t0++) {
+X	newarr[t1] = *gethistent(t0);
+X	if (t0 < firstlex) {
+X	    zsfree(newarr[t1].lex);
+X	    newarr[t1].lex = NULL;
+X	}
+X	if (t0 < firstlit) {
+X	    zsfree(newarr[t1].lit);
+X	    newarr[t1].lit = NULL;
+X	}
+X	t1++;
+X	if (t1 == newentct)
+X	    t1 = 0;
+X    }
+X    free(histentarr);
+X    histentarr = newarr;
+X    histentct = newentct;
+X}
+X
+Xvoid readhistfile(s, err)	/**/
+Xchar *s;
+Xint err;
+X{
+X    char buf[1024];
+X    FILE *in;
+X    Histent ent;
+X    time_t tim = time(NULL);
+X
+X    if (!s)
+X	return;
+X    if ((in = fopen(s, "r"))) {
+X	while (fgets(buf, sizeof(buf), in)) {
+X	    int l = strlen(buf);
+X	    char *pt = buf;
+X
+X	    while (l && buf[l - 1] == '\n') {
+X		buf[l - 1] = '\0';
+X		if (l > 1 && buf[l - 2] == '\\') {
+X		    buf[l - 2] = '\n';
+X		    fgets(buf + l - 1, sizeof(buf) - (l - 1), in);
+X		    l = strlen(buf);
+X		} else
+X		    break;
+X	    }
+X	    for (; *pt; pt++)
+X		if (*pt == ' ')
+X		    *pt = HISTSPACE;
+X
+X	    ent = gethistent(++curhist);
+X	    pt = buf;
+X	    if (*pt == ':') {
+X		pt++;
+X		ent->stim = atol(pt);
+X		for (; *pt != ':' && *pt; pt++);
+X		if (*pt) {
+X		    pt++;
+X		    ent->ftim = atol(pt);
+X		    for (; *pt != ';' && *pt; pt++);
+X		    if (*pt)
+X			pt++;
+X		} else {
+X		    ent->ftim = tim;
+X		}
+X		if (ent->stim == 0)
+X		    ent->stim = tim;
+X		if (ent->ftim == 0)
+X		    ent->ftim = tim;
+X	    } else {
+X		ent->ftim = ent->stim = tim;
+X	    }
+X	    zsfree(ent->lex);
+X	    zsfree(ent->lit);
+X	    ent->lex = ztrdup(pt);
+X	    ent->lit = ztrdup(pt);
+X	    ent->flags = HIST_OLD;
+X	}
+X	fclose(in);
+X    } else if (err)
+X	zerr("can't read history file", s, 0);
+X}
+X
+Xvoid savehistfile(s, err, app)	/**/
+Xchar *s;
+Xint err;
+Xint app;
+X{
+X    char *t;
+X    FILE *out;
+X    int ev;
+X    Histent ent;
+X
+X    if (!s || !interact || savehist == 0)
+X	return;
+X    ev = curhist - savehist + 1;
+X    if (ev < firsthist())
+X	ev = firsthist();
+X    if (app & 1)
+X	out = fdopen(open(s, O_CREAT | O_WRONLY | O_APPEND, 0600), "a");
+X    else
+X	out = fdopen(open(s, O_CREAT | O_WRONLY | O_TRUNC, 0600), "w");
+X    if (out) {
+X	for (; ev <= curhist; ev++) {
+X	    ent = gethistent(ev);
+X	    if (app & 2) {
+X		if (ent->flags & HIST_OLD)
+X		    continue;
+X		ent->flags |= HIST_OLD;
+X	    }
+X	    t = ((lithist) ? ent->lit : ent->lex);
+X	    if (isset(EXTENDEDHISTORY)) {
+X		fprintf(out, ": %ld:%ld;",
+X			(long)ent->stim,
+X			(long)ent->ftim);
+X	    } else if (*t == ':')
+X		fputc('\\', out);
+X
+X	    for (; *t; t++)
+X		if (*t == HISTSPACE)
+X		    fputc(' ', out);
+X		else {
+X		    if (*t == '\n')
+X			fputc('\\', out);
+X		    fputc(*t, out);
+X		}
+X	    fputc('\n', out);
+X	}
+X	fclose(out);
+X
+X	if (app & 2 && (out = fopen(s, "r"))) {
+X	    char **store, buf[1024], **ptr;
+X	    int i, l, histnum = 0;
+X
+X	    store = (char **)zcalloc((savehist + 1) * sizeof *store);
+X	    while (fgets(buf, sizeof(buf), out)) {
+X		l = strlen(buf);
+X		if (l > 1)
+X		    while (l < sizeof(buf) - 1 && buf[l - 2] == '\\') {
+X			fgets(buf + l, sizeof buf - l, out);
+X			l = strlen(buf);
+X		    }
+X		if (store[i = histnum % savehist])
+X		    free(store[i]);
+X		store[i] = (char *)zalloc(l + 1);
+X		strcpy(store[i], buf);
+X		histnum++;
+X	    }
+X	    fclose(out);
+X	    if ((out = fdopen(open(s, O_WRONLY | O_TRUNC, 0600), "w"))) {
+X		if (histnum < savehist)
+X		    for (i = 0; i < histnum; i++)
+X			fprintf(out, "%s", store[i]);
+X		else
+X		    for (i = histnum; i < histnum + savehist; i++)
+X			fprintf(out, "%s", store[i % savehist]);
+X		fclose(out);
+X	    }
+X	    for (ptr = store; *ptr; ptr++)
+X		zsfree(*ptr);
+X	    free(store);
+X	}
+X    } else if (err)
+X	zerr("can't write history file %s", s, 0);
+X}
+X
+Xint firsthist()
+X{				/**/
+X    int ev;
+X    Histent ent;
+X
+X    ev = curhist - histentct + 1;
+X    if (ev < 1)
+X	ev = 1;
+X    do {
+X	ent = gethistent(ev);
+X	if ((lithist) ? ent->lit : ent->lex)
+X	    break;
+X	ev++;
+X    }
+X    while (ev < curhist);
+X    return ev;
+X}
+END_OF_FILE
+  if test 27109 -ne `wc -c <'zsh-2.5.0/src/hist.c'`; then
+    echo shar: \"'zsh-2.5.0/src/hist.c'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/hist.c'
+fi
+if test -f 'zsh-2.5.0/src/jobs.c' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/jobs.c'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/jobs.c'\" \(21649 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/jobs.c' <<'END_OF_FILE'
+X/*
+X * jobs.c - job control
+X *
+X * This file is part of zsh, the Z shell.
+X *
+X * This software is Copyright 1992 by Paul Falstad
+X *
+X * Permission is hereby granted to copy, reproduce, redistribute or otherwise
+X * use this software as long as: there is no monetary profit gained
+X * specifically from the use or reproduction of this software, it is not
+X * sold, rented, traded or otherwise marketed, and this copyright notice is
+X * included prominently in any copy made.
+X *
+X * The author make no claims as to the fitness or correctness of this software
+X * for any use whatsoever, and it is provided as is. Any use of this software
+X * is at the user's own risk.
+X *
+X */
+X
+X#include "zsh.h"
+X#include <errno.h>
+X#include <setjmp.h>
+X
+X#if defined(POSIX) && !defined(__386BSD__) && !defined(__NetBSD__) && !defined(__FreeBSD__)
+X#define JMP_BUF       sigjmp_buf
+X#define SETJMP(b)     sigsetjmp((b), 1)
+X#define LONGJMP(b,n)  siglongjmp((b), (n))
+X#else
+X#define JMP_BUF       jmp_buf
+X#define SETJMP(b)     setjmp(b)
+X#define LONGJMP(b,n)  longjmp((b), (n))
+X#endif
+X
+X#if defined(RESETHANDNEEDED) && !defined(POSIX)
+X#define SIGPROCESS(sig)  sig_ignore(sig)
+X#define SIGRESET(sig)    sig_handle(sig)
+X#else
+X#define SIGPROCESS(sig)  ;
+X#define SIGRESET(sig)    ;
+X#endif
+X
+X/* empty job structure for quick clearing of jobtab entries */
+X
+Xstatic struct job zero;		/* static variables are initialized to zero */
+X
+Xstruct timeval dtimeval, now;
+Xstruct timezone dummy_tz;
+X
+X/* Diff two timevals for elapsed-time computations */
+X
+Xstruct timeval *dtime(dt, t1, t2)	/**/
+Xstruct timeval *dt;
+Xstruct timeval *t1;
+Xstruct timeval *t2;
+X{
+X    dt->tv_sec = t2->tv_sec - t1->tv_sec;
+X    dt->tv_usec = t2->tv_usec - t1->tv_usec;
+X    if (dt->tv_usec < 0) {
+X	dt->tv_usec += 1000000;
+X	dt->tv_sec -= 1;
+X    }
+X    return dt;
+X}
+X
+X/* do a safe, race-free sigpause() to wait for SIGCHLD */
+X
+Xstatic int chld_longjmp = 0;
+Xstatic struct z_jmp_buf {
+X    JMP_BUF jbuf;
+X} foil_race;
+X
+Xvoid chldhandler DCLPROTO((struct z_jmp_buf * jump));
+X
+Xvoid chldsuspend(sig)		/**/
+Xint sig;
+X{
+X/* assumes blockchld() is in effect */
+X    if (SETJMP(foil_race.jbuf) == 0) {
+X	chld_longjmp = 1;
+X	unblockchld();
+X	chldpause(sig);
+X    }
+X    chld_longjmp = 0;
+X}
+X
+X#ifdef INTHANDTYPE
+X#define RETURN   { SIGRESET(sig); return 0; }
+X#else
+X#define RETURN   { SIGRESET(sig); return; }
+X#endif
+X
+Xstatic int from_sig = 0;
+X
+X/* the signal handler */
+X
+XHANDTYPE handler(sig)		/**/
+Xint sig;
+X{
+X    sigset_t heldsigs;
+X    int do_jump;
+X    struct z_jmp_buf jump_to;
+X
+X    SIGPROCESS(sig);
+X
+X    fast_block(&heldsigs);	/* Prevent signal traps temporarily */
+X
+X    do_jump = chld_longjmp;
+X    chld_longjmp = 0;		/* In case a SIGCHLD somehow arrives */
+X
+X    if (zigheld) {
+X	zighold(sig, heldsigs);	/* zigsafe() will fast_unblock(&heldsigs) */
+X	RETURN;
+X    }
+X    if (sig == SIGCHLD) {	/* Traps can cause nested chldsuspend() */
+X	if (do_jump)
+X	    jump_to = foil_race;/* copy foil_race */
+X    }
+X    fast_unblock(&heldsigs);	/* Signal traps OK again (foil_race copied) */
+X
+X    switch (sig) {
+X    case SIGHUP:
+X	if (sigtrapped[SIGHUP])
+X	    dotrap(SIGHUP);
+X	else {
+X	    stopmsg = 1;
+X	    from_sig = 1;
+X	    zexit(SIGHUP);
+X	}
+X	break;
+X
+X    case SIGINT:
+X	if (sigtrapped[SIGINT])
+X	    dotrap(SIGINT);
+X	else {
+X	    breaks = loops;
+X	    errflag = 1;
+X	}
+X	break;
+X
+X#if defined(SIGWINCH) && defined(TIOCGWINSZ)
+X    case SIGWINCH:
+X	adjustwinsize();
+X	break;
+X#endif
+X
+X    case SIGCHLD:
+X	chldhandler(do_jump ? &jump_to : (struct z_jmp_buf *)0);
+X	RETURN;
+X
+X    default:
+X	dotrap(sig);
+X	if (sig == SIGALRM) {
+X	    if (!sigtrapped[SIGALRM]) {
+X		zerr("timeout", NULL, 0);
+X		exit(1);
+X	    } else if (tmout) {
+X		alarm(tmout);
+X	    }
+X	}
+X	break;
+X    }
+X
+X    RETURN;
+X}
+X
+X#undef RETURN
+X
+X#define RETURN \
+X    if (jump) { SIGRESET(SIGCHLD); LONGJMP(jump->jbuf, 1); } else return
+X
+Xvoid chldhandler(jump)
+Xstruct z_jmp_buf *jump;
+X{
+X    long pid;
+X    int statusp;
+X    Job jn;
+X    struct process *pn;
+X
+X#ifdef HAS_RUSAGE
+X    struct rusage ru;
+X
+X#else
+X    long chlds, chldu;
+X
+X#endif
+X
+X    for (;;) {
+X	int old_errno = errno;
+X
+X#ifdef HAS_RUSAGE
+X	pid = wait3((vptr) & statusp, WNOHANG | WUNTRACED, &ru);
+X#else
+X#ifndef WNOHANG
+X	pid = wait(&statusp);
+X#else
+X#ifdef HAS_WAITPID
+X	pid = waitpid(-1, (vptr) & statusp, WNOHANG | WUNTRACED);
+X#else
+X	pid = wait3((vptr) & statusp, WNOHANG | WUNTRACED, NULL);
+X#endif
+X#endif
+X	chlds = shtms.tms_cstime;
+X	chldu = shtms.tms_cutime;
+X	times(&shtms);
+X#endif
+X	if (pid == -1) {
+X	    if (errno != ECHILD)
+X		zerr("wait failed: %e", NULL, errno);
+X	    errno = old_errno;
+X	    RETURN;
+X	}
+X	errno = old_errno;
+X	if (!pid)
+X	    RETURN;
+X	if (pid == cmdoutpid) {
+X	    cmdoutdone(statusp);
+X	    continue;
+X	}
+X	findproc(pid, &jn, &pn);/* find the process of this pid */
+X	if (jn) {
+X	    pn->statusp = statusp;
+X#ifdef HAS_RUSAGE
+X	    pn->ti.ru = ru;
+X#else
+X	    pn->ti.st = shtms.tms_cstime - chlds;
+X	    pn->ti.ut = shtms.tms_cutime - chldu;
+X#endif
+X	    gettimeofday(&pn->endtime, &dummy_tz);
+X	    updatestatus(jn);
+X	}
+X#if 0
+X	else if (WIFSTOPPED(statusp))
+X	    kill(pid, SIGKILL);	/* kill stopped untraced children */
+X#endif
+X    }
+X}
+X
+X#undef RETURN
+X
+X/* clean up after a $() or `` substitution */
+X
+Xvoid cmdoutdone(statusp)	/**/
+Xint statusp;
+X{
+X    cmdoutpid = 0;
+X    if (WIFSIGNALED(statusp)) {
+X	cmdoutval = (0200 | WTERMSIG(statusp));
+X	if (WTERMSIG(statusp) == SIGINT)
+X	    (void)kill(getpid(), SIGINT);
+X	else if (sigtrapped[WTERMSIG(statusp)])
+X	    dotrap(WTERMSIG(statusp));
+X    } else
+X	cmdoutval = WEXITSTATUS(statusp);
+X}
+X
+X/* change job table entry from stopped to running */
+X
+Xvoid makerunning(jn)		/**/
+XJob jn;
+X{
+X    struct process *pn;
+X
+X    jn->stat &= ~STAT_STOPPED;
+X    for (pn = jn->procs; pn; pn = pn->next)
+X	if (WIFSTOPPED(pn->statusp))
+X	    pn->statusp = SP_RUNNING;
+X}
+X
+X/* update status of job, possibly printing it */
+X
+Xvoid updatestatus(jn)		/**/
+XJob jn;
+X{
+X    struct process *pn;
+X    int notrunning = 1, alldone = 1, val = 0, job = jn - jobtab;
+X    int statusp = 0, somestopped = 0, inforeground = 0;
+X    int pgrp;
+X
+X    pgrp = gettygrp();
+X    for (pn = jn->procs; pn; pn = pn->next) {
+X	if (pn->statusp == SP_RUNNING)
+X	    notrunning = 0;
+X	if (pn->statusp == SP_RUNNING || WIFSTOPPED(pn->statusp))
+X	    alldone = 0;
+X	if (WIFSTOPPED(pn->statusp))
+X	    somestopped = 1;
+X	if (!pn->next && jn)
+X	    val = (WIFSIGNALED(pn->statusp)) ?
+X		0200 | WTERMSIG(pn->statusp) : WEXITSTATUS(pn->statusp);
+X	if (pn->pid == jn->gleader) {
+X	    statusp = pn->statusp;
+X	    if (pgrp == 0 || pn->pid == pgrp || 
+X		(pgrp > 1 && kill(-pgrp, 0) == -1))
+X		inforeground = 1;
+X	}
+X    }
+X    if (!notrunning)
+X	return;
+X    if (somestopped) {
+X	if (jn->stty_in_env && !jn->ty) {
+X	    jn->ty = (struct ttyinfo *)zalloc(sizeof(struct ttyinfo));
+X
+X	    gettyinfo(jn->ty);
+X	}
+X	if (jn->stat & STAT_STOPPED)
+X	    return;
+X    }
+X    if (alldone && job == thisjob)
+X	lastval = val;
+X    if (alldone)
+X	lastval2 = val;
+X    if (inforeground && !ttyfrozen && !val && !jn->stty_in_env)
+X	gettyinfo(&shttyinfo);
+X#ifdef TIOCGWINSZ
+X    adjustwinsize();
+X#endif
+X    jn->stat |= (alldone) ? STAT_CHANGED | STAT_DONE :
+X	STAT_CHANGED | STAT_STOPPED;
+X    if ((jn->stat & (STAT_DONE | STAT_STOPPED)) == STAT_STOPPED) {
+X	prevjob = curjob;
+X	curjob = job;
+X    }
+X    if ((isset(NOTIFY) || job == thisjob) && (jn->stat & STAT_LOCKED)) {
+X	printjob(jn, !!isset(LONGLISTJOBS));
+X	if (zleactive)
+X	    refresh();
+X    }
+X    if (sigtrapped[SIGCHLD] && job != thisjob)
+X	dotrap(SIGCHLD);
+X
+X /* If the foreground job got a signal, pretend we got it, too. */
+X    if (inforeground && WIFSIGNALED(statusp)) {
+X	if (sigtrapped[WTERMSIG(statusp)]) {
+X	    dotrap(WTERMSIG(statusp));
+X	} else if (WTERMSIG(statusp) == SIGINT ||
+X		   WTERMSIG(statusp) == SIGQUIT) {
+X	    breaks = loops;
+X	    errflag = 1;
+X	}
+X    }
+X}
+X
+X/* find process and job associated with pid */
+X
+Xvoid findproc(pid, jptr, pptr)	/**/
+Xint pid;
+XJob *jptr;
+Xstruct process **pptr;
+X{
+X    struct process *pn;
+X    int jn;
+X
+X    for (jn = 1; jn != MAXJOB; jn++)
+X	for (pn = jobtab[jn].procs; pn; pn = pn->next)
+X	    if (pn->pid == pid) {
+X		*pptr = pn;
+X		*jptr = jobtab + jn;
+X		return;
+X	    }
+X    *pptr = NULL;
+X    *jptr = NULL;
+X}
+X
+X/*
+X	lng = 0 means jobs
+X	lng = 1 means jobs -l
+X	lng = 2 means jobs -p
+X*/
+X
+Xvoid printjob(jn, lng)		/**/
+XJob jn;
+Xint lng;
+X{
+X    int job = jn - jobtab, len = 9, sig, sflag = 0, llen;
+X    int conted = 0, lineleng = columns, skip = 0, doputnl = 0;
+X    struct process *pn;
+X
+X    if (lng < 0) {
+X	conted = 1;
+X	lng = 0;
+X    }
+X/* find length of longest signame, check to see if we
+X		really need to print this job */
+X
+X    for (pn = jn->procs; pn; pn = pn->next) {
+X	if (pn->statusp != SP_RUNNING)
+X	    if (WIFSIGNALED(pn->statusp)) {
+X		sig = WTERMSIG(pn->statusp);
+X		llen = strlen(sigmsg[sig]);
+X		if (WCOREDUMP(pn->statusp))
+X		    llen += 14;
+X		if (llen > len)
+X		    len = llen;
+X		if (sig != SIGINT && sig != SIGPIPE)
+X		    sflag = 1;
+X		else if (sig == SIGINT)
+X		    errflag = 1;
+X		if (job == thisjob && sig == SIGINT)
+X		    doputnl = 1;
+X	    } else if (WIFSTOPPED(pn->statusp)) {
+X		sig = WSTOPSIG(pn->statusp);
+X		if ((int)strlen(sigmsg[sig]) > len)
+X		    len = strlen(sigmsg[sig]);
+X		if (job == thisjob && sig == SIGTSTP)
+X		    doputnl = 1;
+X	    } else if (isset(PRINTEXITVALUE) && isset(SHINSTDIN) &&
+X		       WEXITSTATUS(pn->statusp))
+X		sflag = 1;
+X    }
+X
+X/* print if necessary */
+X
+X    if (interact && jobbing && ((jn->stat & STAT_STOPPED) || sflag ||
+X				job != thisjob)) {
+X	int len2, fline = 1;
+X	struct process *qn;
+X
+X	trashzle();
+X	if (doputnl)
+X	    putc('\n', stderr);
+X	for (pn = jn->procs; pn;) {
+X	    len2 = ((job == thisjob) ? 5 : 10) + len;	/* 2 spaces */
+X	    if (lng)
+X		qn = pn->next;
+X	    else
+X		for (qn = pn->next; qn; qn = qn->next) {
+X		    if (qn->statusp != pn->statusp)
+X			break;
+X		    if ((int)strlen(qn->text) + len2 + ((qn->next) ? 3 : 0) > lineleng)
+X			break;
+X		    len2 += strlen(qn->text) + 2;
+X		}
+X	    if (job != thisjob)
+X		if (fline)
+X		    fprintf(stderr, "[%ld]  %c ",
+X			    (long)(jn - jobtab),
+X			    (job == curjob) ? '+'
+X			    : (job == prevjob) ? '-' : ' ');
+X		else
+X		    fprintf(stderr, (job > 9) ? "        " : "       ");
+X	    else
+X		fprintf(stderr, "zsh: ");
+X	    if (lng)
+X		if (lng == 1)
+X		    fprintf(stderr, "%ld ", pn->pid);
+X		else {
+X		    int x = jn->gleader;
+X
+X		    fprintf(stderr, "%d ", x);
+X		    do
+X			skip++;
+X		    while ((x /= 10));
+X		    skip++;
+X		    lng = 0;
+X	    } else
+X		fprintf(stderr, "%*s", skip, "");
+X	    if (pn->statusp == SP_RUNNING)
+X		if (!conted)
+X		    fprintf(stderr, "running%*s", len - 7 + 2, "");
+X		else
+X		    fprintf(stderr, "continued%*s", len - 9 + 2, "");
+X	    else if (WIFEXITED(pn->statusp))
+X		if (WEXITSTATUS(pn->statusp))
+X		    fprintf(stderr, "exit %-4d%*s", WEXITSTATUS(pn->statusp),
+X			    len - 9 + 2, "");
+X		else
+X		    fprintf(stderr, "done%*s", len - 4 + 2, "");
+X	    else if (WIFSTOPPED(pn->statusp))
+X		fprintf(stderr, "%-*s", len + 2, sigmsg[WSTOPSIG(pn->statusp)]);
+X	    else if (WCOREDUMP(pn->statusp))
+X		fprintf(stderr, "%s (core dumped)%*s",
+X			sigmsg[WTERMSIG(pn->statusp)],
+X			(int)(len - 14 + 2 - strlen(sigmsg[WTERMSIG(pn->statusp)])), "");
+X	    else
+X		fprintf(stderr, "%-*s", len + 2, sigmsg[WTERMSIG(pn->statusp)]);
+X	    for (; pn != qn; pn = pn->next)
+X		fprintf(stderr, (pn->next) ? "%s | " : "%s", pn->text);
+X	    putc('\n', stderr);
+X	    fline = 0;
+X	}
+X    } else if (doputnl && interact)
+X	putc('\n', stderr);
+X    fflush(stderr);
+X
+X/* print "(pwd now: foo)" messages */
+X
+X    if (interact && job == thisjob && strcmp(jn->pwd, pwd)) {
+X	printf("(pwd now: ");
+X	printdir(pwd);
+X	printf(")\n");
+X	fflush(stdout);
+X    }
+X/* delete job if done */
+X
+X    if (jn->stat & STAT_DONE) {
+X	if ((jn->stat & STAT_TIMED) || (reporttime != -1 && report(jn))) {
+X	    dumptime(jn);
+X	}
+X	deletejob(jn);
+X	if (job == curjob) {
+X	    curjob = prevjob;
+X	    prevjob = job;
+X	}
+X	if (job == prevjob)
+X	    setprevjob();
+X    } else
+X	jn->stat &= ~STAT_CHANGED;
+X}
+X
+Xvoid deletejob(jn)		/**/
+XJob jn;
+X{
+X    struct process *pn, *nx;
+X    char *s;
+X
+X    for (pn = jn->procs; pn; pn = nx) {
+X	nx = pn->next;
+X	zfree(pn, sizeof(struct process));
+X    }
+X    zsfree(jn->pwd);
+X    if (jn->filelist) {
+X	while ((s = (char *)getnode(jn->filelist))) {
+X	    unlink(s);
+X	    zsfree(s);
+X	}
+X	zfree(jn->filelist, sizeof(struct lklist));
+X    }
+X    if (jn->ty)
+X	zfree(jn->ty, sizeof(struct ttyinfo));
+X
+X    *jn = zero;
+X}
+X
+X/* set the previous job to something reasonable */
+X
+Xvoid setprevjob()
+X{				/**/
+X    int t0;
+X
+X    for (t0 = MAXJOB - 1; t0; t0--)
+X	if ((jobtab[t0].stat & STAT_INUSE) && (jobtab[t0].stat & STAT_STOPPED) &&
+X	    t0 != curjob && t0 != thisjob)
+X	    break;
+X    if (!t0)
+X	for (t0 = MAXJOB - 1; t0; t0--)
+X	    if ((jobtab[t0].stat & STAT_INUSE) && t0 != curjob && t0 != thisjob)
+X		break;
+X    prevjob = (t0) ? t0 : -1;
+X}
+X
+X/* initialize a job table entry */
+X
+Xvoid initjob()
+X{				/**/
+X    jobtab[thisjob].pwd = ztrdup(pwd);
+X    jobtab[thisjob].stat = STAT_INUSE;
+X    jobtab[thisjob].gleader = 0;
+X}
+X
+X/* add a process to the current job */
+X
+Xvoid addproc(pid, text)		/**/
+Xlong pid;
+Xchar *text;
+X{
+X    struct process *process;
+X
+X    if (!jobtab[thisjob].gleader)
+X	jobtab[thisjob].gleader = pid;
+X    process = (struct process *)zcalloc(sizeof *process);
+X    process->pid = pid;
+X    if (text)
+X	strcpy(process->text, text);
+X    else
+X	*process->text = '\0';
+X    process->next = NULL;
+X    process->statusp = SP_RUNNING;
+X    gettimeofday(&process->bgtime, &dummy_tz);
+X    if (jobtab[thisjob].procs) {
+X	struct process *n;
+X
+X	for (n = jobtab[thisjob].procs; n->next; n = n->next);
+X	process->next = NULL;
+X	n->next = process;
+X    } else
+X	jobtab[thisjob].procs = process;
+X}
+X
+X/* determine if it's all right to exec a command without
+X	forking in last component of subshells; it's not ok if we have files
+X	to delete */
+X
+Xint execok()
+X{				/**/
+X    Job jn;
+X
+X    if (!exiting)
+X	return 0;
+X    for (jn = jobtab + 1; jn != jobtab + MAXJOB; jn++)
+X	if (jn->stat && jn->filelist)
+X	    return 0;
+X    return 1;
+X
+X}
+X
+Xvoid waitforpid(pid)		/**/
+Xlong pid;
+X{
+X/* blockchld() around this loop in case #ifndef WNOHANG */
+X    blockchld();		/* unblocked in chldsuspend() */
+X    while (!errflag && (kill(pid, 0) >= 0 || errno != ESRCH)) {
+X	chldsuspend(SIGINT);
+X	blockchld();
+X    }
+X    unblockchld();
+X}
+X
+X/* wait for a job to finish */
+X
+Xvoid waitjob(job, sig)		/**/
+Xint job;
+Xint sig;
+X{
+X    Job jn = jobtab + job;
+X
+X    blockchld();		/* unblocked during chldsuspend() */
+X    if (jn->procs) {		/* if any forks were done */
+X	jn->stat |= STAT_LOCKED;
+X	if (jn->stat & STAT_CHANGED)
+X	    printjob(jobtab + job, !!isset(LONGLISTJOBS));
+X	while (!errflag && jn->stat &&
+X	       !(jn->stat & STAT_DONE) &&
+X	       !(interact && (jn->stat & STAT_STOPPED))) {
+X	    chldsuspend(sig);
+X	    blockchld();
+X	}
+X    } else
+X	deletejob(jobtab + job);
+X    unblockchld();
+X}
+X
+X/* wait for running job to finish */
+X
+Xvoid waitjobs()
+X{				/**/
+X    waitjob(thisjob, 0);
+X    thisjob = -1;
+X}
+X
+X/* clear job table when entering subshells */
+X
+Xvoid clearjobtab()
+X{				/**/
+X    int t0;
+X
+X    for (t0 = 1; t0 != MAXJOB; t0++) {
+X	if (jobtab[t0].pwd)
+X	    zsfree(jobtab[t0].pwd);
+X	if (jobtab[t0].ty)
+X	    zfree(jobtab[t0].ty, sizeof(struct ttyinfo));
+X
+X	jobtab[t0] = zero;
+X    }
+X}
+X
+X/* get a free entry in the job table to use */
+X
+Xint getfreejob()
+X{				/**/
+X    int t0;
+X
+X    for (t0 = 1; t0 != MAXJOB; t0++)
+X	if (!jobtab[t0].stat) {
+X	    jobtab[t0].stat |= STAT_INUSE;
+X	    return t0;
+X	}
+X    zerr("job table full or recursion limit exceeded", NULL, 0);
+X    return -1;
+X}
+X
+X/* print pids for & */
+X
+Xvoid spawnjob()
+X{				/**/
+X    struct process *pn;
+X
+X    if (!subsh) {
+X	if (curjob == -1 || !(jobtab[curjob].stat & STAT_STOPPED)) {
+X	    curjob = thisjob;
+X	    setprevjob();
+X	} else if (prevjob == -1 || !(jobtab[prevjob].stat & STAT_STOPPED))
+X	    prevjob = thisjob;
+X	if (interact && jobbing && jobtab[thisjob].procs) {
+X	    fprintf(stderr, "[%d]", thisjob);
+X	    for (pn = jobtab[thisjob].procs; pn; pn = pn->next)
+X		fprintf(stderr, " %ld", pn->pid);
+X	    fprintf(stderr, "\n");
+X	    fflush(stderr);
+X	}
+X    }
+X    if (!jobtab[thisjob].procs)
+X	deletejob(jobtab + thisjob);
+X    else
+X	jobtab[thisjob].stat |= STAT_LOCKED;
+X    thisjob = -1;
+X}
+X
+Xint report(j)			/**/
+XJob j;
+X{
+X    if (!j->procs)
+X	return 0;
+X#ifdef HAS_RUSAGE
+X    return (j->procs->ti.ru.ru_utime.tv_sec + j->procs->ti.ru.ru_stime.tv_sec)
+X	>= reporttime;
+X#else
+X    return (j->procs->ti.ut + j->procs->ti.st) / HZ >= reporttime;
+X#endif
+X}
+X
+Xvoid printtime(real, ti, desc)	/**/
+Xstruct timeval *real;
+Xstruct timeinfo *ti;
+Xchar *desc;
+X{
+X    char *s;
+X    long real100;
+X
+X#ifdef HAS_RUSAGE
+X#ifdef sun
+X    long ticks = 1;
+X    int pk = getpagesize() / 1024;
+X
+X#else
+X    long sec;
+X
+X#endif
+X    struct rusage *ru = &ti->ru;
+X
+X#endif
+X
+X    if (!desc)
+X	desc = "";
+X#ifdef HAS_RUSAGE
+X#ifdef sun
+X    ticks = (ru->ru_utime.tv_sec + ru->ru_stime.tv_sec) * HZ +
+X	(ru->ru_utime.tv_usec + ru->ru_stime.tv_usec) * HZ / 1000000;
+X    if (!ticks)
+X	ticks = 1;
+X#else
+X    sec = ru->ru_utime.tv_sec + ru->ru_stime.tv_sec;
+X    if (!sec)
+X	sec = 1;
+X#endif
+X#endif
+X    for (s = timefmt; *s; s++)
+X	if (*s == '%')
+X	    switch (s++, *s) {
+X	    case 'E':
+X		fprintf(stderr, "%ld.%03lds",
+X			(long)real->tv_sec, (long)real->tv_usec / 1000);
+X		break;
+X#ifndef HAS_RUSAGE
+X	    case 'U':
+X		fprintf(stderr, "%ld.%03lds",
+X			ti->ut / HZ, ti->ut * 1000 / HZ % 1000);
+X		break;
+X	    case 'S':
+X		fprintf(stderr, "%ld.%03lds",
+X			ti->st / HZ, ti->st * 1000 / HZ % 1000);
+X		break;
+X	    case 'P':
+X		if (real->tv_sec > 21000) {
+X		    real100 = (real->tv_sec + 99) / 100;
+X		    fprintf(stderr, "%d%%",
+X			    (int)((ti->ut + ti->st) / HZ) / real100);
+X		} else {
+X		    if ((real100 = real->tv_sec * 1000 + real->tv_usec / 1000))
+X			fprintf(stderr, "%d%%",
+X				(int)(100000 * ((ti->ut + ti->st) / HZ)) / real100);
+X		}
+X		break;
+X#else
+X	    case 'U':
+X		fprintf(stderr, "%ld.%03lds",
+X			(long)ru->ru_utime.tv_sec,
+X			(long)ru->ru_utime.tv_usec / 1000);
+X		break;
+X	    case 'S':
+X		fprintf(stderr, "%ld.%03lds",
+X			(long)ru->ru_stime.tv_sec,
+X			(long)ru->ru_stime.tv_usec / 1000);
+X		break;
+X	    case 'P':
+X		if (real->tv_sec > 21000) {
+X		    real100 = (real->tv_sec + 99) / 100;
+X		    fprintf(stderr, "%ld%%",
+X			    (ru->ru_utime.tv_sec + ru->ru_stime.tv_sec) / real100);
+X		} else {
+X		    if ((real100 = real->tv_sec * 1000 + real->tv_usec / 1000))
+X			fprintf(stderr, "%ld%%",
+X				(100000 * (ru->ru_utime.tv_sec + ru->ru_stime.tv_sec)
+X				 +
+X				 (ru->ru_utime.tv_usec + ru->ru_stime.tv_usec) / 10)
+X				/ real100);
+X		}
+X		break;
+X	    case 'W':
+X		fprintf(stderr, "%ld", ru->ru_nswap);
+X		break;
+X#ifdef sun
+X	    case 'K':
+X	    case 'D':
+X		fprintf(stderr, "%ld", ru->ru_idrss / ticks * pk);
+X		break;
+X	    case 'M':
+X		fprintf(stderr, "%ld", ru->ru_maxrss * pk);
+X		break;
+X#else
+X	    case 'X':
+X		fprintf(stderr, "%ld", ru->ru_ixrss / sec);
+X		break;
+X	    case 'D':
+X		fprintf(stderr, "%ld",
+X			(ru->ru_idrss + ru->ru_isrss) / sec);
+X		break;
+X	    case 'K':
+X		fprintf(stderr, "%ld",
+X			(ru->ru_ixrss + ru->ru_idrss + ru->ru_isrss) / sec);
+X		break;
+X	    case 'M':
+X		fprintf(stderr, "%ld", ru->ru_maxrss / 1024);
+X		break;
+X#endif
+X	    case 'F':
+X		fprintf(stderr, "%ld", ru->ru_majflt);
+X		break;
+X	    case 'R':
+X		fprintf(stderr, "%ld", ru->ru_minflt);
+X		break;
+X	    case 'I':
+X		fprintf(stderr, "%ld", ru->ru_inblock);
+X		break;
+X	    case 'O':
+X		fprintf(stderr, "%ld", ru->ru_oublock);
+X		break;
+X	    case 'r':
+X		fprintf(stderr, "%ld", ru->ru_msgrcv);
+X		break;
+X	    case 's':
+X		fprintf(stderr, "%ld", ru->ru_msgsnd);
+X		break;
+X	    case 'k':
+X		fprintf(stderr, "%ld", ru->ru_nsignals);
+X		break;
+X	    case 'w':
+X		fprintf(stderr, "%ld", ru->ru_nvcsw);
+X		break;
+X	    case 'c':
+X		fprintf(stderr, "%ld", ru->ru_nivcsw);
+X		break;
+X#endif
+X	    case 'J':
+X		fprintf(stderr, "%s", desc);
+X		break;
+X	    default:
+X		fprintf(stderr, "%%%c", *s);
+X		break;
+X	} else
+X	    putc(*s, stderr);
+X    putc('\n', stderr);
+X    fflush(stderr);
+X}
+X
+Xvoid dumptime(jn)		/**/
+XJob jn;
+X{
+X    struct process *pn;
+X
+X    if (!jn->procs)
+X	return;
+X    for (pn = jn->procs; pn; pn = pn->next)
+X	printtime(dtime(&dtimeval, &pn->bgtime, &pn->endtime), &pn->ti, pn->text);
+X}
+X
+Xvoid shelltime()
+X{				/**/
+X    struct timeinfo ti;
+X
+X#ifdef HAS_RUSAGE
+X    struct rusage ru;
+X
+X    getrusage(RUSAGE_SELF, &ru);
+X    memcpy(&ti.ru, &ru, sizeof(ru));
+X    gettimeofday(&now, &dummy_tz);
+X    printtime(dtime(&dtimeval, &shtimer, &now), &ti, "shell");
+X
+X    getrusage(RUSAGE_CHILDREN, &ru);
+X    memcpy(&ti.ru, &ru, sizeof(ru));
+X    printtime(dtime(&dtimeval, &shtimer, &now), &ti, "children");
+X#else
+X    struct tms buf;
+X
+X    times(&buf);
+X    ti.ut = buf.tms_utime;
+X    ti.st = buf.tms_stime;
+X    gettimeofday(&now, &dummy_tz);
+X    printtime(dtime(&dtimeval, &shtimer, &now), &ti, "shell");
+X    ti.ut = buf.tms_cutime;
+X    ti.st = buf.tms_cstime;
+X    printtime(dtime(&dtimeval, &shtimer, &now), &ti, "children");
+X#endif
+X}
+X
+X/* SIGHUP any jobs left running */
+X
+Xvoid killrunjobs()
+X{				/**/
+X    int t0, killed = 0;
+X
+X    if (isset(NOHUP))
+X	return;
+X    for (t0 = 1; t0 != MAXJOB; t0++)
+X	if ((from_sig || t0 != thisjob) && (jobtab[t0].stat & STAT_LOCKED) &&
+X	    !(jobtab[t0].stat & STAT_STOPPED)) {
+X	    if (killpg(jobtab[t0].gleader, SIGHUP) != -1)
+X		killed++;
+X	}
+X    if (killed)
+X	zerr("warning: %d jobs SIGHUPed", NULL, killed);
+X}
+X
+X/* check to see if user has jobs running/stopped */
+X
+Xvoid checkjobs()
+X{				/**/
+X    int t0;
+X
+X    scanjobs();
+X    for (t0 = 1; t0 != MAXJOB; t0++)
+X	if (t0 != thisjob && jobtab[t0].stat & STAT_LOCKED)
+X	    break;
+X    if (t0 != MAXJOB) {
+X	if (jobtab[t0].stat & STAT_STOPPED) {
+X#ifdef USE_SUSPENDED
+X	    zerr("you have suspended jobs.", NULL, 0);
+X#else
+X	    zerr("you have stopped jobs.", NULL, 0);
+X#endif
+X	} else
+X	    zerr("you have running jobs.", NULL, 0);
+X	stopmsg = 1;
+X    }
+X}
+X
+X/* send a signal to a job (simply involves kill if monitoring is on) */
+X
+Xint killjb(jn, sig)		/**/
+XJob jn;
+Xint sig;
+X{
+X    struct process *pn;
+X    int err = 0;
+X
+X    if (jobbing)
+X	return (killpg(jn->gleader, sig));
+X    for (pn = jn->procs; pn; pn = pn->next)
+X	if ((err = kill(pn->pid, sig)) == -1 && errno != ESRCH)
+X	    return -1;
+X    return err;
+X}
+END_OF_FILE
+  if test 21649 -ne `wc -c <'zsh-2.5.0/src/jobs.c'`; then
+    echo shar: \"'zsh-2.5.0/src/jobs.c'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/jobs.c'
+fi
+if test -f 'zsh-2.5.0/src/zle_bindings.c' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'zsh-2.5.0/src/zle_bindings.c'\"
+else
+  echo shar: Extracting \"'zsh-2.5.0/src/zle_bindings.c'\" \(20731 characters\)
+  sed "s/^X//" >'zsh-2.5.0/src/zle_bindings.c' <<'END_OF_FILE'
+X
+X/*
+X *
+X * zle_bindings.c - commands and keymaps
+X *
+X * This file is part of zsh, the Z shell.
+X *
+X * This software is Copyright 1992 by Paul Falstad
+X *
+X * Permission is hereby granted to copy, reproduce, redistribute or otherwise
+X * use this software as long as: there is no monetary profit gained
+X * specifically from the use or reproduction of this software, it is not
+X * sold, rented, traded or otherwise marketed, and this copyright notice is
+X * included prominently in any copy made.
+X *
+X * The author make no claims as to the fitness or correctness of this software
+X * for any use whatsoever, and it is provided as is. Any use of this software
+X * is at the user's own risk.
+X *
+X */
+X
+X#define ZLE
+X#include "zsh.h"
+X
+Xstruct zlecmd zlecmds[] =
+X{
+X    {"accept-and-hold", acceptandhold, 0},
+X    {"accept-and-infer-next-history", acceptandinfernexthistory, 0},
+X    {"accept-and-menu-complete", acceptandmenucomplete, ZLE_MENUCMP},
+X    {"accept-line", acceptline, 0},
+X    {"accept-line-and-down-history", acceptlineanddownhistory, 0},
+X    {"backward-char", backwardchar, ZLE_MOVEMENT},
+X    {"backward-delete-char", backwarddeletechar, ZLE_DELETE},
+X    {"backward-delete-word", backwarddeleteword, ZLE_DELETE},
+X    {"backward-kill-line", backwardkillline, ZLE_KILL},
+X    {"backward-kill-word", backwardkillword, ZLE_KILL | ZLE_DELETE},
+X    {"backward-word", backwardword, ZLE_MOVEMENT},
+X    {"beginning-of-buffer-or-history", beginningofbufferorhistory, ZLE_MOVEMENT},
+X    {"beginning-of-history", beginningofhistory, 0},
+X    {"beginning-of-line", beginningofline, ZLE_MOVEMENT},
+X    {"beginning-of-line-hist", beginningoflinehist, ZLE_MOVEMENT},
+X    {"capitalize-word", capitalizeword, 0},
+X    {"clear-screen", clearscreen, 0},
+X    {"complete-word", completeword, ZLE_MENUCMP},
+X    {"copy-prev-word", copyprevword, 0},
+X    {"copy-region-as-kill", copyregionaskill, ZLE_KILL},
+X    {"delete-char", deletechar, ZLE_DELETE},
+X    {"delete-char-or-list", deletecharorlist, ZLE_MENUCMP},
+X    {"delete-word", deleteword, ZLE_DELETE},
+X    {"digit-argument", digitargument, ZLE_ARG},
+X    {"down-case-word", downcaseword, 0},
+X    {"down-history", downhistory, 0},
+X    {"down-line-or-history", downlineorhistory, ZLE_MOVEMENT | ZLE_LINEMOVE},
+X    {"end-of-buffer-or-history", endofbufferorhistory, ZLE_MOVEMENT},
+X    {"end-of-history", endofhistory, 0},
+X    {"end-of-line", endofline, ZLE_MOVEMENT},
+X    {"end-of-line-hist", endoflinehist, ZLE_MOVEMENT},
+X    {"exchange-point-and-mark", exchangepointandmark, ZLE_MOVEMENT},
+X    {"execute-last-named-cmd", (F) 0, 0},
+X    {"execute-named-cmd", (F) 0, 0},
+X    {"expand-history", expandhistory, 0},
+X    {"expand-or-complete", expandorcomplete, ZLE_MENUCMP},
+X    {"expand-word", expandword, 0},
+X    {"forward-char", forwardchar, ZLE_MOVEMENT},
+X    {"forward-word", forwardword, ZLE_MOVEMENT},
+X    {"get-line", getline, 0},
+X    {"gosmacs-transpose-chars", gosmacstransposechars, 0},
+X    {"history-incremental-search-backward", historyincrementalsearchbackward, 0},
+X    {"history-incremental-search-forward", historyincrementalsearchforward, 0},
+X    {"history-search-backward", historysearchbackward, ZLE_HISTSEARCH},
+X    {"history-search-forward", historysearchforward, ZLE_HISTSEARCH},
+X    {"infer-next-history", infernexthistory, 0},
+X    {"insert-last-word", insertlastword, ZLE_INSERT},
+X    {"kill-buffer", killbuffer, ZLE_KILL},
+X    {"kill-line", killline, ZLE_KILL},
+X    {"kill-region", killregion, ZLE_KILL},
+X    {"kill-whole-line", killwholeline, ZLE_KILL},
+X    {"list-choices", listchoices, ZLE_DELETE | ZLE_MENUCMP},	/* ZLE_DELETE fixes autoremoveslash */
+X    {"list-expand", listexpand, ZLE_MENUCMP},
+X    {"magic-space", magicspace, 0},
+X    {"menu-complete", menucompleteword, ZLE_MENUCMP},
+X    {"menu-expand-or-complete", menuexpandorcomplete, ZLE_MENUCMP},
+X    {"overwrite-mode", overwritemode, 0},
+X    {"push-line", pushline, 0},
+X    {"quoted-insert", quotedinsert, ZLE_INSERT},
+X    {"quote-line", quoteline, 0},
+X    {"quote-region", quoteregion, 0},
+X    {"redisplay", redisplay, 0},
+X    {"reverse-menu-complete", reversemenucomplete, ZLE_MENUCMP},
+X    {"run-help", processcmd, 0},
+X    {"self-insert", selfinsert, ZLE_INSERT},
+X    {"self-insert-unmeta", selfinsertunmeta, ZLE_INSERT},
+X    {"send-break", sendbreak, 0},
+X    {"send-string", sendstring, 0},
+X    {"prefix", (F) 0, 0},
+X    {"set-mark-command", setmarkcommand, 0},
+X    {"spell-word", spellword, 0},
+X    {"toggle-literal-history", toggleliteralhistory, 0},
+X    {"transpose-chars", transposechars, 0},
+X    {"transpose-words", transposewords, 0},
+X    {"undefined-key", undefinedkey, 0},
+X    {"undo", undo, ZLE_UNDO},
+X    {"universal-argument", universalargument, ZLE_ARG},
+X    {"up-case-word", upcaseword, 0},
+X    {"up-history", uphistory, 0},
+X    {"up-line-or-history", uplineorhistory, ZLE_LINEMOVE | ZLE_MOVEMENT},
+X    {"vi-add-eol", viaddeol, 0},
+X    {"vi-add-next", viaddnext, 0},
+X    {"vi-backward-blank-word", vibackwardblankword, ZLE_MOVEMENT},
+X    {"vi-backward-char", vibackwardchar, ZLE_MOVEMENT},
+X    {"vi-backward-delete-char", vibackwarddeletechar, ZLE_DELETE},
+X    {"vi-beginning-of-line", vibeginningofline, ZLE_MOVEMENT},
+X    {"vi-caps-lock-panic", vicapslockpanic, 0},
+X    {"vi-change", vichange, 0},
+X    {"vi-change-eol", vichangeeol, 0},
+X    {"vi-change-whole-line", vichangewholeline, 0},
+X    {"vi-cmd-mode", vicmdmode, 0},
+X    {"vi-delete", videlete, ZLE_KILL},
+X    {"vi-delete-char", videletechar, ZLE_DELETE},
+X    {"vi-digit-or-beginning-of-line", (F) 0, 0},
+X    {"vi-end-of-line", viendofline, ZLE_MOVEMENT},
+X    {"vi-fetch-history", vifetchhistory, 0},
+X    {"vi-find-next-char", vifindnextchar, ZLE_MOVEMENT},
+X    {"vi-find-next-char-skip", vifindnextcharskip, ZLE_MOVEMENT},
+X    {"vi-find-prev-char", vifindprevchar, ZLE_MOVEMENT},
+X    {"vi-find-prev-char-skip", vifindprevcharskip, ZLE_MOVEMENT},
+X    {"vi-first-non-blank", vifirstnonblank, ZLE_MOVEMENT},
+X    {"vi-forward-blank-word", viforwardblankword, ZLE_MOVEMENT},
+X    {"vi-forward-blank-word-end", viforwardblankwordend, ZLE_MOVEMENT},
+X    {"vi-forward-char", viforwardchar, ZLE_MOVEMENT},
+X    {"vi-forward-word-end", viforwardwordend, ZLE_MOVEMENT},
+X    {"vi-goto-column", vigotocolumn, ZLE_MOVEMENT},
+X    {"vi-goto-mark", vigotomark, ZLE_MOVEMENT},
+X    {"vi-goto-mark-line", vigotomarkline, ZLE_MOVEMENT},
+X    {"vi-history-search-backward", vihistorysearchbackward, 0},
+X    {"vi-history-search-forward", vihistorysearchforward, 0},
+X    {"vi-indent", viindent, 0},
+X    {"vi-insert", viinsert, 0},
+X    {"vi-insert-bol", viinsertbol, 0},
+X    {"vi-join", vijoin, 0},
+X    {"vi-match-bracket", vimatchbracket, ZLE_MOVEMENT},
+X    {"vi-open-line-above", viopenlineabove, 0},
+X    {"vi-open-line-below", viopenlinebelow, 0},
+X    {"vi-oper-swap-case", vioperswapcase, 0},
+X    {"vi-put-after", viputafter, ZLE_YANK},
+X    {"vi-repeat-change", virepeatchange, ZLE_ARG},
+X    {"vi-repeat-find", virepeatfind, ZLE_MOVEMENT},
+X    {"vi-repeat-search", virepeatsearch, ZLE_MOVEMENT},
+X    {"vi-replace", vireplace, 0},
+X    {"vi-replace-chars", vireplacechars, 0},
+X    {"vi-rev-repeat-find", virevrepeatfind, ZLE_MOVEMENT},
+X    {"vi-rev-repeat-search", virevrepeatsearch, ZLE_MOVEMENT},
+X    {"vi-set-buffer", visetbuffer, 0},
+X    {"vi-set-mark", visetmark, 0},
+X    {"vi-substitute", visubstitute, 0},
+X    {"vi-swap-case", viswapcase, 0},
+X    {"vi-undo-change", undo, 0},
+X    {"vi-unindent", viunindent, 0},
+X    {"vi-yank", viyank, 0},
+X    {"vi-yank-eol", viyankeol, 0},
+X    {"which-command", processcmd, 0},
+X    {"yank", yank, ZLE_YANK | ZLE_NAMEDBUFFER},
+X    {"yank-pop", yankpop, ZLE_YANK},
+X    {"emacs-backward-word", emacsbackwardword, ZLE_MOVEMENT},
+X    {"emacs-forward-word", emacsforwardword, ZLE_MOVEMENT},
+X    {"kill-word", killword, ZLE_KILL},
+X    {"vi-kill-line", vikillline, ZLE_KILL},
+X    {"vi-backward-kill-word", vibackwardkillword, ZLE_KILL},
+X    {"expand-cmd-path", expandcmdpath, 0},
+X    {"neg-argument", negargument, ZLE_NEGARG | ZLE_ARG},
+X    {"pound-insert", poundinsert, 0},
+X    {"vi-forward-word", viforwardword, ZLE_MOVEMENT},
+X    {"vi-backward-word", vibackwardword, ZLE_MOVEMENT},
+X    {"up-line-or-search", uplineorsearch, ZLE_MOVEMENT | ZLE_LINEMOVE | ZLE_HISTSEARCH},
+X    {"down-line-or-search", downlineorsearch, ZLE_MOVEMENT | ZLE_LINEMOVE | ZLE_HISTSEARCH},
+X    {"push-input", pushinput, 0},
+X    {"push-line-or-edit", pushpopinput, 0},
+X    {"history-beginning-search-backward", historybeginningsearchbackward, ZLE_HISTSEARCH},
+X    {"history-beginning-search-forward", historybeginningsearchforward, ZLE_HISTSEARCH},
+X    {"expand-or-complete-prefix", expandorcompleteprefix, ZLE_MENUCMP},
+X    {"", (F) 0, 0}
+X};
+X
+Xint emacsbind[256] =
+X{
+X    /* ^@ */ z_setmarkcommand,
+X    /* ^A */ z_beginningofline,
+X    /* ^B */ z_backwardchar,
+X    /* ^C */ z_undefinedkey,
+X    /* ^D */ z_deletecharorlist,
+X    /* ^E */ z_endofline,
+X    /* ^F */ z_forwardchar,
+X    /* ^G */ z_sendbreak,
+X    /* ^H */ z_backwarddeletechar,
+X    /* ^I */ z_expandorcomplete,
+X    /* ^J */ z_acceptline,
+X    /* ^K */ z_killline,
+X    /* ^L */ z_clearscreen,
+X    /* ^M */ z_acceptline,
+X    /* ^N */ z_downlineorhistory,
+X    /* ^O */ z_acceptlineanddownhistory,
+X    /* ^P */ z_uplineorhistory,
+X    /* ^Q */ z_pushline,
+X    /* ^R */ z_historyincrementalsearchbackward,
+X    /* ^S */ z_historyincrementalsearchforward,
+X    /* ^T */ z_transposechars,
+X    /* ^U */ z_killwholeline,
+X    /* ^V */ z_quotedinsert,
+X    /* ^W */ z_backwardkillword,
+X    /* ^X */ z_sequenceleadin,
+X    /* ^Y */ z_yank,
+X    /* ^Z */ z_undefinedkey,
+X    /* ^[ */ z_sequenceleadin,
+X    /* ^\ */ z_undefinedkey,
+X    /* ^] */ z_undefinedkey,
+X    /* ^^ */ z_undefinedkey,
+X    /* ^_ */ z_undo,
+X    /*   */ z_selfinsert,
+X    /* ! */ z_selfinsert,
+X    /* " */ z_selfinsert,
+X    /* # */ z_selfinsert,
+X    /* $ */ z_selfinsert,
+X    /* % */ z_selfinsert,
+X    /* & */ z_selfinsert,
+X    /* ' */ z_selfinsert,
+X    /* ( */ z_selfinsert,
+X    /* ) */ z_selfinsert,
+X    /* * */ z_selfinsert,
+X    /* + */ z_selfinsert,
+X    /* , */ z_selfinsert,
+X    /* - */ z_selfinsert,
+X    /* . */ z_selfinsert,
+X    /* / */ z_selfinsert,
+X    /* 0 */ z_selfinsert,
+X    /* 1 */ z_selfinsert,
+X    /* 2 */ z_selfinsert,
+X    /* 3 */ z_selfinsert,
+X    /* 4 */ z_selfinsert,
+X    /* 5 */ z_selfinsert,
+X    /* 6 */ z_selfinsert,
+X    /* 7 */ z_selfinsert,
+X    /* 8 */ z_selfinsert,
+X    /* 9 */ z_selfinsert,
+X    /* : */ z_selfinsert,
+X    /* ; */ z_selfinsert,
+X    /* < */ z_selfinsert,
+X    /* = */ z_selfinsert,
+X    /* > */ z_selfinsert,
+X    /* ? */ z_selfinsert,
+X    /* @ */ z_selfinsert,
+X    /* A */ z_selfinsert,
+X    /* B */ z_selfinsert,
+X    /* C */ z_selfinsert,
+X    /* D */ z_selfinsert,
+X    /* E */ z_selfinsert,
+X    /* F */ z_selfinsert,
+X    /* G */ z_selfinsert,
+X    /* H */ z_selfinsert,
+X    /* I */ z_selfinsert,
+X    /* J */ z_selfinsert,
+X    /* K */ z_selfinsert,
+X    /* L */ z_selfinsert,
+X    /* M */ z_selfinsert,
+X    /* N */ z_selfinsert,
+X    /* O */ z_selfinsert,
+X    /* P */ z_selfinsert,
+X    /* Q */ z_selfinsert,
+X    /* R */ z_selfinsert,
+X    /* S */ z_selfinsert,
+X    /* T */ z_selfinsert,
+X    /* U */ z_selfinsert,
+X    /* V */ z_selfinsert,
+X    /* W */ z_selfinsert,
+X    /* X */ z_selfinsert,
+X    /* Y */ z_selfinsert,
+X    /* Z */ z_selfinsert,
+X    /* [ */ z_selfinsert,
+X    /* \ */ z_selfinsert,
+X    /* ] */ z_selfinsert,
+X    /* ^ */ z_selfinsert,
+X    /* _ */ z_selfinsert,
+X    /* ` */ z_selfinsert,
+X    /* a */ z_selfinsert,
+X    /* b */ z_selfinsert,
+X    /* c */ z_selfinsert,
+X    /* d */ z_selfinsert,
+X    /* e */ z_selfinsert,
+X    /* f */ z_selfinsert,
+X    /* g */ z_selfinsert,
+X    /* h */ z_selfinsert,
+X    /* i */ z_selfinsert,
+X    /* j */ z_selfinsert,
+X    /* k */ z_selfinsert,
+X    /* l */ z_selfinsert,
+X    /* m */ z_selfinsert,
+X    /* n */ z_selfinsert,
+X    /* o */ z_selfinsert,
+X    /* p */ z_selfinsert,
+X    /* q */ z_selfinsert,
+X    /* r */ z_selfinsert,
+X    /* s */ z_selfinsert,
+X    /* t */ z_selfinsert,
+X    /* u */ z_selfinsert,
+X    /* v */ z_selfinsert,
+X    /* w */ z_selfinsert,
+X    /* x */ z_selfinsert,
+X    /* y */ z_selfinsert,
+X    /* z */ z_selfinsert,
+X    /* { */ z_selfinsert,
+X    /* | */ z_selfinsert,
+X    /* } */ z_selfinsert,
+X    /* ~ */ z_selfinsert,
+X    /* ^? */ z_backwarddeletechar,
+X    /* M-^@ */ z_undefinedkey,
+X    /* M-^A */ z_undefinedkey,
+X    /* M-^B */ z_undefinedkey,
+X    /* M-^C */ z_undefinedkey,
+X    /* M-^D */ z_listchoices,
+X    /* M-^E */ z_undefinedkey,
+X    /* M-^F */ z_undefinedkey,
+X    /* M-^G */ z_sendbreak,
+X    /* M-^H */ z_backwardkillword,
+X    /* M-^I */ z_selfinsertunmeta,
+X    /* M-^J */ z_selfinsertunmeta,
+X    /* M-^K */ z_undefinedkey,
+X    /* M-^L */ z_clearscreen,
+X    /* M-^M */ z_selfinsertunmeta,
+X    /* M-^N */ z_undefinedkey,
+X    /* M-^O */ z_undefinedkey,
+X    /* M-^P */ z_undefinedkey,
+X    /* M-^Q */ z_undefinedkey,
+X    /* M-^R */ z_undefinedkey,
+X    /* M-^S */ z_undefinedkey,
+X    /* M-^T */ z_undefinedkey,
+X    /* M-^U */ z_undefinedkey,
+X    /* M-^V */ z_undefinedkey,
+X    /* M-^W */ z_undefinedkey,
+X    /* M-^X */ z_undefinedkey,
+X    /* M-^Y */ z_undefinedkey,
+X    /* M-^Z */ z_undefinedkey,
+X    /* M-^[ */ z_undefinedkey,
+X    /* M-^\ */ z_undefinedkey,
+X    /* M-^] */ z_undefinedkey,
+X    /* M-^^ */ z_undefinedkey,
+X    /* M-^_ */ z_copyprevword,
+X    /* M-  */ z_expandhistory,
+X    /* M-! */ z_expandhistory,
+X    /* M-" */ z_quoteregion,
+X    /* M-# */ z_undefinedkey,
+X    /* M-$ */ z_spellword,
+X    /* M-% */ z_undefinedkey,
+X    /* M-& */ z_undefinedkey,
+X    /* M-' */ z_quoteline,
+X    /* M-( */ z_undefinedkey,
+X    /* M-) */ z_undefinedkey,
+X    /* M-* */ z_undefinedkey,
+X    /* M-+ */ z_undefinedkey,
+X    /* M-, */ z_undefinedkey,
+X    /* M-- */ z_negargument,
+X    /* M-. */ z_insertlastword,
+X    /* M-/ */ z_undefinedkey,
+X    /* M-0 */ z_digitargument,
+X    /* M-1 */ z_digitargument,
+X    /* M-2 */ z_digitargument,
+X    /* M-3 */ z_digitargument,
+X    /* M-4 */ z_digitargument,
+X    /* M-5 */ z_digitargument,
+X    /* M-6 */ z_digitargument,
+X    /* M-7 */ z_digitargument,
+X    /* M-8 */ z_digitargument,
+X    /* M-9 */ z_digitargument,
+X    /* M-: */ z_undefinedkey,
+X    /* M-; */ z_undefinedkey,
+X    /* M-< */ z_beginningofbufferorhistory,
+X    /* M-= */ z_undefinedkey,
+X    /* M-> */ z_endofbufferorhistory,
+X    /* M-? */ z_whichcommand,
+X    /* M-@ */ z_undefinedkey,
+X    /* M-A */ z_acceptandhold,
+X    /* M-B */ z_backwardword,
+X    /* M-C */ z_capitalizeword,
+X    /* M-D */ z_killword,
+X    /* M-E */ z_undefinedkey,
+X    /* M-F */ z_forwardword,
+X    /* M-G */ z_getline,
+X    /* M-H */ z_runhelp,
+X    /* M-I */ z_undefinedkey,
+X    /* M-J */ z_undefinedkey,
+X    /* M-K */ z_undefinedkey,
+X    /* M-L */ z_downcaseword,
+X    /* M-M */ z_undefinedkey,
+X    /* M-N */ z_historysearchforward,
+X    /* M-O */ z_undefinedkey,
+X    /* M-P */ z_historysearchbackward,
+X    /* M-Q */ z_pushline,
+X    /* M-R */ z_toggleliteralhistory,
+X    /* M-S */ z_spellword,
+X    /* M-T */ z_transposewords,
+X    /* M-U */ z_upcaseword,
+X    /* M-V */ z_undefinedkey,
+X    /* M-W */ z_copyregionaskill,
+X    /* M-X */ z_undefinedkey,
+X    /* M-Y */ z_undefinedkey,
+X    /* M-Z */ z_undefinedkey,
+X    /* M-[ */ z_undefinedkey,
+X    /* M-\ */ z_undefinedkey,
+X    /* M-] */ z_undefinedkey,
+X    /* M-^ */ z_undefinedkey,
+X    /* M-_ */ z_insertlastword,
+X    /* M-` */ z_undefinedkey,
+X    /* M-a */ z_acceptandhold,
+X    /* M-b */ z_backwardword,
+X    /* M-c */ z_capitalizeword,
+X    /* M-d */ z_killword,
+X    /* M-e */ z_undefinedkey,
+X    /* M-f */ z_forwardword,
+X    /* M-g */ z_getline,
+X    /* M-h */ z_runhelp,
+X    /* M-i */ z_undefinedkey,
+X    /* M-j */ z_undefinedkey,
+X    /* M-k */ z_undefinedkey,
+X    /* M-l */ z_downcaseword,
+X    /* M-m */ z_undefinedkey,
+X    /* M-n */ z_historysearchforward,
+X    /* M-o */ z_undefinedkey,
+X    /* M-p */ z_historysearchbackward,
+X    /* M-q */ z_pushline,
+X    /* M-r */ z_toggleliteralhistory,
+X    /* M-s */ z_spellword,
+X    /* M-t */ z_transposewords,
+X    /* M-u */ z_upcaseword,
+X    /* M-v */ z_undefinedkey,
+X    /* M-w */ z_copyregionaskill,
+X    /* M-x */ z_executenamedcmd,
+X    /* M-y */ z_yankpop,
+X    /* M-z */ z_executelastnamedcmd,
+X    /* M-{ */ z_undefinedkey,
+X    /* M-| */ z_vigotocolumn,
+X    /* M-} */ z_undefinedkey,
+X    /* M-~ */ z_undefinedkey,
+X    /* M-^? */ z_backwardkillword,
+X};
+X
+Xint viinsbind[32] =
+X{
+X    /* ^@ */ z_undefinedkey,
+X    /* ^A */ z_selfinsert,
+X    /* ^B */ z_selfinsert,
+X    /* ^C */ z_undefinedkey,
+X    /* ^D */ z_listchoices,
+X    /* ^E */ z_selfinsert,
+X    /* ^F */ z_selfinsert,
+X    /* ^G */ z_selfinsert,
+X    /* ^H */ z_vibackwarddeletechar,
+X    /* ^I */ z_expandorcomplete,
+X    /* ^J */ z_acceptline,
+X    /* ^K */ z_killline,
+X    /* ^L */ z_clearscreen,
+X    /* ^M */ z_acceptline,
+X    /* ^N */ z_selfinsert,
+X    /* ^O */ z_selfinsert,
+X    /* ^P */ z_selfinsert,
+X    /* ^Q */ z_selfinsert,
+X    /* ^R */ z_redisplay,
+X    /* ^S */ z_selfinsert,
+X    /* ^T */ z_selfinsert,
+X    /* ^U */ z_vikillline,
+X    /* ^V */ z_quotedinsert,
+X    /* ^W */ z_vibackwardkillword,
+X    /* ^X */ z_selfinsert,
+X    /* ^Y */ z_selfinsert,
+X    /* ^Z */ z_selfinsert,
+X    /* ^[ */ z_sequenceleadin,
+X    /* ^\ */ z_selfinsert,
+X    /* ^] */ z_selfinsert,
+X    /* ^^ */ z_selfinsert,
+X    /* ^_ */ z_selfinsert,
+X};
+X
+Xint vicmdbind[128] =
+X{
+X    /* ^@ */ z_undefinedkey,
+X    /* ^A */ z_beginningofline,
+X    /* ^B */ z_undefinedkey,
+X    /* ^C */ z_undefinedkey,
+X    /* ^D */ z_listchoices,
+X    /* ^E */ z_endofline,
+X    /* ^F */ z_undefinedkey,
+X    /* ^G */ z_listexpand,
+X    /* ^H */ z_backwarddeletechar,
+X    /* ^I */ z_completeword,
+X    /* ^J */ z_acceptline,
+X    /* ^K */ z_killline,
+X    /* ^L */ z_clearscreen,
+X    /* ^M */ z_acceptline,
+X    /* ^N */ z_downhistory,
+X    /* ^O */ z_undefinedkey,
+X    /* ^P */ z_uphistory,
+X    /* ^Q */ z_undefinedkey,
+X    /* ^R */ z_redisplay,
+X    /* ^S */ z_undefinedkey,
+X    /* ^T */ z_undefinedkey,
+X    /* ^U */ z_killbuffer,
+X    /* ^V */ z_undefinedkey,
+X    /* ^W */ z_backwardkillword,
+X    /* ^X */ z_expandorcomplete,
+X    /* ^Y */ z_undefinedkey,
+X    /* ^Z */ z_undefinedkey,
+X    /* ^[ */ z_sequenceleadin,
+X    /* ^\ */ z_undefinedkey,
+X    /* ^] */ z_undefinedkey,
+X    /* ^^ */ z_undefinedkey,
+X    /* ^_ */ z_undefinedkey,
+X    /*   */ z_viforwardchar,
+X    /* ! */ z_undefinedkey,
+X    /* " */ z_visetbuffer,
+X    /* # */ z_poundinsert,
+X    /* $ */ z_viendofline,
+X    /* % */ z_vimatchbracket,
+X    /* & */ z_undefinedkey,
+X    /* ' */ z_vigotomarkline,
+X    /* ( */ z_undefinedkey,
+X    /* ) */ z_undefinedkey,
+X    /* * */ z_undefinedkey,
+X    /* + */ z_downlineorhistory,
+X    /* , */ z_virevrepeatfind,
+X    /* - */ z_uplineorhistory,
+X    /* . */ z_virepeatchange,
+X    /* / */ z_vihistorysearchbackward,
+X    /* 0 */ z_vidigitorbeginningofline,
+X    /* 1 */ z_digitargument,
+X    /* 2 */ z_digitargument,
+X    /* 3 */ z_digitargument,
+X    /* 4 */ z_digitargument,
+X    /* 5 */ z_digitargument,
+X    /* 6 */ z_digitargument,
+X    /* 7 */ z_digitargument,
+X    /* 8 */ z_digitargument,
+X    /* 9 */ z_digitargument,
+X    /* : */ z_undefinedkey,
+X    /* ; */ z_virepeatfind,
+X    /* < */ z_viunindent,
+X    /* = */ z_listchoices,
+X    /* > */ z_viindent,
+X    /* ? */ z_vihistorysearchforward,
+X    /* @ */ z_undefinedkey,
+X    /* A */ z_viaddeol,
+X    /* B */ z_vibackwardblankword,
+X    /* C */ z_vichangeeol,
+X    /* D */ z_killline,
+X    /* E */ z_viforwardblankwordend,
+X    /* F */ z_vifindprevchar,
+X    /* G */ z_vifetchhistory,
+X    /* H */ z_vicapslockpanic,
+X    /* I */ z_viinsertbol,
+X    /* J */ z_historysearchforward,
+X    /* K */ z_historysearchbackward,
+X    /* L */ z_undefinedkey,
+X    /* M */ z_undefinedkey,
+X    /* N */ z_virevrepeatsearch,
+X    /* O */ z_viopenlineabove,
+X    /* P */ z_yank,
+X    /* Q */ z_undefinedkey,
+X    /* R */ z_vireplace,
+X    /* S */ z_vichangewholeline,
+X    /* T */ z_vifindprevcharskip,
+X    /* U */ z_undefinedkey,
+X    /* V */ z_undefinedkey,
+X    /* W */ z_viforwardblankword,
+X    /* X */ z_vibackwarddeletechar,
+X    /* Y */ z_viyankeol,
+X    /* Z */ z_undefinedkey,
+X    /* [ */ z_undefinedkey,
+X    /* \ */ z_completeword,
+X    /* ] */ z_undefinedkey,
+X    /* ^ */ z_vifirstnonblank,
+X    /* _ */ z_undefinedkey,
+X    /* ` */ z_vigotomark,
+X    /* a */ z_viaddnext,
+X    /* b */ z_vibackwardword,
+X    /* c */ z_vichange,
+X    /* d */ z_videlete,
+X    /* e */ z_viforwardwordend,
+X    /* f */ z_vifindnextchar,
+X    /* g */ z_undefinedkey,
+X    /* h */ z_vibackwardchar,
+X    /* i */ z_viinsert,
+X    /* j */ z_downlineorhistory,
+X    /* k */ z_uplineorhistory,
+X    /* l */ z_viforwardchar,
+X    /* m */ z_visetmark,
+X    /* n */ z_virepeatsearch,
+X    /* o */ z_viopenlinebelow,
+X    /* p */ z_viputafter,
+X    /* q */ z_undefinedkey,
+X    /* r */ z_vireplacechars,
+X    /* s */ z_visubstitute,
+X    /* t */ z_vifindnextcharskip,
+X    /* u */ z_viundochange,
+X    /* v */ z_undefinedkey,
+X    /* w */ z_viforwardword,
+X    /* x */ z_videletechar,
+X    /* y */ z_viyank,
+X    /* z */ z_undefinedkey,
+X    /* { */ z_undefinedkey,
+X    /* | */ z_vigotocolumn,
+X    /* } */ z_undefinedkey,
+X    /* ~ */ z_viswapcase,
+X    /* ^? */ z_backwarddeletechar,
+X};
+END_OF_FILE
+  if test 20731 -ne `wc -c <'zsh-2.5.0/src/zle_bindings.c'`; then
+    echo shar: \"'zsh-2.5.0/src/zle_bindings.c'\" unpacked with wrong size!
+  fi
+  # end of 'zsh-2.5.0/src/zle_bindings.c'
+fi
+echo shar: End of archive 14 \(of 18\).
+cp /dev/null ark14isdone
+MISSING=""
+for I in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 ; do
+    if test ! -f ark${I}isdone ; then
+	MISSING="${MISSING} ${I}"
+    fi
+done
+if test "${MISSING}" = "" ; then
+    echo You have unpacked all 18 archives.
+    rm -f ark[1-9]isdone ark[1-9][0-9]isdone
+else
+    echo You still must unpack the following archives:
+    echo "        " ${MISSING}
+fi
+exit 0
+exit 0 # Just in case...

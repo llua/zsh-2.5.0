@@ -1,0 +1,69 @@
+. ./config/bz.doksh
+
+if test -z "$B_auto" -a -z "$B_justmake"
+then
+  if test -z "$B_query"
+  then
+    cat <<foo | $PAGER
+
+	buildzsh will probe your system for all kinds of features that
+	are useful to know when building zsh.  buildzsh will also
+	suggest some site-dependent things like where to install
+	the final zsh binary.
+
+	You can either:
+
+	* Let buildzsh do all the work for you.
+
+	  This method is suggested either for the first time
+	  zsh-builders who _hope_ that zsh will build ok -- or
+	  for the experienced builders who _know_ that zsh will build ok.
+	  This method can be selected by "buildzsh auto", this text
+	  will then not be shown.
+		
+	* Try to answer the questions about the features and
+	  to define yourself the site-dependent things.
+
+	  This method requires both intimate knowledge about
+	  your operating system and C compilation environment
+	  (compiler, preprocessor, headers, libraries, linker)
+	  and about your site-specific software installation
+	  guidelines.  That is, most of the time you must be
+	  a system administrator of sorts to use this option.
+	  This method can be selected by "buildzsh query", this text
+	  will then not be shown.
+
+	  Note that some questions of the installation kind
+	  (optimize or not, where the install the final executable binary)
+	  can be more conveniently answered beforehand at the buildzsh
+	  command line.  Try "buildzsh help" to find out how.
+	  
+        At any point you can interrupt buildzsh by hitting the interrupt
+	key (normally ^C [ctrl+c]) and if your shell supports job control,
+	suspend buildzsh for a while (normally done with ^Z [ctrl+z]).
+
+	To summarize:					Answer:
+
+	* this is your first time buildzing zsh		n
+	* you _know_ that building zsh will work	n
+	* you want to tweak various definitions		y
+
+[proceed with $PAGER_quit]
+foo
+    F_define=
+    F_using=yep
+    G_verb1_=Will
+    G_verb2_='want to answer'
+    G_verb3a_='will ask'
+    G_verb3b_=letting
+    _savedB_query_=$B_query
+    B_query=yep
+    set false _ 1 'the questions' 'buildzsh have all the fun'
+    . ./config/bz.ifdef
+    test -n "$_yea" && B_query=yep || B_query=$_savedB_query_
+  fi
+else
+  B_query=
+fi
+
+. ./config/bz.sanity

@@ -1,0 +1,499 @@
+# --- bz.makeprobe
+
+# --- make groks VPATH?
+
+test -z "$make_groks_VPATH_done" && . ./config/bz.makevpath
+
+# -- 
+
+if test -z "$B_justmake"
+then
+
+cat <<foo
+	probing for Makefile...
+
+foo
+
+# --- cc?
+
+test -z "$makecc_done" && . ./config/bz.makecc
+
+# --- CFLAGS
+
+if test -z "$C_CFLAGS"
+then
+
+CFLAGS_D="$CFLAGS_D $C_CFLAGS_D"
+
+CFLAGS_X="$CFLAGS_X $C_CFLAGS_X"
+
+CFLAGS_W="$CFLAGS_W $C_CFLAGS_W"
+
+if test -n "$B_debug"
+then
+  CFLAGS_g="`echo $CFLAGS_g $C_CFLAGS_g | sed 's/^ +$//'`"
+  test -z "$CFLAGS_g" && CFLAGS_g="$DEFAULT_C_CFLAGS_g"
+fi
+
+if test -n "$B_zshdebug"
+then
+  CFLAGS_z="$CFLAGS_z $C_CFLAGS_z"
+  test -z "$CFLAGS_z" && CFLAGS_z="$DEFAULT_C_CFLAGS_z"
+fi
+
+D_HP='-D_XOPEN_SOURCE -D_HPUX_SOURCE'
+
+if test -n "$B_gcc" -o -n "$LINUX" -o -n "$NEXT"
+then
+  # NeXT 3.* has POSIX headers but no POSIX libs, sheesh
+  # LINUX has no prototypes for non-ANSI stuff, sheesh
+  if test -n "$LINUX" -o -n "$NEXT"
+  then
+    CFLAGS_W="$GCC_BASE0_W"	# no -ansi or -Wmissing-prototypes
+  else
+    CFLAGS_W="$GCC_BASE1_W"
+  fi
+  DEFAULT_C_CFLAGS_O=-O2
+  test -n "$B_mediumgcc" && CFLAGS_W="$CFLAGS_W $GCC_MEDIUM_W"
+  test -n "$B_strictgcc" && CFLAGS_W="$CFLAGS_W $GCC_STRICT_W"
+  test -n "$NEXT" -o -n "$LINUX" && CFLAGS_X="$CFLAGS_X -pipe"
+  test -z "$LINUX" -a -z "$NEXT" && CFLAGS_X="$CFLAGS_X -fpcc-struct-return"
+  test Z"$host" = Z"i486"        && CFLAGS_M="$CFLAGS_M -m486"
+  # if we have gcc, never mind that the native cc might be mips
+  CC_MIPS_STYLE=
+elif test -n "$APOLLO"
+then CFLAGS_W="$CFLAGS_W -A nansi"
+elif test -n "$HPUX"
+then
+  CFLAGS_D="$CFLAGS_D $D_HP -D_POSIX_SOURCE"
+  if test -n "$C89"
+  then CFLAGS_W="$CFLAGS_W +w1"
+  else test Z"$HPUX" = Z"7.03" && CFLAGS_X="$CFLAGS_X -Wc,-Ns5000"
+  fi
+  C_LDFLAGS="$C_LDFLAGS -z"
+elif test -n "$AIX"
+then test -n "$C89" && CFLAGS_D="$CFLAGS_D -D_ALL_SOURCE"
+elif test -n "$HPOSF"
+# HPOSF must be tested before OSF1
+then
+  CFLAGS_D="$CFLAGS_D $D_HP -D_OSF_SOURCE"
+  CFLAGS_W="$CFLAGS_W -q lang_level:ansi"
+elif test -n "$OSF1"			# NOTE: the -Olimit N 
+then CFLAGS_W="$CFLAGS_W -std1"	# is done later on
+elif test -n "$NEWS"			# as it will be useful
+then CFLAGS_W="$CFLAGS_W -std"	# only iff optimization
+elif test -n "$MIPS"			# will be used.
+then
+  CFLAGS_W="$CFLAGS_W -std1"
+  CFLAGS_X="$CFLAGS_X -Wf,-XNd5000 -Wf,-XNl4096"
+elif test -n "$CONVEX"
+then
+CFLAGS_W="$CFLAGS_W -d arg_ptr_qual=w -d arg_ptr_ref=w -d bad_escape=w -d class_ignored=w -d const_not_init=w -d division_by_zero=w -d dollar_names=w -d escape_range_sequence=w -d float_suffix=w -d function_parameter=w -d hidden_arg=w -d hidden_extern=w -d hides_outer=w -d implicit_decl=w -d integer_overflow=w -d long_long_suffix=w -d no_arg_type=w -d no_external_declaration=w -d no_newline=w -d non_int_bit_field=w -d nothing_declared=w -d pp_argcount=w -d pp_argsended=w -d pp_badstr=w -d pp_badtp=w -d pp_badtp_cmdl=w -d pp_error_directive=w -d pp_extra=w -d pp_idexpected=w -d pp_line_range=w -d pp_macro_arg=w -d pp_macro_redefinition=w -d pp_macro_redefinition_cmdl=w -d pp_malformed_directive=w -d pp_old_dir=w -d pp_parse=w -d pp_undef=w -d pp_undef_cmdl=w -d pp_unrecognized_directive=w -d pp_unrecognized_pragma=w -d ptr_cvt_truncates=w -d qualified_cast=w -d record_fn_call=w -d record_fn_defn=w -d shift_too_large=w -d short_cvt_truncates=w -d strict_syntax=w -d unsigned_suffix"
+elif test -n "$SOLARIS"
+then
+# -Xa would be nicer but it is strictish ANSI, while zsh
+# needs K&R, so -Xs (s=sun) it is
+# If you dream of -D_POSIX_SOURCE, quit dreaming.
+  DEFAULT_C_CFLAGS_O="$DEFAULT_C_CFLAGS_O -xO2"
+  CFLAGS_W="$CFLAGS_W -v -Xs"
+elif test -n "$UNICOS"
+then CFLAGS_W="$CFLAGS_W -h stdc"
+elif test -f ${headerdir}/ndir.h -a ! -f /usr/lib/libBSD.a
+then CFLAGS_W="$CFLAGS_W -Aa"
+elif test -n "$IRIX"
+then
+  CFLAGS_W="$CFLAGS_W -prototypes -fullwarn"
+  if test -n "$IRIX5"
+  then CFLAGS_W="$CFLAGS_W -woff 799"
+  else CFLAGS_W="$CFLAGS_W -woff 2,183,262,269,270,286,287,302,303,309"	# IRIX 4
+  fi
+fi
+
+# optimization by default on
+CFLAGS_O="`echo $CFLAGS_O $C_CFLAGS_O | sed 's/^ +$//'`"
+test -z "$CFLAGS_O" && CFLAGS_O="$DEFAULT_C_CFLAGS_O"
+
+if test -n "$B_noopt"
+then
+  CFLAGS_O=
+fi
+
+fi
+
+# --- do -c and -o work simultaneously?
+
+if test -z "$F_bld_eq_src"
+then
+
+cc_groks_c_o=
+cc_groks_c_o_done=
+
+if test -z "$cc_groks_c_o_done"
+then
+
+for co in $CC_GROK_c_o
+do
+ if test -n "`eval echo '$'$co`"
+ then
+   cc_groks_c_o=yep
+   cc_groks_c_o_done=yep
+   break
+ fi
+done
+
+fi
+
+if test -z "$cc_groks_c_o_done"
+then
+
+for co in $CC_LOSE_c_o
+do
+ if test -n "`eval echo '$'$co`"
+ then
+   cc_groks_c_o=
+   cc_groks_c_o_done=yep
+   break
+ fi
+done
+
+fi
+
+if test -z "$cc_groks_c_o_done"
+then
+
+# well, we must really test for it, then, mustn't we?
+
+tmpc=/tmp/_tmp$$.c
+tmpo=/tmp/_tmp$$.o
+
+trap "rm -f $tmpc $tmpo;$TRAPN" $TRAPSIGS
+
+echo 'int foo=42;' > $tmpc
+# this C program *should* not elicit any other errors than just
+# the complaint about simultaneous -c and -o
+test -n "`($CC -c -o $tmpo $tmpc 2>&1)`" && cc_groks_c_o=
+
+rm -f $tmpc $tmpo
+
+cc_groks_c_o_done=yep
+
+fi
+
+if test -z "$cc_groks_c_o"
+then
+  if test -n "$F_bld_eq_src"
+  then
+    CC_JUST_C=yep
+  else
+    CC_LOSES_c_O=yep
+  fi
+fi
+
+G_verb1_=Does
+G_subj_=$CC
+G_verb2_=understand
+set 'test -z "$cc_groks_c_o"' cc_groks_c_o 1 "-c and -o simultaneously"
+. ./config/bz.ifdef
+
+fi
+
+# --- do -g and -O work simultaneously?
+
+if test -z "$B_noopt" -a -n "$B_debug" -a -n "$CFLAGS_O"
+then
+
+cc_groks_g_O=
+cc_groks_g_O_done=
+
+if test -z "$cc_groks_g_O_done"
+then
+
+for co in $CC_LOSE_g_O
+do
+ if test -n "`eval echo '$'$co`"
+ then
+   cc_groks_g_O=
+   cc_groks_g_O_done=yep
+   break
+ fi
+done
+
+fi
+
+if test -z "$cc_groks_g_O_done"
+then
+
+for co in $CC_GROK_g_O
+do
+ set Z `echo $co|tr -d "'" |tr ":" " "`
+ if test -n "`eval echo '$'$1`"
+ then
+   test -n "$3" && CFLAGS_g="$3"
+   test -n "$4" && CFLAGS_O="$4"
+   cc_groks_g_O=yep
+   cc_groks_g_O_done=yep
+   break
+ fi
+done
+
+fi
+
+if test -z "$cc_groks_g_O_done"
+then
+
+# well, we must really test for it, then, mustn't we?
+
+tmpc=/tmp/_tmp$$.c
+tmpo=/tmp/_tmp$$.o
+
+trap "rm -f $tmpc $tmpo;$TRAPN" $TRAPSIGS
+
+echo 'int foo=42;' > $tmpc
+# this C program *should* not elicit any other errors than just
+# the complaint about simultaneous -g and -O
+test -z "`($CC $CFLAGS_g $CFLAGS_O -o $tmpo -c $tmpc 2>&1)`" && cc_groks_g_O=yep
+
+rm -f $tmpc $tmpo
+
+cc_groks_g_O_done=yep
+
+fi
+
+G_verb1_=Does
+G_subj_=$CC
+G_verb2_=understand
+set 'test -n "$cc_groks_g_O"' cc_groks_g_O 1 "-g and -O simultaneously"
+. ./config/bz.ifdef
+
+fi
+
+# ---
+
+if test -n "$CFLAGS_O" -a -n "$CFLAGS_g" -a -z "$cc_groks_g_O"
+then
+  echo "	($CC cannot simultaneously optimize (-O) and debug (-g),"
+  if test -n "$B_debug"
+  then
+    echo "	turning off optimization...)"
+    CFLAGS_O=
+  elif test -z "$B_noopt"
+  then
+    echo "	turning off debug...)"
+    CFLAGS_g=
+  fi
+fi
+
+### Optimization complexity level
+# for MIPS style compilers
+if test -n "$CFLAGS_O" -a -n "$CC_MIPS_STYLE" -a -z "`echo $CFLAGS_O|grep Olimit`"
+then
+  CFLAGS_O="$CFLAGS_O -Olimit 1000"
+fi
+
+if test -n "$B_query"
+then
+
+set CFLAGS_O "$CFLAGS_O" "$CC optimizer flags (e.g. -O)"
+. ./config/bz.define
+
+set CFLAGS_g "$CFLAGS_g" "$CC debug flags (e.g. -g)"
+. ./config/bz.define
+
+set CFLAGS_X "$CFLAGS_X" "$CC additional flags (fancy -Defines, etc)"
+. ./config/bz.define
+
+fi
+
+# the final joining of various CFLAGS_
+
+# non-optimizing CFLAGS
+CFLAGS_WO_O="`echo $CFLAGS_D $CFLAGS_W $CFLAGS_X $CFLAGS_g $CFLAGS_z $CFLAGS_M|sed 's/  */ /g'`"
+
+CFLAGS_W_O="`echo $CFLAGS_WO_O $CFLAGS_O|sed 's/  */ /g'`"
+
+if test -z "$CFLAGS" -a -n "$C_CFLAGS"
+then
+  CFLAGS="$C_CFLAGS"
+else
+  CFLAGS="$CFLAGS_W_O"
+fi
+set CFLAGS "$CFLAGS" "$CC flags"
+. ./config/bz.define
+
+# LD
+
+LD="$CC"
+
+test -z "$LD" -a -n "$C_LD" && LD="$C_LD"
+test -z "$LD" && LD="$DEFAULT_C_LD"
+set LD "$LD" "linker"
+. ./config/bz.define
+
+# LDFLAGS
+
+LDFLAGS="`echo $CFLAGS_X $CFLAGS_M $CFLAGS_O $CFLAGS_g|sed 's/  */ /g'`"
+
+test -n "$C_LDFLAGS" && LDFLAGS="$C_LDFLAGS"
+set LDFLAGS "$LDFLAGS" "link flags"
+. ./config/bz.define
+
+# --- LIBS
+
+if test -z "$LIBS"
+then
+
+  if test -n "$IRIX"
+  then
+    if grep '^\+' /etc/passwd >/dev/null 2>&1
+    then LIBS='-lcurses -lmalloc -lbsd -lsun'
+    else LIBS='-lcurses -lmalloc -lbsd'
+    fi
+  elif test -n "$SOLARIS"
+  then LIBS='-ltermcap -lnsl'
+  elif test -n "$BBN"
+  then LIBS='-ltermcap -lposix'
+  elif test -n "$OSF1" -o -n "$TITAN" -o -n "$HPUX"
+  then LIBS='-ltermcap'
+  elif test -n "$SEQUENTPTX"
+  then LIBS='-ltermlib -lX11 -lseq'
+  elif test -f /usr/lib/libcposix.a
+  then LIBS='-lcposix -ltermcap'
+  elif test -f /usr/lib/libBSD.a
+  then LIBS='-ltermcap -lBSD'
+  elif test -f /usr/lib/libtermcap.a -o -f /usr/ucblib/libtermcap.a
+  then
+    if test -n "$AIX"
+    then LIBS='-lcurses'	# -lbsd should not be needed
+    else LIBS='-ltermcap'
+    fi
+  fi
+fi
+
+test -z "$LIBS" -a -n "$C_LIBS" && LIBS="$C_LIBS"
+test -z "$LIBS" && LIBS="$DEFAULT_C_LIBS"
+set LIBS "$LIBS" "libraries to link with"
+. ./config/bz.define
+
+# -- modules
+
+echo '	Working out modules (*.{[hco],pro})...'
+
+modules="/tmp/modules$$"
+modules_c="${modules}.c"
+modules_h="${modules}.h"
+modules_o="${modules}.o"
+modules_p="${modules}.p"
+
+trap "rm -f $modules $modules_c $modules_h $modules_o $modules_p;$TRAPN" $TRAPSIGS
+
+(exec >$modules
+# C source files and header files, one file per line,
+# between "cat <<foo" and "foo"-lines
+cat <<foo
+builtin.c
+cond.c
+exec.c
+glob.c
+hist.c
+init.c
+jobs.c
+lex.c
+loop.c
+math.c
+mem.c
+params.c
+parse.c
+subst.c
+table.c
+text.c
+utils.c
+watch.c
+zle_bindings.c
+zle_hist.c
+zle_main.c
+zle_misc.c
+zle_move.c
+zle_refresh.c
+zle_tricky.c
+zle_utils.c
+zle_vi.c
+zle_word.c
+funcs.h
+zle.h
+zsh.h
+ztype.h
+foo
+)
+
+echo '	.c....'
+egrep '\.c$' $modules > $modules_c
+SRC=`cat $modules_c|tr '\012' ' '`
+
+# as SRC but without .c 
+BSRC=`cat $modules_c|sed 's/\.c$//'|tr '\012' ' '`
+
+echo '	.h....'
+egrep '\.h$' $modules > $modules_h
+HEADER=`cat $modules_h | tr '\012' ' '`
+
+test -n "$make_groks_VPATH" && c_blddir= || c_blddir="$C_BLDDIR"
+
+echo '	.pro....'
+sed 's/\.c$/.pro/' < $modules_c | sed "s%^%$c_blddir%" > $modules_p
+PROTO=`cat $modules_p | tr '\012' ' '`
+
+echo '	.o....'
+sed 's/\.c$/.o/' < $modules_c | sed "s%^%$c_blddir%" > $modules_o
+OBJS=`cat $modules_o | tr '\012' ' '`
+
+rm -f $modules $modules_c $modules_h $modules_o $modules_p
+
+{
+  echo
+  echo "	probed for Makefile..."
+  echo
+} >&2
+
+fi
+
+# -- find out how to build the .c.o rule
+
+ccit='$(CC) $(CFLAGS) -c $(DFLAGS)'
+ccdotc='$<'
+ccseparate=
+makeprecd=
+makefflag=
+ccinc=
+
+if test -z "$F_bld_eq_src"
+then
+  test -n "$C_SRCDIR" && ccinc=" -I$C_SRCDIR"
+  if test -z "$B_makeatbld"
+  then
+     makefflag="-f $MAKEFILE"
+     ccinc=" -I$C_BLDDIR"
+  else
+     makeprecmd="cd $C_BLDDIR && "
+     ccseparate=yep
+  fi
+  if test -n "$make_groks_VPATH"
+  then
+     if test -z "$B_makeatbld"
+     then
+       ccit="$ccit$ccinc -o ${C_BLDDIR}\$@ "
+     fi
+  else
+     if test -n "$B_makeatbld"
+     then
+       ccit="$ccit$ccinc"' -o `basename ${C_SRCDIR}\$@`'
+     else
+       ccseparate=yep
+     fi
+  fi
+fi
+
+# all set
+
+make_probe_done=yep
+
+###

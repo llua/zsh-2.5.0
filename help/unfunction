@@ -1,0 +1,5 @@
+       unfunction [ -m ] name ...
+              The function definition, if any, for each  name  is
+              removed.  If the -m flag is specified the arguments
+              are taken as patterns (should be  quoted)  and  all
+              functions with matching names are removed.
